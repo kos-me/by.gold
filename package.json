@@ -1,0 +1,29 @@
+{
+  "name": "gold-by",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "gold.by — официальная цена скупки золота в Беларуси",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "astro check",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "astro": "^7.1.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/node": "^26.1.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

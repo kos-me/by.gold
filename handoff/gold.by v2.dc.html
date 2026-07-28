@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Onest:wght@500;600;700;800&family=Martian+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #1b1e21; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #23566f; text-decoration: none; border-bottom: 1px solid rgba(35,86,111,.35); }
+  a:hover { color: #143a4d; border-bottom-color: #143a4d; }
+  :focus-visible { outline: 2px solid #7ea8bd; outline-offset: 3px; border-radius: 2px; }
+  input, button, textarea { font: inherit; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="min-height:100vh;background:#f5f4f1;font-family:'Golos Text',system-ui,sans-serif;color:#15181b">
+
+  <div style="background:#1b1e21;color:#f5f4f1">
+    <div style="max-width:720px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div style="font-family:'Onest',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.02em">gold<span style="color:#8b9299">.by</span></div>
+      <div style="display:flex;gap:16px;font-size:13.5px;font-weight:500;color:#b9bfc4">
+        <button onClick="{{ goHome }}" style="background:none;border:0;color:inherit;cursor:pointer;padding:2px 0">Цена</button>
+        <button onClick="{{ goCheck }}" style="background:none;border:0;color:inherit;cursor:pointer;padding:2px 0">Как проверить</button>
+        <button onClick="{{ goAbout }}" style="background:none;border:0;color:inherit;cursor:pointer;padding:2px 0">О проекте</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="max-width:720px;margin:0 auto;padding:0 20px 60px">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <div>
+    <section style="padding:34px 0 0">
+      <sc-if value="{{ isNormal }}" hint-placeholder-val="{{ true }}">
+      <h1 style="font-family:'Onest',sans-serif;font-weight:700;font-size:29px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px;max-width:15em;text-wrap:pretty">Официальная цена скупки золота в Беларуси</h1>
+      <p style="margin:0 0 22px;font-size:16px;line-height:1.55;color:#4a4f45;max-width:34em;text-wrap:pretty">Цену устанавливает Министерство финансов. Ниже неё не платит ни одна лицензированная скупка.</p>
+      </sc-if>
+      <sc-if value="{{ isWithheld }}" hint-placeholder-val="{{ false }}">
+      <h1 style="font-family:'Onest',sans-serif;font-weight:700;font-size:29px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px;max-width:16em;text-wrap:pretty">Цена не показана: срок действия постановления истёк</h1>
+      <p style="margin:0 0 22px;font-size:16px;line-height:1.55;color:#4a4f45;max-width:34em;text-wrap:pretty">Постановление № 41 действовало до 31 июля 2026 года. Новое ещё не опубликовано, поэтому мы не показываем цену и не считаем стоимость — старая цифра уже может быть неверной.</p>
+      </sc-if>
+
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:14px;box-shadow:0 1px 2px rgba(21,24,27,.04);overflow:hidden">
+        <sc-if value="{{ isNormal }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 20px 18px;display:flex;flex-wrap:wrap;gap:22px 28px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid #edeae5">
+          <div>
+            <div style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:10px">585 проба, за грамм</div>
+            <div style="display:flex;align-items:baseline;gap:9px">
+              <span style="font-family:'Onest',sans-serif;font-weight:800;font-size:54px;line-height:.92;letter-spacing:-.035em">158,42</span>
+              <span style="font-size:17px;font-weight:600;color:#6c6c62">BYN</span>
+            </div>
+          </div>
+          <div style="transform:rotate(-1.8deg);border:1.5px solid #6b7560;border-radius:4px;padding:9px 12px 8px;background:#f2f3ee">
+            <div style="font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#5a6450;line-height:1.6">
+              <div style="font-weight:500">Пост. Минфина № 41</div>
+              <div>от 3 июля 2026</div>
+              <div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(107,117,96,.4)">действует до 31.07.2026</div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ isWithheld }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:22px 20px 18px;display:flex;flex-wrap:wrap;gap:20px 28px;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #edeae5;background:repeating-linear-gradient(135deg,#f7f6f2 0 9px,#f2f1ec 9px 18px)">
+          <div>
+            <div style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:10px">585 проба, за грамм</div>
+            <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px">
+              <span style="font-family:'Onest',sans-serif;font-weight:700;font-size:25px;letter-spacing:-.02em;color:#6c6c62">Цифры пока нет</span>
+              <span style="font-size:13.5px;font-weight:500;color:#8b8478">ждём новое постановление</span>
+            </div>
+          </div>
+          <div style="transform:rotate(-1.8deg);border:1.5px dashed #b3aea3;border-radius:4px;padding:9px 12px 8px;background:#f4f3ef">
+            <div style="font-family:'Martian Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8b8478;line-height:1.6">
+              <div style="font-weight:500">без действующего</div>
+              <div>постановления</div>
+              <div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(179,174,163,.6)">проверено 1.08.2026, 09:40</div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+        <div style="padding:16px 20px 12px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;border-bottom:1px solid #edeae5">
+          <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:16.5px;margin:0">Цена скупки по пробам</h2>
+          <span style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#8b8478">BYN за грамм лигатурной массы</span>
+        </div>
+        <sc-for list="{{ tariffs }}" as="row" hint-placeholder-count="6">
+          <div style="{{ row.style }}">
+            <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;min-width:44px">{{ row.fineness }}</span>
+            <span style="flex:1;font-size:13px;color:#8b8478">{{ row.note }}</span>
+            <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">{{ row.price }}</span>
+          </div>
+        </sc-for>
+        <div style="padding:12px 20px;font-size:12.5px;color:#8b8478;line-height:1.55">Цена указана за грамм лигатурной массы изделия соответствующей пробы. Пробу определяют при приёмке — клеймо на изделии не всегда совпадает с результатом опробования.</div>
+      </div>
+    </section>
+
+    <sc-if value="{{ isWithheldHome }}" hint-placeholder-val="{{ false }}">
+    <section style="margin-top:14px">
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:14px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+          <div style="padding:17px 20px;border-right:1px solid #edeae5;border-bottom:1px solid #edeae5">
+            <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6a54;margin-bottom:8px">что известно</div>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#33372f">Порядок не изменился: цену устанавливает Минфин, и во всех лицензированных скупках она одинакова. Изменится только цифра.</p>
+          </div>
+          <div style="padding:17px 20px;border-bottom:1px solid #edeae5">
+            <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6a54;margin-bottom:8px">что уточняем</div>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#33372f">Номер, дату и цены нового постановления. Проверяем сайт Минфина каждый час; страница обновится сама.</p>
+          </div>
+        </div>
+        <div style="padding:15px 20px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:baseline;justify-content:space-between;border-bottom:1px solid #edeae5">
+          <span style="font-size:14px;color:#4a4f45">Действующее постановление всегда есть на сайте министерства.</span>
+          <a href="#source" style="font-size:14px;font-weight:600">Открыть minfin.gov.by →</a>
+        </div>
+        <div style="padding:15px 20px;background:#f5f4f1">
+          <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:9px">архив — не цена на сегодня</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline">
+            <span style="font-size:20px;font-weight:700;color:#8b8478;font-variant-numeric:tabular-nums;text-decoration:line-through;text-decoration-color:#c4c0b6">158,42 BYN</span>
+            <span style="font-size:13px;color:#8b8478">585 проба по постановлению № 41, действовало 3–31 июля 2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <section style="margin-top:14px">
+      <div style="background:#f0efe9;border:1px solid #d8d5cc;border-left:none;border-right:none;border-radius:12px;padding:16px 20px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-start;border-left:1px solid #d8d5cc;border-right:1px solid #d8d5cc">
+        <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6a54;padding-top:3px;min-width:130px">может быть больше</div>
+        <p style="margin:0;flex:1;min-width:220px;font-size:14px;line-height:1.6;color:#3a3f36;text-wrap:pretty">Цена Минфина — это то, что вам обязаны заплатить в любой лицензированной скупке. Ювелирные сети иногда платят выше этой цены: по своим программам выкупа или при обмене старого изделия на новое. Разница бывает заметной, поэтому имеет смысл спросить условия в сети до того, как сдавать лом. Ниже официальной цены не платит никто.</p>
+      </div>
+    </section>
+
+    <section style="margin-top:14px">
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:14px;overflow:hidden">
+        <div style="position:relative;width:100%;height:250px">
+          <image-slot id="gold-hallmark-macro" shape="rect" fit="cover" src="./images/hallmark-585.webp" placeholder="Клеймо 585 внутри шинки кольца, макро"></image-slot>
+        </div>
+        <div style="padding:14px 20px;font-size:13.5px;line-height:1.55;color:#4a4f45">Клеймо заявляет пробу, но не подтверждает её. Проба, по которой посчитают сумму, определяется при приёмке.</div>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.015em;margin:0 0 12px">Сколько стоит ваше изделие</h2>
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:14px;padding:20px;display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+        <div>
+          <label style="display:block;font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:8px">Масса металла, г</label>
+          <input type="text" inputMode="decimal" value="{{ grams }}" onChange="{{ onGrams }}" disabled="{{ isWithheld }}" style="{{ inputStyle }}" />
+          <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin:16px 0 8px">Проба по клейму</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ purityBtns }}" as="p" hint-placeholder-count="6">
+              <button onClick="{{ p.onClick }}" disabled="{{ isWithheld }}" style="{{ p.style }}">{{ p.label }}</button>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;font-size:12.5px;line-height:1.55;color:#6c6c62;display:grid;gap:7px">
+            <div>Вес брутто не равен зачётной массе: камни, эмаль, замки из другого металла не считаются.</div>
+            <div>Клеймо — заявленная проба. Итоговую определит опробование при приёмке.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="border-radius:11px;padding:18px;background:{{ outBg }};border:1px solid #e3e0d9">
+            <div style="font-size:13px;line-height:1.45;color:#6c6c62;margin-bottom:9px">{{ outLabel }}</div>
+            <div style="font-family:'Onest',sans-serif;font-weight:800;font-size:31px;letter-spacing:-.025em;line-height:1;color:{{ outColor }}">{{ outValue }}</div>
+            <div style="font-size:12.5px;line-height:1.55;color:#8b8478;margin-top:11px">{{ outNote }}</div>
+          </div>
+          <div style="border-radius:11px;padding:14px 16px;border:1px dashed #cfccc3;font-size:12.5px;line-height:1.55;color:#6c6c62">В ювелирной сети за это же изделие могут предложить больше — при обмене на новое или по акции выкупа. Уточняйте до сделки.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.015em;margin:0 0 12px">Как менялась цена</h2>
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:14px;padding:18px 20px">
+        <div style="display:flex;align-items:flex-end;gap:5px;height:52px;margin-bottom:14px">
+          <sc-for list="{{ bars }}" as="b" hint-placeholder-count="9">
+            <div style="flex:1;background:{{ b.color }};border-radius:2px 2px 0 0;height:{{ b.h }}px"></div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ history }}" as="h" hint-placeholder-count="5">
+          <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding:9px 0;border-top:1px solid #edeae5;font-size:14px">
+            <span style="font-weight:600;font-variant-numeric:tabular-nums;min-width:94px">{{ h.price }}</span>
+            <span style="color:#6c6c62;flex:1;min-width:130px">{{ h.period }}</span>
+            <span style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.06em;color:#8b8478">{{ h.decree }}</span>
+          </div>
+        </sc-for>
+        <div style="font-size:12.5px;color:#8b8478;margin-top:12px;line-height:1.5">585 проба, BYN за грамм. Постановления выходят нерегулярно — раз в две–шесть недель.</div>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.015em;margin:0 0 6px">Мерные слитки — другой порядок</h2>
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.55;color:#4a4f45;max-width:34em">Слитки Нацбанка не скупка лома: цену объявляет НБРБ, она меняется ежедневно и зависит от сохранности слитка и сертификата.</p>
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:14px;overflow:hidden">
+        <sc-for list="{{ bullion }}" as="b" hint-placeholder-count="4">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid #edeae5;font-size:15px">
+            <span style="font-weight:600;min-width:44px">{{ b.mass }}</span>
+            <span style="flex:1;font-size:13px;color:#8b8478">{{ b.note }}</span>
+            <span style="font-weight:600;font-variant-numeric:tabular-nums">{{ b.price }}</span>
+          </div>
+        </sc-for>
+        <div style="padding:12px 20px;font-size:12.5px;color:#8b8478;line-height:1.5">Цены НБРБ на 28 июля 2026, обратный выкуп слитков без повреждений и с сертификатом.</div>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.015em;margin:0 0 12px">Не ваш случай?</h2>
+      <div style="display:grid;gap:10px">
+        <sc-for list="{{ routes }}" as="r" hint-placeholder-count="3">
+          <div style="background:#fff;border:1px solid #dcd9d3;border-radius:12px;padding:15px 18px;display:flex;flex-wrap:wrap;gap:4px 18px">
+            <div style="font-family:'Onest',sans-serif;font-weight:700;font-size:15.5px;min-width:170px">{{ r.title }}</div>
+            <p style="margin:0;flex:1;min-width:220px;font-size:13.5px;line-height:1.6;color:#4a4f45">{{ r.text }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <div style="border:1px solid #dcd9d3;border-radius:14px;overflow:hidden;background:#fff">
+        <div style="position:relative;width:100%;height:270px">
+          <image-slot id="gold-touchstone-assay" shape="rect" fit="cover" src="./images/touchstone-assay.webp" placeholder="Опробование: капля реактива на пробирном камне"></image-slot>
+        </div>
+        <div style="padding:15px 20px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:baseline;justify-content:space-between">
+          <span style="font-size:14px;color:#4a4f45">Пробу определяют при вас — это то, что стоит проверить у стойки.</span>
+          <a href="#check" onClick="{{ goCheck }}" style="font-size:14px;font-weight:600">Как проходит оценка →</a>
+        </div>
+      </div>
+    </section>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isCheck }}" hint-placeholder-val="{{ false }}">
+  <div style="max-width:620px">
+    <section style="padding:34px 0 0">
+      <div style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:14px">/kak-proverit-otsenku</div>
+      <h1 style="font-family:'Onest',sans-serif;font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:0 0 14px;max-width:17em;text-wrap:pretty">Как проверить оценку в скупке</h1>
+      <p style="margin:0 0 24px;font-size:16.5px;line-height:1.55;color:#4a4f45;text-wrap:pretty">Цена за грамм в скупке не обсуждается — её установил Минфин, и ниже неё не платит никто. Обсуждаются два числа: проба и зачётная масса. Вот что должно происходить у стойки.</p>
+      <div style="display:grid;gap:8px">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+          <div style="background:#fff;border:1px solid #dcd9d3;border-radius:12px;padding:17px 19px;display:flex;gap:15px;align-items:flex-start">
+            <span style="font-family:'Martian Mono',monospace;font-size:11px;color:#8b8478;padding-top:3px">{{ s.n }}</span>
+            <div>
+              <div style="font-family:'Onest',sans-serif;font-weight:700;font-size:16.5px;margin-bottom:7px">{{ s.title }}</div>
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:#33372f;text-wrap:pretty">{{ s.text }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:14px;background:#fff;border:1px solid #dcd9d3;border-radius:12px;overflow:hidden">
+        <div style="position:relative;width:100%;height:210px">
+          <image-slot id="gold-scale-grams" shape="rect" fit="cover" src="./images/scale-display.webp" placeholder="Цепочка на поверенных весах, дисплей с граммами"></image-slot>
+        </div>
+        <div style="padding:13px 18px;font-size:13.5px;line-height:1.55;color:#4a4f45">Весы должны быть поверены, а взвешивание — при вас, с нуля.</div>
+      </div>
+
+      <div style="margin-top:18px;border:1.5px solid #6b7560;border-radius:12px;padding:18px 20px;background:#f0efe9">
+        <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6a54;margin-bottom:9px">если что-то не так</div>
+        <p style="margin:0;font-size:14.5px;line-height:1.6;color:#33372f">Отказаться от сделки можно на любом этапе до подписания и забрать изделие. Если цена за грамм ниже постановления, попросите показать действующий документ — он должен быть в скупке. Расхождение — повод обратиться в Пробирную инспекцию.</p>
+      </div>
+    </section>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+  <div style="max-width:620px">
+    <section style="padding:34px 0 0">
+      <div style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:14px">/o-proekte</div>
+      <h1 style="font-family:'Onest',sans-serif;font-weight:700;font-size:28px;line-height:1.15;letter-spacing:-.02em;margin:0 0 14px">О проекте</h1>
+      <p style="margin:0 0 24px;font-size:16.5px;line-height:1.55;color:#4a4f45;text-wrap:pretty">gold.by показывает цену скупки золота, установленную Минфином, и объясняет, как она превращается в сумму у стойки. Мы ничего не покупаем и не продаём.</p>
+
+      <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:18px;margin:0 0 10px">Источники</h2>
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:12px;overflow:hidden;margin-bottom:24px">
+        <sc-for list="{{ sources }}" as="s" hint-placeholder-count="3">
+          <div style="padding:14px 18px;border-bottom:1px solid #edeae5">
+            <div style="font-size:14.5px;font-weight:600;margin-bottom:4px">{{ s.title }}</div>
+            <div style="font-size:13px;color:#6c6c62;line-height:1.55">{{ s.text }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <h2 style="font-family:'Onest',sans-serif;font-weight:700;font-size:18px;margin:0 0 10px">Нашли ошибку в цифре?</h2>
+      <p style="margin:0 0 14px;font-size:14.5px;line-height:1.6;color:#4a4f45">Напишите номер постановления и что именно расходится. Проверим и исправим или объясним, почему цифра верна.</p>
+      <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:12px;padding:18px 20px;display:grid;gap:12px">
+        <div>
+          <label style="display:block;font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:7px">Ваша почта</label>
+          <input type="email" placeholder="name@mail.by" value="{{ formEmail }}" onChange="{{ onFormEmail }}" style="{{ emailStyle }}" />
+        </div>
+        <div>
+          <label style="display:block;font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:7px">Что не так</label>
+          <textarea rows="4" placeholder="Например: в скупке назвали цену ниже постановления" value="{{ formNote }}" onChange="{{ onFormNote }}" style="{{ noteStyle }}"></textarea>
+        </div>
+        <sc-if value="{{ formInvalid }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border-radius:9px;background:#f7f1ee;border:1px solid #e0cdc4">
+          <span style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#9c5f45;padding-top:2px">проверьте</span>
+          <span style="font-size:13.5px;line-height:1.5;color:#6b4635">{{ formInvalidText }}</span>
+        </div>
+        </sc-if>
+        <div style="display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center">
+          <button onClick="{{ submitForm }}" disabled="{{ formSending }}" style="{{ submitStyle }}">{{ submitLabel }}</button>
+          <span style="font-size:12.5px;color:#8b8478;line-height:1.5">Ответим на почту. Обычно в течение дня.</span>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ formSent }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1.5px solid #6b7560;border-radius:12px;overflow:hidden">
+        <div style="padding:18px 20px;background:#f0efe9;border-bottom:1px solid #e0e2d8">
+          <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#5f6a54;margin-bottom:8px">сообщение принято</div>
+          <div style="font-family:'Onest',sans-serif;font-weight:700;font-size:17px;margin-bottom:7px">Проверим и ответим на {{ formEmailShown }}</div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#33372f">Сверим ваше сообщение с действующим постановлением. Если расхождение на нашей стороне — исправим цифру и напишем, что изменилось.</p>
+        </div>
+        <div style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between">
+          <span style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.06em;color:#8b8478">обращение {{ ticketId }}</span>
+          <button onClick="{{ resetForm }}" style="{{ ghostBtn }}">Сообщить ещё об одном</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ formDupe }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #dcd9d3;border-radius:12px;overflow:hidden">
+        <div style="padding:18px 20px;border-bottom:1px solid #edeae5">
+          <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8b8478;margin-bottom:8px">уже в работе</div>
+          <div style="font-family:'Onest',sans-serif;font-weight:700;font-size:17px;margin-bottom:7px">Об этом расхождении нам уже сообщили</div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#33372f">Постановление № 41 проверяем с 28 июля, обращений по нему уже три. Пока проверка не закончена, цифра на главной остаётся прежней. Ваше письмо не потеряется — мы добавили вас в этот же запрос.</p>
+        </div>
+        <div style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between">
+          <a href="#source" style="font-size:13.5px;font-weight:600">Открыть постановление на minfin.gov.by →</a>
+          <button onClick="{{ resetForm }}" style="{{ ghostBtn }}">Сообщить о другом</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ formFailed }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#fff;border:1px solid #d8c3b8;border-radius:12px;overflow:hidden">
+        <div style="padding:18px 20px;background:#f9f3f0;border-bottom:1px solid #e6d5cc">
+          <div style="font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#9c5f45;margin-bottom:8px">не отправилось</div>
+          <div style="font-family:'Onest',sans-serif;font-weight:700;font-size:17px;margin-bottom:7px">Письмо не ушло — форма не отвечает</div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#6b4635">Текст сохранён, он никуда не пропал. Нажмите «Повторить» или напишите на почту напрямую — так дойдёт наверняка.</p>
+        </div>
+        <div style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between">
+          <a href="mailto:pravka@gold.by" style="font-size:13.5px;font-weight:600">pravka@gold.by</a>
+          <button onClick="{{ submitForm }}" style="{{ ghostBtn }}">Повторить</button>
+        </div>
+      </div>
+      </sc-if>
+    </section>
+  </div>
+  </sc-if>
+
+
+  <div style="margin-top:34px;padding-top:20px;border-top:1px solid #dcd9d3;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;font-size:13px;color:#8b8478">
+    <span>gold.by — цена скупки золота, установленная Минфином</span>
+    <span style="font-family:'Martian Mono',monospace;font-size:10px;letter-spacing:.06em">данные проверены {{ checkedAt }}</span>
+  </div>
+
+  <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px;align-items:center;font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#a6a196">
+    <span>состояние</span>
+    <button onClick="{{ setNormal }}" style="{{ btnNormal }}">данные подтверждены</button>
+    <button onClick="{{ setWithheld }}" style="{{ btnWithheld }}">срок истёк</button>
+  </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startWithheld&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Состояние&quot;}}">
+class Component extends DCLogic {
+  state = {
+    page: "home", withheld: false, grams: "8,4", purity: 585,
+    form: "idle", formEmail: "", formNote: "", formInvalidText: "", ticketId: ""
+  };
+
+  submit = () => {
+    const email = this.state.formEmail.trim();
+    const note = this.state.formNote.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+      return this.setState({ form: "invalid", formInvalidText: "Адрес почты выглядит неполным — без него мы не сможем ответить." });
+    }
+    if (note.length < 12) {
+      return this.setState({ form: "invalid", formInvalidText: "Опишите расхождение хотя бы одной фразой: что и где не сходится." });
+    }
+    this.setState({ form: "sending", formInvalidText: "" });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      // демо-развилка: «41» в тексте → уже в работе, «.test» в адресе → сбой отправки
+      if (/\.test$/.test(email)) return this.setState({ form: "failed" });
+      if (/\b41\b/.test(note)) return this.setState({ form: "dupe" });
+      this.setState({
+        form: "sent",
+        ticketId: "GB-" + String(1740 + Math.floor(Math.random() * 60))
+      });
+    }, 900);
+  };
+
+  reset = () => this.setState({ form: "idle", formNote: "", formInvalidText: "" });
+
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  componentDidMount() {
+    if (this.props.startWithheld) this.setState({ withheld: true });
+  }
+
+  fmt(n) {
+    return n.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+
+  renderVals() {
+    const w = this.state.withheld;
+    const page = this.state.page;
+    const priceFor = { 375: 101.55, 500: 135.4, 585: 158.42, 750: 203.1, 958: 259.43, 999: 270.6 };
+    const notes = { 375: "", 500: "", 585: "чаще всего", 750: "", 958: "", 999: "" };
+    const g = parseFloat(String(this.state.grams).replace(",", ".").replace(/\s/g, ""));
+    const valid = !isNaN(g) && g > 0;
+    const sum = valid ? g * priceFor[this.state.purity] : 0;
+
+    const rowStyle = (sel) =>
+      "display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid #edeae5;background:" +
+      (sel && !w ? "#f6f5f0" : "transparent") +
+      ";box-shadow:" + (sel && !w ? "inset 3px 0 0 #6b7560" : "none") +
+      ";color:" + (w ? "#a6a196" : "#15181b");
+
+    const chip = (active, disabled) =>
+      "padding:8px 12px;border-radius:8px;font-size:14px;font-weight:600;cursor:" + (disabled ? "not-allowed" : "pointer") +
+      ";border:1px solid " + (active && !disabled ? "#23566f" : "#cfccc3") +
+      ";background:" + (active && !disabled ? "#23566f" : "#fff") +
+      ";color:" + (disabled ? "#b3aea3" : active ? "#fff" : "#33372f");
+
+    const seg = (active) =>
+      "padding:5px 9px;border-radius:6px;font-family:'Martian Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid " +
+      (active ? "#6b7560" : "#d8d5cc") + ";background:" + (active ? "#f0efe9" : "transparent") +
+      ";color:" + (active ? "#5f6a54" : "#a6a196");
+
+    const f = this.state.form;
+    const field = (bad) =>
+      "width:100%;padding:11px 13px;border-radius:9px;font-size:15px;color:#15181b;background:#fff;border:1px solid " +
+      (bad ? "#c58e74" : "#cfccc3") + ";";
+
+    const series = [132.1, 136.4, 134.8, 139.9, 143.6, 151.05, 149.17, 154.9, 158.42];
+    const min = Math.min(...series) - 6, max = Math.max(...series);
+
+    return {
+      isHome: page === "home", isCheck: page === "check", isAbout: page === "about",
+      isNormal: !w, isWithheld: w, isWithheldHome: w && page === "home",
+      goHome: () => this.setState({ page: "home" }),
+      goCheck: () => this.setState({ page: "check" }),
+      goAbout: () => this.setState({ page: "about" }),
+      setNormal: () => this.setState({ withheld: false }),
+      setWithheld: () => this.setState({ withheld: true }),
+      btnNormal: seg(!w), btnWithheld: seg(w),
+
+      tariffs: [375, 500, 585, 750, 958, 999].map((p) => ({
+        fineness: String(p),
+        price: w ? "—" : this.fmt(priceFor[p]),
+        note: notes[p],
+        style: rowStyle(p === this.state.purity)
+      })),
+
+      grams: this.state.grams,
+      onGrams: (e) => this.setState({ grams: e.target.value }),
+      inputStyle: "width:100%;padding:12px 14px;border-radius:9px;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;border:1px solid " +
+        (w ? "#e3e0d9" : "#cfccc3") + ";background:" + (w ? "#f3f2ee" : "#fff") + ";color:" + (w ? "#b3aea3" : "#15181b"),
+      purityBtns: [375, 500, 585, 750, 958, 999].map((p) => ({
+        label: String(p), style: chip(this.state.purity === p, w),
+        onClick: () => this.setState({ purity: p })
+      })),
+      outBg: w ? "#f3f2ee" : "#f0efe9",
+      outColor: w ? "#b3aea3" : "#15181b",
+      outLabel: w ? "Расчёт приостановлен" : "Стоимость по официальным ценам Минфина",
+      outValue: w ? "—" : (valid ? this.fmt(sum) + " BYN" : "введите массу"),
+      outNote: w
+        ? "Считать по истёкшему постановлению нельзя. Расчёт включится, как только выйдет новое."
+        : "Итоговая сумма зависит от пробы и зачётной массы, определённых при приёмке.",
+
+      bars: series.map((v, i) => ({
+        h: Math.round(13 + ((v - min) / (max - min)) * 39),
+        color: i === series.length - 1 ? (w ? "#c4c0b6" : "#6b7560") : "#d8d5cc"
+      })),
+      history: [
+        { price: "158,42 BYN", period: "3 — 31 июля 2026", decree: "№ 41" },
+        { price: "154,90 BYN", period: "12 июня — 2 июля 2026", decree: "№ 36" },
+        { price: "149,17 BYN", period: "8 мая — 11 июня 2026", decree: "№ 29" },
+        { price: "151,05 BYN", period: "27 марта — 7 мая 2026", decree: "№ 21" },
+        { price: "143,60 BYN", period: "20 февраля — 26 марта 2026", decree: "№ 14" }
+      ],
+      bullion: [
+        { mass: "1 г", price: "342,10 BYN", note: "999,9" },
+        { mass: "5 г", price: "1 690,50 BYN", note: "999,9" },
+        { mass: "10 г", price: "3 358,00 BYN", note: "999,9" },
+        { mass: "20 г", price: "6 682,40 BYN", note: "999,9" }
+      ],
+      routes: [
+        { title: "Обмен на новое изделие", text: "В ювелирной сети зачёт старого золота при покупке нового обычно выше цены скупки. Условия у каждой сети свои и меняются — спрашивайте до сделки." },
+        { title: "Слитки и монеты", text: "Мерные слитки и памятные монеты сдают в банк по его цене, а не в скупку. Нужен сертификат и сохранная упаковка." },
+        { title: "Ломбард — это не продажа", text: "Заём под залог: изделие остаётся вашим, пока вы платите проценты. Оценка залога ниже цены скупки." }
+      ],
+      steps: [
+        { n: "01", title: "Проверьте цену за грамм", text: "На стойке должна быть цена из действующего постановления Минфина. Ниже неё платить не вправе; выше — может предложить ювелирная сеть по своей программе." },
+        { n: "02", title: "Смотрите, как определяют пробу", text: "Клеймо только заявляет пробу. При приёмке проводят опробование — реактивом на пробирном камне или прибором — и называют результат при вас." },
+        { n: "03", title: "Следите за весом", text: "Взвешивают на поверенных весах, при вас, с нулём на пустой чаше. Камни, замки и вставки из другого металла удаляют или вычитают из массы." },
+        { n: "04", title: "Пересчитайте сумму", text: "Сумма = зачётная масса × цена за грамм для установленной пробы. Проверьте на телефоне до подписания." },
+        { n: "05", title: "Возьмите документ", text: "Договор или квитанция с массой, пробой, ценой за грамм и суммой. Без документа сделку не подтвердить." }
+      ],
+      sources: [
+        { title: "Министерство финансов", text: "Постановления о ценах скупки драгоценных металлов у населения — источник главной цифры." },
+        { title: "Национальный банк", text: "Цены покупки мерных слитков и памятных монет, обновляются ежедневно." },
+        { title: "Пробирная инспекция", text: "Правила опробования и клеймения; порядок обращения при расхождениях." }
+      ],
+      formOpen: f === "idle" || f === "invalid" || f === "sending",
+      formInvalid: f === "invalid",
+      formSending: f === "sending",
+      formSent: f === "sent",
+      formDupe: f === "dupe",
+      formFailed: f === "failed",
+      formInvalidText: this.state.formInvalidText,
+      formEmail: this.state.formEmail,
+      formEmailShown: this.state.formEmail.trim() || "указанный адрес",
+      formNote: this.state.formNote,
+      ticketId: this.state.ticketId,
+      onFormEmail: (e) => this.setState({ formEmail: e.target.value }),
+      onFormNote: (e) => this.setState({ formNote: e.target.value }),
+      submitForm: this.submit,
+      resetForm: this.reset,
+      emailStyle: field(f === "invalid" && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(this.state.formEmail.trim())),
+      noteStyle: field(f === "invalid" && this.state.formNote.trim().length < 12) + "font-family:inherit;resize:vertical;",
+      submitLabel: f === "sending" ? "Отправляем…" : "Отправить",
+      submitStyle: "justify-self:start;padding:11px 20px;border:0;border-radius:9px;font-weight:600;font-size:15px;cursor:" +
+        (f === "sending" ? "default" : "pointer") + ";background:" + (f === "sending" ? "#8b9a86" : "#23566f") + ";color:#fff",
+      ghostBtn: "padding:9px 15px;border:1px solid #cfccc3;border-radius:8px;background:#fff;font-size:13.5px;font-weight:600;color:#33372f;cursor:pointer",
+      checkedAt: w ? "1 августа 2026, 09:40" : "28 июля 2026, 09:40"
+    };
+  }
+}
+</script>
+</body>
+</html>
