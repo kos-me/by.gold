@@ -9,13 +9,15 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run validate:data && astro build",
+    "build:only": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "astro check",
-    "check": "npm run typecheck && npm run test && npm run build"
+    "validate:data": "vitest run tests/data-integrity.test.ts",
+    "check": "npm run typecheck && npm run test && npm run build:only"
   },
   "dependencies": {
     "astro": "^7.1.5"
