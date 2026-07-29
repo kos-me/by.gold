@@ -69,6 +69,17 @@ function compareRecords(a: TariffRecord, b: TariffRecord): number {
   return a.act_number.localeCompare(b.act_number, 'ru');
 }
 
+/**
+ * May this record decide what the site shows as in force?
+ *
+ * Only records read from the act itself. A record taken from a year-archive
+ * page has no verified end date — see `transcribed_from` in schema.ts — so it
+ * is history and never the current figure.
+ */
+export function isGoverning(record: TariffRecord): boolean {
+  return record.transcribed_from !== 'archive';
+}
+
 /** Whole days between two ISO dates. Both are read as UTC midnight. */
 function daysBetween(fromIso: string, toIso: string): number {
   const from = Date.parse(`${fromIso}T00:00:00Z`);
@@ -91,23 +102,32 @@ export function resolveTariffState(
 
   const effective = ordered.filter((record) => record.effective_from <= asOf);
   const future = ordered.filter((record) => record.effective_from > asOf);
-  const upcoming = future[0] ?? null;
+  const upcoming = future.find(isGoverning) ?? null;
 
   // The last record to take force. It supersedes every earlier one, including
   // open-ended ones: an act with no stated end date runs until replaced, not
   // forever.
-  const lastKnown = effective.at(-1) ?? null;
+  //
+  // Archive records are excluded from this choice, and only from this choice.
+  // Their expiry was never read, so treating one as in force would mean
+  // showing a figure whose period nobody has verified. They still count as
+  // history, which is the only reason they exist.
+  const lastKnown = effective.filter(isGoverning).at(-1) ?? null;
   const history = [...effective].reverse();
 
   if (lastKnown === null) {
     return {
       status: 'unavailable',
       asOf,
-      reason: ordered.length === 0 ? 'no_records' : 'not_yet_effective',
+      // Archive-only data is not "waiting to take force" — there is no act it
+      // could ever show. That is the same position as an empty file.
+      reason: ordered.some(isGoverning) ? 'not_yet_effective' : 'no_records',
       current: null,
       lastKnown: null,
       upcoming,
-      history: [],
+      // Not necessarily empty. Archive records can have taken force while no
+      // governing act has, and they are still history.
+      history,
       daysSinceExpiry: null,
     };
   }

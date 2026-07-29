@@ -249,3 +249,38 @@ describe('validateStatusFile', () => {
     );
   });
 });
+
+describe('validateTariffRecord — transcribed_from', () => {
+  it('is optional: omitted means the act itself was read', () => {
+    const result = validateTariffRecord(tariff());
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.transcribed_from).toBeUndefined();
+  });
+
+  it("accepts 'archive' when no expiry is stated", () => {
+    const result = validateTariffRecord(
+      tariff({ transcribed_from: 'archive', stated_expiry: null }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.transcribed_from).toBe('archive');
+  });
+
+  it('rejects an archive record that states an expiry', () => {
+    // The archive pages carry no act text, so a date here could only have come
+    // from somewhere unrecorded.
+    const issues = expectRejected(
+      tariff({ transcribed_from: 'archive', stated_expiry: '2000-01-31' }),
+    );
+    expect(issuePaths(issues)).toContain('stated_expiry');
+  });
+
+  it('rejects any other value', () => {
+    expect(
+      issuePaths(expectRejected(tariff({ transcribed_from: 'news' as never }))),
+    ).toContain('transcribed_from');
+  });
+
+  it("accepts an explicit 'act' with a stated expiry", () => {
+    expect(validateTariffRecord(tariff({ transcribed_from: 'act' })).ok).toBe(true);
+  });
+});

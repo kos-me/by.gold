@@ -87,6 +87,21 @@ export interface TariffRecord {
    * prevent.
    */
   readonly stated_expiry: string | null;
+  /**
+   * Where the figures were read from. Defaults to `'act'`.
+   *
+   * `'archive'` marks a record taken from a Ministry year-archive page rather
+   * than from the act. Those pages publish the act's number, its date, the
+   * date it took force and its price tables — but **not** the act's text, so
+   * whether it named an end date is simply unknown. Such a record must carry
+   * `stated_expiry: null`, and there `null` means "not read", not "the act
+   * names none".
+   *
+   * That ambiguity is prevented from ever mattering: an `'archive'` record
+   * feeds history and nothing else. It can never become the current act, so
+   * no figure the site shows as in force can rest on an unread expiry.
+   */
+  readonly transcribed_from?: 'act' | 'archive';
   /** Link to the act or to the source page. Required. */
   readonly source_url: string;
   /** When a person transcribed the figures, ISO with a time zone. */
@@ -239,6 +254,25 @@ export function validateTariffRecord(input: unknown, path = ''): ValidationResul
     }
   }
 
+  // --- where it was read from ----------------------------------------------
+  const from = input['transcribed_from'];
+  if (from !== undefined && from !== 'act' && from !== 'archive') {
+    issues.push({
+      path: at('transcribed_from'),
+      message: "either 'act' or 'archive'. Omit it when the act itself was read",
+    });
+  }
+  if (from === 'archive' && input['stated_expiry'] !== null) {
+    // The year-archive pages carry no act text, so an expiry read from one
+    // cannot exist. A date here would mean it came from somewhere unrecorded.
+    issues.push({
+      path: at('stated_expiry'),
+      message:
+        'must be null on an archive record: the archive pages do not publish the act text, ' +
+        'so its end date cannot have been read',
+    });
+  }
+
   if (
     isIsoDate(input['act_date']) &&
     isIsoDate(input['effective_from']) &&
@@ -297,6 +331,7 @@ export function validateTariffRecord(input: unknown, path = ''): ValidationResul
     act_date: raw.act_date,
     effective_from: raw.effective_from,
     stated_expiry: raw.stated_expiry,
+    ...(raw.transcribed_from === undefined ? {} : { transcribed_from: raw.transcribed_from }),
     source_url: raw.source_url.trim(),
     transcribed_at: raw.transcribed_at,
     transcribed_by: raw.transcribed_by.trim(),

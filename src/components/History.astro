@@ -7,8 +7,8 @@
  * appears from three points — there is nothing to draw with two.
  */
 import { formatByn } from '../lib/calc.ts';
-import { formatRuPeriod } from '../lib/date.ts';
-import { HEADLINE_FINENESS } from '../lib/schema.ts';
+import { formatRuDate, formatRuPeriod } from '../lib/date.ts';
+import { HEADLINE_FINENESS, type TariffRecord } from '../lib/schema.ts';
 import { priceSeries, type TariffState } from '../lib/tariff.ts';
 
 interface Props {
@@ -32,6 +32,20 @@ const barHeight = (price: number): number => Math.round(13 + ((price - floor) / 
 
 const rows = [...series].reverse();
 const isWithheld = state.status !== 'valid';
+
+/*
+ * What to print for the period.
+ *
+ * Records read from a year-archive page have no end date — the archive does
+ * not publish the act text — so only the start is stated. Deriving the end
+ * from the next act's start would assume the two are contiguous, which is
+ * exactly the sort of small invention this project refuses.
+ */
+function period(record: TariffRecord): string {
+  return record.transcribed_from === 'archive'
+    ? `с ${formatRuDate(record.effective_from)}`
+    : formatRuPeriod(record.effective_from, record.stated_expiry);
+}
 ---
 
 {
@@ -57,9 +71,7 @@ const isWithheld = state.status !== 'valid';
         {rows.map((entry) => (
           <div class="history__row">
             <span class="history__price tabular">{formatByn(entry.price)} BYN</span>
-            <span class="history__period">
-              {formatRuPeriod(entry.record.effective_from, entry.record.stated_expiry)}
-            </span>
+            <span class="history__period">{period(entry.record)}</span>
             <span class="history__act">№ {entry.record.act_number}</span>
           </div>
         ))}

@@ -655,3 +655,89 @@ provision could have moved since. The warning at the top of
   over both HTTP and HTTPS while `api.nbrb.by` answers instantly. Not a VPN
   artefact — it persists with the VPN off, when every other Belarusian host
   responds normally.
+
+## Price history imported from the year archive (2024 onward)
+
+The Ministry keeps a year-by-year archive of superseded acts at
+`…/activities_jewels/fund/pokupka/fizlic/archive/<year>/`, with index pages from
+2003 to 2026. Each carries every act of that year in full: number, signature
+date, and all four price tables.
+
+**Where it stops, and why.** Only from partway through 2024 do those pages state
+the date an act took force. Surveyed on 29 July 2026: 2026 all five, 2025 all
+four, 2024 two of four, and **nothing before that**. `effective_from` is
+mandatory precisely because a price without a period is not a publishable fact,
+and deriving one from the signature date is the inference this project exists to
+refuse. So the import stops at the first act that states its own start date —
+2024-10-12, № 50 — and the two 2024 acts without one were skipped, by name, in
+the import output rather than silently dropped.
+
+**Eleven records, ten added.** Act № 31 of 08.07.2026 was already held from the
+act's own PDF, and a record read from the act always wins over one read from the
+archive. That overlap turned out to be the most useful part of the exercise: it
+gave a way to validate the extractor. Re-reading № 31 from the archive page
+reproduced, digit for digit, all nine prices transcribed independently from the
+PDF. The extraction path is therefore checked against known-good output, not
+merely plausible.
+
+**The extractor refuses rather than guesses.** It reads the fineness header row
+and the gold row as cells, expands each header cell to the finenesses it names
+(583 and 585 share one merged cell), and requires the expansion to equal the nine
+known finenesses exactly and the cell counts to match. Anything else is reported
+as a problem and the act skipped. Across 2024–2026: thirteen acts, no failures.
+
+### The design problem: an expiry that was never read
+
+The archive pages carry no act text, so whether an act named an end date is
+unknown. `stated_expiry: null` already means something specific — "the act names
+no end date" — and writing it here would assert something unverified. Inventing a
+date was never an option.
+
+**Decision.** A new optional field, `transcribed_from: 'act' | 'archive'`,
+defaulting to `'act'`. On an `'archive'` record `stated_expiry` must be `null`,
+and there it means "not read". The schema rejects an archive record that states
+an expiry, since such a date could only have come from somewhere unrecorded.
+
+One `null` with two meanings would normally be a trap. It is made unable to
+matter instead of being documented away: **an archive record can never be the act
+in force.** `resolveTariffState` excludes it from `current`, `lastKnown` and
+`upcoming`; it appears only in `history`. So no figure the site shows as current,
+and no figure it keeps as the last known one, ever rests on an unread expiry —
+and importing history cannot change the price on the homepage. Six tests hold
+that line, including the dangerous ordering where the archive record takes force
+*after* a real act has lapsed, which is where an open-ended unread record would
+otherwise show a figure for ever.
+
+Provenance rather than policy, deliberately: the field states where the figures
+came from, and the code derives what may be done with them. A boolean called
+`history_only` would have invited someone to flip it.
+
+**A bug this surfaced.** The "nothing has taken force" branch returned
+`history: []`. That was equivalent before — if nothing had taken force there was
+no history — but archive records can take force while no governing act has. It
+now returns the real history. Found by a test written for the new rule, not by
+reading the code.
+
+### What the history displays
+
+Archive rows print only the start date, "с 6 ноября 2025". Deriving the end from
+the next act's start would assume the two are contiguous, which is not known
+either — there may have been a gap where the figure was withheld. The current
+act, read from the act itself, still shows its full period.
+
+The series is visibly non-monotonic — 237.94 in April 2026 down to 202.18 in July
+— which is worth noting given the brief's ban on trend and forecast language. The
+footer hedge stays: "Постановления выходят нерегулярно."
+
+### Not done, and why
+
+- **Before 2024.** Needs a decision, not a script: either stop here, or accept
+  records with no effective date at all, which would mean a second and weaker
+  class of record than the archive one added here.
+- **Pre-July-2016 anything.** Belarus redenominated on 1 July 2016 at 10 000:1.
+  A series crossing that boundary is meaningless without conversion and a loud
+  label.
+- **Per-fineness history.** `priceSeries(state, fineness)` is already
+  parameterised and the data now spans twelve acts, so the remaining work is a
+  selector and deciding how to render a fineness an older act does not name.
+  583 and 585 must not pose as two independent series: they are one number.

@@ -76,6 +76,24 @@ current act as a PDF.
 You do not delete the old record. History is built from the records that
 accumulate, and the state machine works out which one applies today.
 
+### Two kinds of record
+
+Most records are read from the act. A few are read from the Ministry's year
+archive instead, and are marked `"transcribed_from": "archive"`.
+
+The difference matters. The archive pages publish an act's number, date, start
+date and prices, but not its text — so whether it named an end date is unknown.
+Those records are **history only**: the code will not let one become the price
+shown as current, however recent it looks. Full explanation in
+[data/README.md](data/README.md).
+
+The practical consequence: **importing history cannot change the price on the
+homepage.** If it ever appears to, something is wrong.
+
+If you later read the act for one of these, upgrade the record — drop
+`transcribed_from`, fill in the real expiry, point `source_url` at the act. What
+the act says always beats what a summary page says.
+
 ### Things that will be rejected, on purpose
 
 - A record with no `source_url`, no act number, or no effective date.

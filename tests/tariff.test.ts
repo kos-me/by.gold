@@ -294,3 +294,87 @@ describe('price access', () => {
     expect(headlinePrice(partial)).toEqual({ fineness: '750', price: 4.0 });
   });
 });
+
+describe('archive records are history and never the figure in force', () => {
+  /*
+   * The guarantee this suite exists for: importing history cannot change what
+   * the site shows as the current price. An archive record's expiry was never
+   * read, so it must never decide whether a figure is in force.
+   */
+  const archived = tariff({
+    act_number: 'TEST-ARCHIVE',
+    act_date: '2000-01-01',
+    effective_from: '2000-01-10',
+    stated_expiry: null,
+    transcribed_from: 'archive',
+    prices_byn_per_gram: { '585': 1.5 },
+  });
+  const fromAct = tariff({
+    act_number: 'TEST-ACT',
+    act_date: '2000-02-01',
+    effective_from: '2000-02-10',
+    stated_expiry: '2000-02-28',
+  });
+
+  it('an archive record alone shows no figure, even though it has taken force', () => {
+    const state = resolveTariffState([archived], clock('2000-01-15'));
+    expect(state.status).toBe('unavailable');
+    expect(state.current).toBeNull();
+    expect(state.lastKnown).toBeNull();
+    expect(isCalculatorEnabled(state)).toBe(false);
+  });
+
+  it('archive-only data reads as "no records", not as "not in force yet"', () => {
+    // There is no act it could ever show, which is the same position as an
+    // empty file — not a promise that something is coming.
+    expect(resolveTariffState([archived], clock('2000-01-15')).reason).toBe('no_records');
+  });
+
+  it('but it still appears in history, which is the whole point', () => {
+    const state = resolveTariffState([archived], clock('2000-01-15'));
+    expect(state.history.map((r) => r.act_number)).toEqual(['TEST-ARCHIVE']);
+    expect(priceSeries(state, '585').map((e) => e.price)).toEqual([1.5]);
+  });
+
+  it('a later act from the act itself is what governs', () => {
+    const state = resolveTariffState([archived, fromAct], clock('2000-02-15'));
+    expect(state.status).toBe('valid');
+    expect(state.current?.act_number).toBe('TEST-ACT');
+    expect(state.history.map((r) => r.act_number)).toEqual(['TEST-ACT', 'TEST-ARCHIVE']);
+  });
+
+  it('an archive record cannot become the last known figure when the act expires', () => {
+    // Once TEST-ACT lapses the site withholds the figure and shows the last
+    // known one as an archive. That must be TEST-ACT, whose period was read,
+    // and never the archive record behind it.
+    const state = resolveTariffState([archived, fromAct], clock('2000-03-15'));
+    expect(state.status).toBe('review_required');
+    expect(state.lastKnown?.act_number).toBe('TEST-ACT');
+  });
+
+  it('an archive record is never announced as upcoming', () => {
+    const future = tariff({
+      act_number: 'TEST-FUTURE',
+      effective_from: '2000-06-01',
+      stated_expiry: null,
+      transcribed_from: 'archive',
+    });
+    expect(resolveTariffState([future], clock('2000-01-15')).upcoming).toBeNull();
+  });
+
+  it('an archive record cannot resurrect a figure after a real act has lapsed', () => {
+    // The dangerous ordering: the archive record takes force last. If it were
+    // allowed to govern, an open-ended record with an unread expiry would show
+    // a figure for ever.
+    const later = tariff({
+      act_number: 'TEST-ARCHIVE-LATER',
+      act_date: '2000-03-01',
+      effective_from: '2000-03-05',
+      stated_expiry: null,
+      transcribed_from: 'archive',
+    });
+    const state = resolveTariffState([fromAct, later], clock('2000-04-01'));
+    expect(state.status).toBe('review_required');
+    expect(state.current).toBeNull();
+  });
+});

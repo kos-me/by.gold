@@ -137,6 +137,11 @@ two independent lines; and a fineness missing from an older act must render as a
 gap, not be silently closed up, or the chart implies a continuity that is not
 there.
 
+> **Update: the import is done.** Ten records added from the year archive, so
+> the site now carries twelve acts — from 12 October 2024 to 1 August 2026.
+> Details in IMPLEMENTATION-LOG.md; the rest of this section is the survey it
+> was based on and still describes where the archive stops being usable.
+
 **Importing old acts — possible, but only back to 2024.** The Ministry keeps a
 year-by-year archive at `…/archive/<year>/`, with index pages from 2003 to 2026,
 each carrying the full four tables for every act of that year. Surveyed on
@@ -175,7 +180,8 @@ Two more caveats for anything going further back:
   be pointed at them unverified. Each era needs checking against the page it
   came from.
 
-Neither of these is started. Nothing was invented to fill a gap.
+Nothing was invented to fill a gap. The two 2024 acts with no stated start date
+were skipped by name, not quietly dropped.
 
 ---
 
