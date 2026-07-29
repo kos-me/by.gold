@@ -1,0 +1,104 @@
+---
+import Base from '../layouts/Base.astro';
+import ReportForm from '../components/ReportForm.astro';
+import { MINFIN_URL, NBRB_URL } from '../lib/site.ts';
+
+const description =
+  'Откуда берутся цифры на gold.by, как они проверяются и как сообщить ' +
+  'об ошибке. Мы ничего не покупаем и не продаём.';
+
+/*
+ * Ключ Turnstile берётся из окружения. Нет ключа — виджета нет, и форма
+ * просто отправляется без него; воркер в продакшене такую отправку не примет.
+ * Подставлять сюда чужой или выдуманный ключ нельзя.
+ */
+const turnstileSiteKey = import.meta.env['PUBLIC_TURNSTILE_SITE_KEY'] ?? null;
+
+const SOURCES = [
+  {
+    title: 'Министерство финансов',
+    text:
+      'Постановления о ценах скупки драгоценных металлов и драгоценных камней ' +
+      'у физических лиц. Источник главной цифры на сайте. Цифры переносит человек ' +
+      'из самого акта, а не из новостей о нём.',
+    href: MINFIN_URL,
+    linkText: 'minfin.gov.by',
+  },
+  {
+    title: 'Национальный банк',
+    text:
+      'Цены покупки мерных слитков и памятных монет. Другой регламент и другая ' +
+      'периодичность — со скупкой лома не смешиваются.',
+    href: NBRB_URL,
+    linkText: 'nbrb.by',
+  },
+  {
+    title: 'Пробирная инспекция',
+    text:
+      'Правила опробования и клеймения, порядок обращения при расхождении. ' +
+      'К ней имеет смысл идти, если у стойки назвали цену ниже постановления.',
+    href: null,
+    linkText: null,
+  },
+];
+---
+
+<Base
+  title="О проекте — откуда цифры и как сообщить об ошибке | gold.by"
+  description={description}
+  path="/o-proekte"
+  narrow
+>
+  <section class="section section--first prose">
+    <div class="label label--lg slug">/o-proekte</div>
+    <h1>О проекте</h1>
+    <p>
+      gold.by показывает цену скупки золота, установленную Минфином, и объясняет,
+      как она превращается в сумму у стойки. Мы ничего не покупаем и не продаём
+      и ни с одной скупкой не связаны.
+    </p>
+
+    <h2>Источники</h2>
+  </section>
+
+  <div class="card" style="margin-bottom:24px">
+    {
+      SOURCES.map((source) => (
+        <div class="source-item">
+          <div class="source-item__title">{source.title}</div>
+          <div class="source-item__text">
+            {source.text}
+            {source.href !== null && (
+              <Fragment>
+                {' '}
+                <a href={source.href} rel="noopener">
+                  {source.linkText}
+                </a>
+              </Fragment>
+            )}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <section class="prose">
+    <h2>Как мы обращаемся с цифрами</h2>
+    <p style="font-size:14.5px;margin-bottom:24px">
+      Цена живёт в одном файле в репозитории вместе с номером постановления,
+      датой вступления в силу и ссылкой на источник. Записи без любого из этих
+      трёх полей на сайт не попадают. Когда срок действия постановления истёк,
+      а нового ещё нет, цифра скрывается, а калькулятор выключается — вместо
+      того чтобы показывать значение, которое уже может быть неверным.
+      Это обычное состояние сайта, а не поломка.
+    </p>
+
+    <h2>Нашли ошибку в цифре?</h2>
+    <p style="font-size:14.5px;margin-bottom:14px">
+      Напишите номер постановления и что именно расходится. Проверим и исправим
+      или объясним, почему цифра верна.
+    </p>
+  </section>
+
+  <ReportForm turnstileSiteKey={turnstileSiteKey} />
+</Base>

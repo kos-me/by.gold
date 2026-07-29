@@ -1,0 +1,63 @@
+---
+import Base from '../layouts/Base.astro';
+import { IF_SOMETHING_WRONG, STEPS } from '../lib/procedure.ts';
+
+const description =
+  'Что должно происходить у стойки скупки: опробование при вас, поверенные ' +
+  'весы, зачётная масса и документ. Цена за грамм не обсуждается — её ' +
+  'установил Минфин.';
+---
+
+<Base
+  title="Как проверить оценку в скупке золота | gold.by"
+  description={description}
+  path="/kak-proverit-otsenku"
+  narrow
+>
+  <section class="section section--first prose">
+    <div class="label label--lg slug">/kak-proverit-otsenku</div>
+    <h1>Как проверить оценку в скупке</h1>
+    <p>
+      Цена за грамм в скупке не обсуждается — её установил Минфин, и ниже неё
+      не платит никто. Обсуждаются два других числа: проба и зачётная масса.
+      Вот что должно происходить у стойки.
+    </p>
+  </section>
+
+  <div class="steps">
+    {
+      STEPS.map((step) => (
+        <div class="step">
+          <span class="step__n">{step.n}</span>
+          <div>
+            <div class="step__title">{step.title}</div>
+            <p>{step.text}</p>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <section class="section section--tight">
+    <figure class="figure card">
+      <div class="figure__frame" style="height:210px">
+        <img
+          src="/images/scale-display.webp"
+          alt="Дисплей поверенных весов с массой изделия в граммах"
+          width={900}
+          height={352}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <figcaption>Весы должны быть поверены, а взвешивание — при вас, с нуля.</figcaption>
+    </figure>
+  </section>
+
+  <section class="section section--tight">
+    <div class="callout">
+      <div class="label label--stamp">если что-то не так</div>
+      <p>{IF_SOMETHING_WRONG}</p>
+    </div>
+  </section>
+</Base>

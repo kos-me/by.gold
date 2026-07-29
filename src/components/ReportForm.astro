@@ -1,0 +1,200 @@
+---
+/**
+ * Форма сообщения об ошибке в цифре.
+ *
+ * Состояния из макета: idle, invalid, sending, sent, dupe, failed. Все они
+ * лежат в разметке сразу и переключаются скриптом — так состояние «не
+ * отправилось» показывается вместе с сохранённым текстом, не теряя его.
+ *
+ * Без JavaScript форма отправляется обычным POST на тот же адрес; воркер
+ * умеет ответить и разметкой, и JSON — см. worker/.
+ */
+import { CONTACT_EMAIL, MINFIN_URL } from '../lib/site.ts';
+
+interface Props {
+  /** Ключ Turnstile. Пусто — виджет не рисуется (локальная разработка). */
+  turnstileSiteKey: string | null;
+}
+
+const { turnstileSiteKey } = Astro.props;
+---
+
+<div data-report-form>
+  <form
+    class="card"
+    id="report-form"
+    method="post"
+    action="/api/contact"
+    style="padding:18px 20px;display:grid;gap:12px"
+    data-state="idle"
+    novalidate
+  >
+    <div>
+      <label class="label" for="report-email" style="display:block;margin-bottom:7px">
+        Ваша почта
+      </label>
+      <input
+        class="calc__input"
+        id="report-email"
+        name="email"
+        type="email"
+        placeholder="name@mail.by"
+        autocomplete="email"
+        required
+        style="font-size:15px;font-weight:400"
+      />
+    </div>
+
+    <div>
+      <label class="label" for="report-note" style="display:block;margin-bottom:7px">
+        Что не так
+      </label>
+      <textarea
+        class="calc__input"
+        id="report-note"
+        name="note"
+        rows="4"
+        required
+        minlength="12"
+        placeholder="Например: в скупке назвали цену ниже постановления"
+        style="font-size:15px;font-weight:400;font-family:inherit;resize:vertical"></textarea>
+    </div>
+
+    {/*
+      Ловушка для ботов. Не `type=hidden` — наивный бот заполняет только те
+      поля, которые видит в разметке как обычные. И не `.sr-only`: то средство
+      как раз показывает содержимое скринридеру, а здесь надо наоборот —
+      поле должно быть невидимо всем, включая читающие программы.
+    */}
+    <div class="honeypot" aria-hidden="true">
+      <label for="report-city">Не заполняйте это поле</label>
+      <input id="report-city" name="city" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div data-report-invalid hidden>
+      <div
+        style="display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border-radius:9px;background:var(--warn-bg);border:1px solid var(--warn-line)"
+      >
+        <span class="label" style="color:var(--warn-label);padding-top:2px">проверьте</span>
+        <span
+          style="font-size:13.5px;line-height:1.5;color:var(--warn-ink)"
+          data-report-invalid-text></span>
+      </div>
+    </div>
+
+    {
+      turnstileSiteKey !== null && (
+        <div
+          class="cf-turnstile"
+          data-sitekey={turnstileSiteKey}
+          data-theme="light"
+          data-size="flexible"
+        />
+      )
+    }
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center">
+      <button
+        type="submit"
+        data-report-submit
+        style="justify-self:start;padding:11px 20px;border:0;border-radius:9px;font-weight:600;font-size:15px;cursor:pointer;background:var(--link);color:#fff"
+      >
+        Отправить
+      </button>
+      <span class="note">Ответим на почту. Обычно в течение дня.</span>
+    </div>
+  </form>
+
+  {/* принято */}
+  <div class="card" data-report-sent hidden style="border:1.5px solid var(--stamp)">
+    <div style="padding:18px 20px;background:var(--wash);border-bottom:1px solid var(--stamp-line)">
+      <div class="label label--stamp">сообщение принято</div>
+      <div
+        style="font-family:var(--font-display);font-weight:700;font-size:17px;margin:8px 0 7px"
+      >
+        Проверим и ответим на <span data-report-email>указанный адрес</span>
+      </div>
+      <p style="font-size:14px;line-height:1.6;color:var(--ink-strong)">
+        Сверим ваше сообщение с действующим постановлением. Если расхождение
+        на нашей стороне — исправим цифру и напишем, что изменилось.
+      </p>
+    </div>
+    <div
+      style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between"
+    >
+      <span class="history__act">обращение <span data-report-ticket></span></span>
+      <button type="button" data-report-reset class="chip" style="font-weight:600">
+        Сообщить ещё об одном
+      </button>
+    </div>
+  </div>
+
+  {/* уже в работе */}
+  <div class="card" data-report-dupe hidden>
+    <div style="padding:18px 20px;border-bottom:1px solid var(--line-inner)">
+      <div class="label">уже в работе</div>
+      <div
+        style="font-family:var(--font-display);font-weight:700;font-size:17px;margin:8px 0 7px"
+      >
+        Об этом расхождении нам уже сообщили
+      </div>
+      <p
+        style="font-size:14px;line-height:1.6;color:var(--ink-strong)"
+        data-report-dupe-text
+      ></p>
+    </div>
+    <div
+      style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between"
+    >
+      <a href={MINFIN_URL} rel="noopener" style="font-size:13.5px;font-weight:600">
+        Открыть постановление на minfin.gov.by →
+      </a>
+      <button type="button" data-report-reset class="chip" style="font-weight:600">
+        Сообщить о другом
+      </button>
+    </div>
+  </div>
+
+  {/* не отправилось */}
+  <div class="card" data-report-failed hidden style="border-color:var(--warn-card-line)">
+    <div
+      style="padding:18px 20px;background:var(--warn-bg-2);border-bottom:1px solid var(--warn-line-2)"
+    >
+      <div class="label" style="color:var(--warn-label)">не отправилось</div>
+      <div
+        style="font-family:var(--font-display);font-weight:700;font-size:17px;margin:8px 0 7px"
+      >
+        Письмо не ушло — форма не отвечает
+      </div>
+      <p style="font-size:14px;line-height:1.6;color:var(--warn-ink)">
+        Текст сохранён, он никуда не пропал. Нажмите «Повторить» или напишите
+        на почту напрямую — так дойдёт наверняка.
+      </p>
+    </div>
+    <div
+      style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between"
+    >
+      <a href={`mailto:${CONTACT_EMAIL}`} style="font-size:13.5px;font-weight:600">
+        {CONTACT_EMAIL}
+      </a>
+      <button type="button" data-report-retry class="chip" style="font-weight:600">
+        Повторить
+      </button>
+    </div>
+  </div>
+</div>
+
+{
+  turnstileSiteKey !== null && (
+    <script
+      is:inline
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      async
+      defer
+    />
+  )
+}
+
+<script>
+  import '../scripts/report-form.ts';
+</script>

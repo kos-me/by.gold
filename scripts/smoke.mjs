@@ -6,7 +6,7 @@
  * переключение пробы её меняет, мусор не превращается в число, а в состоянии
  * без действующего постановления поля выключены и остаются выключенными.
  *
- * Запуск: node scripts/smoke.mjs <urlValid> <urlWithheld>
+ * Запуск: node scripts/smoke.mjs <urlValid> <urlWithheld> [urlAbout]
  */
 
 import { existsSync } from 'node:fs';
@@ -19,7 +19,7 @@ const CHROME_CANDIDATES = [
   '/usr/bin/chromium',
 ];
 
-const [, , validUrl, withheldUrl] = process.argv;
+const [, , validUrl, withheldUrl, aboutUrl] = process.argv;
 if (validUrl === undefined || withheldUrl === undefined) {
   console.error('Использование: node scripts/smoke.mjs <urlValid> <urlWithheld>');
   process.exit(2);
@@ -116,6 +116,71 @@ const browser = await puppeteer.launch({ executablePath: chrome, headless: true 
     return (text.match(/\d+[.,]\d{2}\s*BYN/g) ?? []).length;
   });
   check('на странице нет ни одной суммы в BYN', bynFigures, 0);
+
+  await page.close();
+}
+
+// --- форма сообщения об ошибке ---------------------------------------------
+if (aboutUrl !== undefined) {
+  const page = await browser.newPage();
+  await page.setCacheEnabled(false);
+
+  const visible = (selector) =>
+    page.$eval(selector, (el) => el.offsetParent !== null || el.getClientRects().length > 0);
+  const invalidText = () =>
+    page.$eval('[data-report-invalid-text]', (el) => el.textContent?.trim() ?? '');
+
+  // 1. Неполный адрес почты.
+  await page.goto(aboutUrl, { waitUntil: 'networkidle0' });
+  await page.type('#report-email', 'не-почта');
+  await page.type('#report-note', 'В скупке назвали цену ниже постановления');
+  await page.click('[data-report-submit]');
+  await page.waitForSelector('[data-report-invalid]:not([hidden])', { timeout: 3000 });
+  check(
+    'неполная почта — своя формулировка',
+    (await invalidText()).startsWith('Адрес почты'),
+    true,
+  );
+
+  // 2. Слишком короткое описание.
+  await page.goto(aboutUrl, { waitUntil: 'networkidle0' });
+  await page.type('#report-email', 'chelovek@mail.by');
+  await page.type('#report-note', 'ошибка');
+  await page.click('[data-report-submit]');
+  await page.waitForSelector('[data-report-invalid]:not([hidden])', { timeout: 3000 });
+  check(
+    'короткое описание — своя формулировка',
+    (await invalidText()).startsWith('Опишите расхождение'),
+    true,
+  );
+
+  // 3. Воркера нет: /api/contact не отвечает → состояние «не отправилось»,
+  //    и текст пользователя обязан остаться в поле.
+  await page.goto(aboutUrl, { waitUntil: 'networkidle0' });
+  const written = 'Постановление № 12: на главной цена не та, что в акте';
+  await page.type('#report-email', 'chelovek@mail.by');
+  await page.type('#report-note', written);
+  await page.click('[data-report-submit]');
+  await page.waitForSelector('[data-report-failed]:not([hidden])', { timeout: 8000 });
+  check('без воркера — состояние «не отправилось»', await visible('[data-report-failed]'), true);
+
+  // 4. Возврат к форме сохраняет написанное.
+  await page.click('[data-report-retry]');
+  const preserved = await page.$eval('#report-note', (el) => el.value);
+  check('текст пользователя не потерян', preserved, written);
+
+  // 5. Ловушка для ботов не видна человеку и не читается скринридером.
+  const honeypot = await page.$eval('#report-city', (el) => {
+    const rect = el.getBoundingClientRect();
+    return {
+      offScreen: rect.right < 0 || rect.bottom < 0,
+      ariaHidden: el.closest('[aria-hidden="true"]') !== null,
+      notTabbable: el.tabIndex < 0,
+    };
+  });
+  check('ловушка уведена за экран', honeypot.offScreen, true);
+  check('ловушка скрыта от скринридера', honeypot.ariaHidden, true);
+  check('ловушка не получает фокус табом', honeypot.notTabbable, true);
 
   await page.close();
 }
