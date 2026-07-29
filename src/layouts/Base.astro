@@ -1,4 +1,5 @@
 ---
+import Analytics from '../components/Analytics.astro';
 import { NAV, SITE_NAME, SITE_TAGLINE, MINFIN_URL } from '../lib/site.ts';
 import { DATA_DIR, status, USING_OVERRIDDEN_DATA } from '../lib/data.ts';
 import { minskDateTime } from '../lib/date.ts';
@@ -28,6 +29,22 @@ const canonical = new URL(path, Astro.site ?? 'https://gold.by').href;
  */
 const checked =
   status.last_checked === null ? null : minskDateTime(new Date(status.last_checked));
+
+const googleVerification = import.meta.env['PUBLIC_GOOGLE_SITE_VERIFICATION'] ?? null;
+const yandexVerification = import.meta.env['PUBLIC_YANDEX_VERIFICATION'] ?? null;
+
+const origin = new URL(canonical).origin;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  url: `${origin}/`,
+  inLanguage: 'ru',
+  description:
+    'Официальная цена скупки золота в Беларуси, установленная Министерством финансов, ' +
+    'и порядок оценки изделия при приёмке.',
+};
 ---
 
 <!doctype html>
@@ -48,12 +65,41 @@ const checked =
       crossorigin
     />
 
+    <meta name="theme-color" content="#1b1e21" />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content="ru_BY" />
+    <meta property="og:image" content={`${new URL('/images/hallmark-585.webp', canonical).href}`} />
+    <meta property="og:image:alt" content="Оттиск 585 внутри шинки кольца" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {
+      /*
+       * Подтверждение прав в Search Console и Яндекс.Вебмастере. Кода нет —
+       * тега нет: выдуманный код всё равно не подтвердит ничего, а выглядеть
+       * будет как настроенное.
+       */
+      googleVerification !== null && (
+        <meta name="google-site-verification" content={googleVerification} />
+      )
+    }
+    {
+      yandexVerification !== null && (
+        <meta name="yandex-verification" content={yandexVerification} />
+      )
+    }
+
+    {/*
+      Структурированные данные намеренно скупые: только «что это за сайт».
+      Схемы Product/Offer с ценой здесь были бы враньём — цену устанавливает
+      государство, сайт ничего не продаёт, а в состоянии «цифры нет»
+      машиночитаемая цена оказалась бы ещё и просроченной.
+    */}
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
   </head>
 
   <body>
@@ -104,5 +150,7 @@ const checked =
         }
       </footer>
     </main>
+
+    <Analytics />
   </body>
 </html>

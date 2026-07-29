@@ -1,0 +1,123 @@
+---
+/**
+ * GA4 с уведомлением о согласии.
+ *
+ * Ничего не грузится и не рисуется, пока не задан `PUBLIC_GA4_ID`. Нет
+ * идентификатора — нет ни счётчика, ни плашки: пустая плашка «мы используем
+ * cookie» без единого cookie была бы просто шумом.
+ *
+ * Согласие хранится в собственной cookie, а не в localStorage: хранилища
+ * на этом сайте не используются. Cookie техническая, живёт 180 дней,
+ * `SameSite=Lax`, без обращения к третьим сторонам.
+ *
+ * Из счётчиков — только GA4. Ни Метрики, ни VK, ни Mail.ru.
+ */
+const measurementId = import.meta.env['PUBLIC_GA4_ID'] ?? null;
+---
+
+{
+  measurementId !== null && (
+    <div class="consent" data-consent hidden>
+      <p class="consent__text">
+        Собираем обезличенную статистику посещений через Google Analytics, чтобы
+        понимать, какие страницы нужны. Без согласия счётчик не загружается.
+      </p>
+      <div class="consent__actions">
+        <button type="button" class="chip" data-consent-yes>Согласен</button>
+        <button type="button" class="chip" data-consent-no>Не надо</button>
+      </div>
+    </div>
+  )
+}
+
+{
+  measurementId !== null && (
+    <script is:inline define:vars={{ measurementId }}>
+      (() => {
+        const COOKIE = 'gold_consent';
+        const banner = document.querySelector('[data-consent]');
+
+        const read = () => {
+          const found = document.cookie
+            .split(';')
+            .map((part) => part.trim().split('='))
+            .find(([name]) => name === COOKIE);
+          return found === undefined ? null : found[1];
+        };
+
+        const write = (value) => {
+          const maxAge = 180 * 24 * 60 * 60;
+          document.cookie = `${COOKIE}=${value}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+        };
+
+        const load = () => {
+          if (window.__ga4Loaded) return;
+          window.__ga4Loaded = true;
+          const tag = document.createElement('script');
+          tag.async = true;
+          tag.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+          document.head.appendChild(tag);
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            window.dataLayer.push(arguments);
+          }
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', measurementId, { anonymize_ip: true });
+        };
+
+        const decision = read();
+        if (decision === 'yes') {
+          load();
+        } else if (decision !== 'no' && banner !== null) {
+          banner.hidden = false;
+        }
+
+        banner?.querySelector('[data-consent-yes]')?.addEventListener('click', () => {
+          write('yes');
+          banner.hidden = true;
+          load();
+        });
+        banner?.querySelector('[data-consent-no]')?.addEventListener('click', () => {
+          write('no');
+          banner.hidden = true;
+        });
+      })();
+    </script>
+  )
+}
+
+<style>
+  .consent {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 50;
+    margin: 0 auto;
+    max-width: 640px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r-block);
+    box-shadow: 0 6px 24px rgba(21, 24, 27, 0.12);
+    padding: 14px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .consent__text {
+    flex: 1;
+    min-width: 220px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .consent__actions {
+    display: flex;
+    gap: 8px;
+  }
+</style>
