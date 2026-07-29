@@ -59,6 +59,13 @@ npm run build:expired && npx serve dist-expired -l 4402 &
 node scripts/smoke.mjs http://localhost:4401/ http://localhost:4402/ http://localhost:4399/o-proekte
 ```
 
+What a build shows on a later date — the staleness guard, in a real browser with
+the clock faked:
+
+```sh
+node scripts/clock.mjs http://localhost:4399/ 2026-07-31 2026-08-01
+```
+
 ## Layout
 
 ```

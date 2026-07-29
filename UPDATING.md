@@ -126,6 +126,31 @@ Two things change the truth without anybody pushing a commit:
 Rebuild-on-push crosses neither. A build made in July keeps serving July's
 answer until something triggers a new build.
 
+### The question this always raises
+
+*"If both acts are already in `data/tariffs.json` — the one expiring on 31 July
+and the one starting on 1 August — will the new price appear on its own?"*
+
+**No.** A rebuild is required, and here is the concrete reason: **the successor's
+price is not in the file being served.** A build made in July contains act № 31's
+figures and nothing else. Act № 34's price, its number and its date do not appear
+anywhere in that HTML, so no amount of client-side script could show them. There
+is nothing to show.
+
+Verified in a real browser, driving one July build with the clock faked
+(`node scripts/clock.mjs`):
+
+| the browser thinks it is | what a visitor sees |
+|---|---|
+| 29 July | 202,18 · calculator working |
+| 31 July | 202,18 · calculator working |
+| **1 August** | **no figure** · "срок постановления истёк" · table dashed · calculator off |
+| 15 September | the same, indefinitely |
+
+So the failure is not a wrong price — it is **no price at all**, on a day when a
+correct one exists in the repository and is simply unreachable. Rebuild and the
+same data renders act № 34 at 202,50.
+
 There are two defences, and they do different jobs:
 
 - **A daily rebuild**, which is the actual fix. Set up a scheduled deploy —
