@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  isPastExpiry,
   formatRuDate,
   formatRuDateShort,
   formatRuPeriod,
@@ -92,5 +93,34 @@ describe('Russian formatting', () => {
   it('garbage in comes back out unchanged, not turned into a date', () => {
     expect(formatRuDate('не дата')).toBe('не дата');
     expect(formatRuDateShort('')).toBe('');
+  });
+});
+
+describe('isPastExpiry — the stale-build guard', () => {
+  it('inside the period it is not stale', () => {
+    expect(isPastExpiry('2000-01-31', new Date('2000-01-15T12:00:00Z'))).toBe(false);
+  });
+
+  it('the last day of the period is not stale', () => {
+    expect(isPastExpiry('2000-01-31', new Date('2000-01-31T12:00:00Z'))).toBe(false);
+  });
+
+  it('the day after is stale', () => {
+    expect(isPastExpiry('2000-01-31', new Date('2000-02-01T12:00:00Z'))).toBe(true);
+  });
+
+  it('the boundary is Minsk, not UTC', () => {
+    // 21:30 UTC on the 31st is already 00:30 on 1 February in Minsk.
+    expect(isPastExpiry('2000-01-31', new Date('2000-01-31T21:30:00Z'))).toBe(true);
+    expect(isPastExpiry('2000-01-31', new Date('2000-01-31T20:30:00Z'))).toBe(false);
+  });
+
+  it('an act with no stated end date never goes stale on a date', () => {
+    expect(isPastExpiry(null, new Date('2099-01-01T12:00:00Z'))).toBe(false);
+  });
+
+  it('a malformed expiry does not silently hide the figure', () => {
+    // Wrong here means refusing to act, not blanking the page on a typo.
+    expect(isPastExpiry('31.01.2000', new Date('2099-01-01T12:00:00Z'))).toBe(false);
   });
 });

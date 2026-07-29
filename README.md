@@ -55,7 +55,8 @@ Visual check and horizontal-overflow check (needs Chrome installed):
 ```sh
 npm run build && npx serve dist -l 4399
 node scripts/shoot.mjs http://localhost:4399 shots / /kak-proverit-otsenku /o-proekte
-node scripts/smoke.mjs http://localhost:4401/ http://localhost:4399/ http://localhost:4399/o-proekte
+npm run build:expired && npx serve dist-expired -l 4402 &
+node scripts/smoke.mjs http://localhost:4401/ http://localhost:4402/ http://localhost:4399/o-proekte
 ```
 
 ## Layout

@@ -32,10 +32,39 @@ const rows: readonly FinenessKey[] =
     : FINENESSES.filter((key) => record.prices_byn_per_gram[key] !== undefined);
 
 const absent = absenceNote(state);
+
+/*
+ * The date after which this build stops being truthful. Only set when a
+ * figure is actually on the page and the act names an end date; an act with
+ * no stated expiry is replaced rather than expiring, so there is no date to
+ * check against.
+ */
+const staleGuardExpiry = state.status === 'valid' ? (record?.stated_expiry ?? null) : null;
 ---
 
 <section class="section section--first">
-  <div class="card card--shadow">
+  <div class="card card--shadow" data-stale-guard={staleGuardExpiry ?? undefined}>
+    {
+      /*
+       * Only rendered when a figure is being shown and the act has a stated
+       * end date. It is the fallback the browser swaps in if this build is
+       * still being served after that date has passed — see
+       * src/scripts/staleness.ts. Hidden, and server-rendered, so no sentence
+       * has to be assembled in JavaScript.
+       */
+      staleGuardExpiry !== null && (
+        <div class="price price--withheld" data-when-stale hidden>
+          <div>
+            <div class="label label--lg">{HEADLINE_FINENESS} проба, за грамм</div>
+            <div class="price__absent">
+              <span class="price__absent-title">Цифры пока нет</span>
+              <span class="price__absent-note">срок постановления истёк</span>
+            </div>
+          </div>
+          <Hallmark record={null} />
+        </div>
+      )
+    }
     {
       headline === null ? (
         <div class="price price--withheld">
@@ -49,7 +78,7 @@ const absent = absenceNote(state);
           <Hallmark record={null} />
         </div>
       ) : (
-        <div class="price">
+        <div class="price" data-when-fresh>
           <div>
             <div class="label label--lg">{headline.fineness} проба, за грамм</div>
             <p class="price__figure">
@@ -92,4 +121,14 @@ const absent = absenceNote(state);
 
     <div class="card__foot">{TARIFF_TABLE_NOTE}</div>
   </div>
+
+  {/*
+    Unconditional on purpose. Astro only hoists a <script> it can see
+    statically, and the guard costs a few hundred bytes; the script itself
+    does nothing when [data-stale-guard] is absent, which is every state
+    except "a figure is shown and its act has an end date".
+  */}
+  <script>
+    import '../scripts/staleness.ts';
+  </script>
 </section>

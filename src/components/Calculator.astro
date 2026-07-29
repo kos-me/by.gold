@@ -73,7 +73,12 @@ const payload =
 
     <div class="calc__out-col">
       <div class:list={['calc__out', !enabled && 'calc__out--off']}>
-        <div class="calc__out-label">{out.label}</div>
+        <div
+          class="calc__out-label"
+          data-calc-stale-text={enabled ? 'Расчёт приостановлен' : undefined}
+        >
+          {out.label}
+        </div>
         <div
           class="calc__out-value"
           data-calc-value
@@ -82,7 +87,16 @@ const payload =
         >
           {enabled ? 'введите массу' : '—'}
         </div>
-        <div class="calc__out-note">{out.note}</div>
+        <div
+          class="calc__out-note"
+          data-calc-stale-text={
+            enabled
+              ? 'Считать по истёкшему постановлению нельзя. Расчёт включится, как только выйдет новое.'
+              : undefined
+          }
+        >
+          {out.note}
+        </div>
       </div>
 
       <div class="calc__aside">{CALC_ASIDE_COPY}</div>

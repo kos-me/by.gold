@@ -71,6 +71,16 @@ img {
   max-width: 100%;
 }
 
+/*
+ * `[hidden]` is only a user-agent rule, so any author `display` — and this
+ * sheet sets plenty of `display: flex` — silently overrides it. Without this
+ * an element marked hidden stays on screen, which for the stale-build guard
+ * would mean showing the withheld block and the live figure at once.
+ */
+[hidden] {
+  display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

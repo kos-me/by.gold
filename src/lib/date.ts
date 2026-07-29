@@ -52,6 +52,23 @@ export function minskDateTime(now: Date): { date: string; time: string } {
   return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
 }
 
+/**
+ * Has the stated expiry passed, as of `now`, in Minsk?
+ *
+ * The site is static, so its state is baked in at build time. If nobody
+ * rebuilds after an act lapses, a deployed page would keep showing a figure
+ * that is no longer in force — which is the one failure this project exists
+ * to prevent. The browser re-checks this on every visit, so a stale build
+ * goes quiet by itself rather than lying until someone notices.
+ *
+ * `null` expiry means the act names no end date and never goes stale on a
+ * date; it is replaced, not expired.
+ */
+export function isPastExpiry(expiry: string | null, now: Date): boolean {
+  if (expiry === null || !isIsoDate(expiry)) return false;
+  return minskDate(now) > expiry;
+}
+
 /** Russian month names in the genitive case — the form used inside a sentence. */
 const MONTHS_GENITIVE = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',

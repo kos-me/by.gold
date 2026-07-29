@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "act_number": "31",
+    "act_date": "2026-07-08",
+    "effective_from": "2026-07-18",
+    "stated_expiry": "2026-07-31",
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "2026-07-29T14:52:30Z",
+    "transcribed_by": "Claude Opus 5 — NOT yet verified by a human",
+    "prices_byn_per_gram": {
+      "375": 129.6,
+      "500": 172.8,
+      "583": 202.18,
+      "585": 202.18,
+      "750": 259.2,
+      "900": 311.04,
+      "916": 316.57,
+      "950": 328.32,
+      "958": 331.08
+    },
+    "notes": "Provenance, field by field. Prices and stated_expiry come from the act itself (the PDF at minfin.gov.by/upload/dragmet/gosfond/actual_fizlitca.pdf, appendix Table 1; point 3 reads 'действует по 31 июля 2026 г.'). act_number and act_date come from the appendix heading on the prices page. effective_from is the weakest link: the act says only 'вступает в силу после его официального опубликования' and names no date, so 2026-07-18 is taken from the Ministry's own news headline 'Цены ... с 18 июля 2026 г.' (minfin.gov.by/ru/news/9a38d5a566414c29.html). The prices were confirmed twice, from the PDF and from the HTML table independently. A human should re-check effective_from and then replace transcribed_by with their own name."
+  }
+]

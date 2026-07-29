@@ -189,7 +189,8 @@ Browser smoke test of the calculator and the form:
 
 ```sh
 npm run build:valid && npx serve dist-valid -l 4401 &
-node scripts/smoke.mjs http://localhost:4401/ http://localhost:4399/ http://localhost:4399/o-proekte
+npm run build:expired && npx serve dist-expired -l 4402 &
+node scripts/smoke.mjs http://localhost:4401/ http://localhost:4402/ http://localhost:4399/o-proekte
 ```
 
 Refresh the fonts: `node scripts/fetch-fonts.mjs`.

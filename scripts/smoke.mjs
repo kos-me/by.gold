@@ -137,12 +137,28 @@ const browser = await puppeteer.launch({ executablePath: chrome, headless: true 
   const payload = await page.$('#tariff-payload');
   check('no prices in the markup at all', payload, null);
 
-  // Not one BYN figure anywhere on the page: not in the table, not in the archive.
-  const bynFigures = await page.evaluate(() => {
-    const text = document.body.innerText;
-    return (text.match(/\d+[.,]\d{2}\s*BYN/g) ?? []).length;
+  /*
+   * No CURRENT price anywhere in the price card. The archive figure, the
+   * history rows and the bullion table are a different matter: they are
+   * labelled as past or as another regime, and the withheld design shows them
+   * on purpose. What must not appear is a figure presented as today's.
+   */
+  const priceCard = await page.evaluate(() => {
+    const card = document.querySelector('.card');
+    const text = card === null ? '' : card.innerText;
+    return {
+      sums: (text.match(/\d+[.,]\d{2}\s*BYN/g) ?? []).length,
+      dashedRows: [...document.querySelectorAll('[data-tariff-row] .tariff-row__price')]
+        .every((el) => el.textContent.trim() === '—'),
+      headlineVisible: (() => {
+        const el = document.querySelector('.price__value');
+        return el !== null && el.offsetParent !== null;
+      })(),
+    };
   });
-  check('the page carries no BYN sum at all', bynFigures, 0);
+  check('the price card carries no BYN sum', priceCard.sums, 0);
+  check('every fineness row is dashed', priceCard.dashedRows, true);
+  check('no headline figure is shown', priceCard.headlineVisible, false);
 
   await page.close();
 }
