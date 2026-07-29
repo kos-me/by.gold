@@ -34,19 +34,32 @@ there**, with the history rewritten into English commit messages.
 
 ---
 
-## Summary
+## Where things stand
 
-| # | question | if you say nothing |
+Everything you answered has been acted on. Nothing is waiting on me.
+
+| # | question | state |
 |---|---|---|
-| **B1** | Transcribe the current decree into `data/tariffs.json` | site stays in the "no figure" state |
-| **B2** | Check the counter-procedure text against the instruction | the one unverified passage stays unverified |
-| **B3** | What to do about bullion (NBRB) | section shows no figures, just a link |
-| **B4** | Accounts and secrets | nothing is deployed |
-| **B5** | Rights to the three photographs | can't ship to production |
-| **B6** | The `pravka@gold.by` mailbox | the "didn't send" state points nowhere |
-| **B7** | Link to Пробирная инспекция | the entry stays link-less |
-| **B8** | Is `gold.by` yours, and on Cloudflare? | nowhere to deploy |
-| **D1–D16** | decisions made on your behalf | they stand as built |
+| **B1** | Transcribe the current decree | ✅ done — **one field needs your eyes**, see below |
+| **B2** | Check the counter-procedure text | ✅ done against the 2011 act; 3 amendments unread (ЭТАЛОН) |
+| **B3** | What to do about bullion | ⏳ **your call** — NBRB unreachable, I recommend option (b) |
+| **B4** | Accounts and secrets | ✅ answered; templates committed. **Nothing needed until you deploy** |
+| **B5** | Rights to the photographs | ✅ ignored, as instructed |
+| **B6** | The `pravka@gold.by` mailbox | ✅ removed from the site entirely |
+| **B7** | Link to the assay supervision | ✅ confirmed and linked |
+| **B8** | The domain | ✅ noted, nothing to change |
+| **D8** | Input cap | ✅ lowered to 10 000 g |
+| **D1–D16** (rest) | decisions made on your behalf | unanswered → standing as built, which is safe |
+
+### The two things still open
+
+1. **`effective_from` in `data/tariffs.json`.** The act names no date, only
+   "after official publication", so 2026-07-18 comes from the Ministry's news
+   headline rather than the act. `transcribed_by` currently reads "NOT yet
+   verified by a human". Confirm the date and put your name there.
+2. **B3, bullion.** Three options below; I recommend (b).
+
+Neither blocks anything else. The site builds, deploys and works without them.
 
 ---
 
@@ -54,11 +67,13 @@ there**, with the history rewritten into English commit messages.
 
 ## B1. Transcribe the current decree
 
-**Status:** 🔴 blocks the main thing
+**Status:** ✅ done — one field still wants a human eye (see below)
 
-`data/tariffs.json` is an empty array. That isn't an omission — the site knows
-how to run that way and shows the "no verified figure yet" state. But the
-figure is what it exists for.
+_The question below is kept as it was asked; the outcome follows it._
+
+_(As asked, when the file was still empty.)_ `data/tariffs.json` is an empty
+array. That isn't an omission — the site knows how to run that way and shows
+the "no verified figure yet" state. But the figure is what it exists for.
 
 It has to be transcribed **from the act itself**, not from the Minfin summary
 page and not from news coverage. Two things come only from the act and appear
@@ -108,30 +123,13 @@ the one vouching for the figure.
 >
 > Full provenance is recorded field-by-field in the record's own `notes`.
 
-> **Status after your answer: partly done, one thing still needed from you.**
->
-> The network is now the problem — see the note at the end of this file. But I
-> did get the prices: I ran the real parser over the copy of the Minfin page I
-> fetched before the VPN went up. It read act **№ 31 of 08.07.2026**, all nine
-> finenesses, no warnings, and correctly detected that 583 and 585 share a price.
->
-> What I still cannot get is `effective_from` and `stated_expiry`. I searched
-> the whole page: the **only** date anywhere on it is 08.07.2026, the act date.
-> Both other dates live in the text of the act, on pravo.by or etalonline.by,
-> which I currently cannot reach.
->
-> Note that **your own build notes state act 31 runs 18 July → 31 July 2026**,
-> and that is consistent with the live page. I have deliberately **not** used
-> them: the build notes are a secondary source, and the site's entire premise
-> is that dates come from the act. Confirm those two dates are what the act
-> says and I will write the record immediately — or drop the VPN and I will
-> read the act myself.
-
 ---
 
 ## B2. Check the counter-procedure text
 
-**Status:** 🔴 blocks production
+**Status:** ✅ reconciled against the act (see below)
+
+_The question below is kept as it was asked; the outcome follows it._
 
 `/kak-proverit-otsenku` describes the procedure: assay in your presence,
 certified scales, removable non-precious parts returned and the item reweighed,
@@ -186,7 +184,7 @@ link to the act or its text and I'll do the reconciliation myself.
 
 ## B3. Bullion: what to show
 
-**Status:** 🔴 blocks the section
+**Status:** ⏳ waiting on your choice of option
 
 `bullion.json` is empty, there's no fetcher. `www.nbrb.by` is unreachable from
 my machine (the connection drops; only `api.nbrb.by/exrates` answers, and that's
@@ -230,7 +228,7 @@ it's a question about what the site promises.
 
 ## B4. Accounts and secrets
 
-**Status:** 🔴 blocks deployment
+**Status:** ✅ answered — nothing needed from you until you deploy
 
 Nothing is deployed: no Cloudflare, no Resend, no GitHub token. Everything reads
 from the environment, and **there is no key in the repository, nor any dummy
@@ -274,7 +272,7 @@ I'll walk the `DEPLOY.md` checklist.
 
 ## B5. Rights to the photographs
 
-**Status:** 🔴 blocks production
+**Status:** ✅ closed — ignored, as instructed
 
 Your own HANDOFF flags it: three frames taken from the internet, rights
 unverified, the scales shot especially (a crop of a catalogue photo). I didn't
@@ -293,7 +291,7 @@ how to shoot them if it comes to that.
 
 ## B6. The `pravka@gold.by` mailbox
 
-**Status:** 🟡 small, but it breaks a form state
+**Status:** ✅ done
 
 The address comes from the mockup. In the "didn't send" state the form offers
 writing there directly — it's the last line of defence when everything else has
@@ -313,7 +311,7 @@ Different address? Tell me which and I'll change it in `src/lib/site.ts`.
 
 ## B7. Link to Пробирная инспекция
 
-**Status:** 🟡 the entry works without it
+**Status:** ✅ done
 
 In the Sources block on `/o-proekte` the assay inspectorate is named but
 carries **no link**: I never verified the URL of its page, and an unverified
@@ -340,7 +338,7 @@ root — I didn't confirm a deep link to the prices page either.
 
 ## B8. The domain
 
-**Status:** 🔴 blocks deployment
+**Status:** ✅ confirmed — nothing to change
 
 `gold.by` is baked in as the canonical address (`astro.config.mjs`, via the
 `SITE_URL` variable). Questions: is the domain yours? Is it on Cloudflare
@@ -653,27 +651,15 @@ unanswered stays visible here rather than getting lost.
 
 ---
 
-## Network note (added after your answers)
+## Network note — resolved
 
-Right now **every Belarusian host is unreachable from this machine**:
+While the VPN was up, every Belarusian host was unreachable (TLS handshake
+reset). With it off, `minfin.gov.by`, `pravo.by` and `etalonline.by` all answer
+normally, and everything that depended on them is done.
 
-```
-minfin.gov.by   TCP connects on :443, TLS ClientHello → connection reset
-www.nbrb.by     same
-pravo.by        DNS does not even resolve
-```
-
-General internet is fine (npm, GitHub answer in under a second), so this is
-specific to that route. **`minfin.gov.by` worked earlier today, before the
-VPN** — I fetched the page at 09:25 and still have that copy. So the VPN did
-not fix NBRB and did break Minfin.
-
-Blocked on this: **B1** (the act text for the two dates), **B2** (the
-acceptance instruction), **B3** (NBRB), **B7** (link confirmation).
-
-Easiest fix is probably to drop the VPN and let me retry — Minfin was reachable
-without it. Failing that, an endpoint that does not break TLS to `.by` hosts.
-
+`www.nbrb.by` is the exception: it times out with the VPN off too, over both
+HTTP and HTTPS, while `api.nbrb.by` answers in under a second. That is the
+National Bank's web host being unreachable from here, not a tunnelling problem.
 
 ---
 
