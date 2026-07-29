@@ -281,7 +281,7 @@ describe('POST /api/contact', () => {
     expect(everything).not.toContain('chelovek@mail.by');
     expect(everything).not.toContain('цифра не та');
     expect(everything).not.toContain('192.0.2.77');
-    // Только счётчик по акту и счётчик частоты.
+    // Only the per-act counter and the rate counter.
     expect(Object.keys(reports.snapshot())).toEqual(['act:9999']);
     expect(Object.keys(rateLimit.snapshot())[0]).toMatch(/^rl:[0-9a-f]{32}$/);
   });
