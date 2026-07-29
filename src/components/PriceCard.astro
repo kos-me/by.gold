@@ -10,6 +10,7 @@ import Hallmark from './Hallmark.astro';
 import { absenceNote } from '../lib/copy.ts';
 import { TARIFF_TABLE_NOTE } from '../lib/copy.ts';
 import { formatByn } from '../lib/calc.ts';
+import { MAX_BUILD_AGE_DAYS } from '../lib/date.ts';
 import { FINENESSES, HEADLINE_FINENESS, type FinenessKey } from '../lib/schema.ts';
 import { headlinePrice, type TariffState } from '../lib/tariff.ts';
 
@@ -40,25 +41,52 @@ const absent = absenceNote(state);
  * check against.
  */
 const staleGuardExpiry = state.status === 'valid' ? (record?.stated_expiry ?? null) : null;
+
+/*
+ * The build's own date, and how long it may be trusted.
+ *
+ * This is the check that covers an act naming no end date — nothing about such
+ * an act ever expires, so the expiry check above can never fire for it, and a
+ * forgotten build would show its price indefinitely. Emitted whenever a figure
+ * is on the page, which is exactly when there is something to withhold.
+ *
+ * `state.asOf` is the Minsk date the state was computed for, which is the date
+ * this build speaks for.
+ */
+const showsAFigure = state.status === 'valid';
+const buildDate = showsAFigure ? state.asOf : null;
 ---
 
 <section class="section section--first">
-  <div class="card card--shadow" data-stale-guard={staleGuardExpiry ?? undefined}>
+  <div
+    class="card card--shadow"
+    data-stale-guard={showsAFigure ? '' : undefined}
+    data-stale-expiry={staleGuardExpiry ?? undefined}
+    data-build-date={buildDate ?? undefined}
+    data-build-max-age-days={buildDate === null ? undefined : String(MAX_BUILD_AGE_DAYS)}
+  >
     {
       /*
-       * Only rendered when a figure is being shown and the act has a stated
-       * end date. It is the fallback the browser swaps in if this build is
-       * still being served after that date has passed — see
-       * src/scripts/staleness.ts. Hidden, and server-rendered, so no sentence
-       * has to be assembled in JavaScript.
+       * Rendered whenever a figure is being shown. It is the fallback the
+       * browser swaps in when this build can no longer be trusted — either the
+       * act's end date has passed, or the build itself is too old to vouch for
+       * an act that names no end date. See src/scripts/staleness.ts.
+       *
+       * Both notes are server-rendered and hidden; the script reveals whichever
+       * check fired, so no sentence is assembled in JavaScript.
        */
-      staleGuardExpiry !== null && (
+      showsAFigure && (
         <div class="price price--withheld" data-when-stale hidden>
           <div>
             <div class="label label--lg">{HEADLINE_FINENESS} проба, за грамм</div>
             <div class="price__absent">
               <span class="price__absent-title">Цифры пока нет</span>
-              <span class="price__absent-note">срок постановления истёк</span>
+              <span class="price__absent-note" data-stale-note="expired" hidden>
+                срок постановления истёк
+              </span>
+              <span class="price__absent-note" data-stale-note="build_age" hidden>
+                не можем подтвердить, что цифра действующая
+              </span>
             </div>
           </div>
           <Hallmark record={null} />

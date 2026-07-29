@@ -20,8 +20,13 @@ name: Daily rebuild
 on:
   schedule:
     # Times are UTC. Minsk is UTC+3 all year — Belarus has no DST.
-    - cron: '5 21 * * *' # 00:05 Minsk: an act taking force today goes live at once
-    - cron: '5 06 * * *' # 09:05 Minsk: safety net, GitHub's schedules are best-effort
+    #
+    # Deliberately not near the top of the hour: GitHub's own docs say the
+    # schedule event "can be delayed during periods of high loads" and that
+    # "high load times include the start of every hour", where "some queued jobs
+    # may be dropped".
+    - cron: '23 21 * * *' # 00:23 Minsk: an act taking force today goes live at once
+    - cron: '47 06 * * *' # 09:47 Minsk: safety net, in case the first was dropped
   workflow_dispatch: # the manual button, for when you want it now
 
 # Never let two deploys overlap.

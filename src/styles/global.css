@@ -312,6 +312,17 @@ img {
 }
 
 /*
+ * Where a page says which act it was written from. Quiet, but not hidden: a
+ * reader told that a buyer "обязан" something is entitled to check the source
+ * and to know what we did not read.
+ */
+.source-note {
+  font-size: 12.5px;
+  color: var(--ink-label);
+  line-height: 1.6;
+}
+
+/*
  * Microtext. In the mockup this is Martian Mono at 9–10px, uppercase, wide
  * tracking — the language of labels and utility captions. The monospace face
  * appears nowhere else.

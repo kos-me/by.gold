@@ -69,6 +69,45 @@ export function isPastExpiry(expiry: string | null, now: Date): boolean {
   return minskDate(now) > expiry;
 }
 
+/**
+ * How many days a build may keep showing its figure before it stops being
+ * trusted.
+ *
+ * The expiry check above only helps when the act in force states an end date.
+ * An act that names none — and № 34 of 28.07.2026 names none — runs until
+ * something replaces it, so there is no date for a stale build to fail. Without
+ * a second test, a build that stopped being rebuilt would show such an act's
+ * price for ever, and it would look perfectly current.
+ *
+ * Hence an age limit on the build itself. Seven days, because the Ministry has
+ * replaced an act as little as eight days after the previous one (№ 25 on
+ * 17 June 2026, № 27 on the 25th), so a week is the longest a build can be
+ * trusted without being refreshed. With a daily rebuild in place this never
+ * fires; when it does fire, the deployment pipeline has been broken for a week
+ * and the figure genuinely cannot be vouched for.
+ */
+export const MAX_BUILD_AGE_DAYS = 7;
+
+/**
+ * Is this build too old to be trusted, as of `now`?
+ *
+ * `buildDate` is the Minsk date the site was built, `YYYY-MM-DD`. An
+ * unparseable or missing date is treated as **not** stale: the guard must never
+ * take a figure away because of a malformed attribute, only because of a date
+ * it actually understood.
+ */
+export function isBuildStale(
+  buildDate: string | null,
+  now: Date,
+  maxAgeDays: number = MAX_BUILD_AGE_DAYS,
+): boolean {
+  if (buildDate === null || !isIsoDate(buildDate)) return false;
+  if (!Number.isFinite(maxAgeDays) || maxAgeDays < 0) return false;
+  const built = Date.parse(`${buildDate}T00:00:00Z`);
+  const today = Date.parse(`${minskDate(now)}T00:00:00Z`);
+  return today - built > maxAgeDays * 86_400_000;
+}
+
 /** Russian month names in the genitive case — the form used inside a sentence. */
 const MONTHS_GENITIVE = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',

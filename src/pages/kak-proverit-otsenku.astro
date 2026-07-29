@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { IF_SOMETHING_WRONG, STEPS } from '../lib/procedure.ts';
+import { BUYBACK_RULES_URL } from '../lib/site.ts';
 
 const description =
   'Что должно происходить у стойки скупки: пробу определяют при вас, весы ' +
@@ -59,5 +60,23 @@ const description =
       <div class="label label--stamp">если что-то не так</div>
       <p>{IF_SOMETHING_WRONG}</p>
     </div>
+  </section>
+
+  {/*
+    The source, stated to the visitor rather than only in a code comment.
+    Everything above says buyers "должны", "обязаны", "не вправе" — a reader is
+    entitled to know which act says so and to check it. The known limit is
+    stated too: the amendments have not been read, so the page says what it
+    rests on and no more.
+  */}
+  <section class="section section--tight">
+    <p class="source-note">
+      Написано по Правилам скупки у граждан драгоценных металлов и драгоценных
+      камней в изделиях и ломе — <a href={BUYBACK_RULES_URL} rel="noopener">
+        постановление Совета Министров от 12 сентября 2011 г. № 1211</a>. Мы
+      читали первоначальный текст; изменения 2017, 2023 и 2025 годов мы не
+      сверяли — сводный текст доступен только по подписке. Спорную ситуацию
+      сверяйте с самими Правилами по ссылке.
+    </p>
   </section>
 </Base>

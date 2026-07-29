@@ -119,9 +119,27 @@ settles it in a minute.
 
 Nothing on the site is materially wrong either way: the only visible effect is
 the period reading "18 — 31 июля" instead of "17 — 31 июля", and the record
-becomes historical on 1 August. **The lesson matters more than the day** — the
-archive is not always identical to what the live page said at the time, which
-constrains how far back history can honestly be built.
+became historical on 1 August.
+
+> **Later evidence — and it points the other way.** Reviewing this, a primary
+> source turned up. Act № 27 of 18.06.2026 was **officially published on
+> 24.06.2026** (National Legal Internet Portal, ref 11-1/45001, from the
+> publication PDF's own header), and the year archive dates it from the **25th**.
+> Publication plus one day — which is when an act commencing "после
+> официального опубликования" takes force.
+>
+> So the archive column reports the **legal effective date**, not the
+> publication date. It is not confusing the two, and it was right for № 27. That
+> removes the reason for preferring the live page's 18 July for № 31, and makes
+> 17 July the better-supported reading. It has **not** been changed, because the
+> deciding document — № 31's own publication record — could not be reached, and
+> because you have said this day does not matter to you. If it ever does, that
+> PDF settles it in a minute.
+>
+> The useful consequence is for the ten imported records: their effective dates
+> come from that same column, and it now has a primary source behind it. Their
+> provenance notes were updated to say so rather than carrying a blanket
+> "plus-or-minus one day".
 
 ### Price history: what is possible, and where it stops
 

@@ -19,8 +19,15 @@ const measurementId = import.meta.env['PUBLIC_GA4_ID'] ?? null;
   measurementId !== null && (
     <div class="consent" data-consent hidden>
       <p class="consent__text">
-        Собираем обезличенную статистику посещений через Google Analytics, чтобы
-        понимать, какие страницы нужны. Без согласия счётчик не загружается.
+        {/*
+          Was "обезличенную статистику" — a claim we cannot make. Google
+          Analytics receives the IP address and sets an identifier, and the data
+          leaves the country. Saying otherwise would be exactly the kind of
+          comfortable inaccuracy this site refuses elsewhere.
+        */}
+        Собираем статистику посещений через Google Analytics, чтобы понимать,
+        какие страницы нужны. Данные обрабатывает Google, в том числе за
+        пределами Беларуси. Без согласия счётчик не загружается.
       </p>
       <div class="consent__actions">
         <button type="button" class="chip" data-consent-yes>Согласен</button>

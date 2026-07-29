@@ -71,9 +71,14 @@ for (const date of dates) {
       const element = document.querySelector(selector);
       return element !== null && element.offsetParent !== null;
     };
+    const shownNote = [...document.querySelectorAll('[data-stale-note]')].find(
+      (element) => element.offsetParent !== null,
+    );
     return {
       figure: visible('[data-when-fresh]') ? text('.price__value') : null,
-      absence: visible('[data-when-stale]') ? text('.price__absent') : null,
+      absence: visible('[data-when-stale]')
+        ? `${shownNote?.dataset.staleNote ?? 'none'}: ${shownNote?.textContent?.trim() ?? ''}`
+        : null,
       headlineRow: text('[data-tariff-row="585"] .tariff-row__price'),
       calculatorDisabled: document.querySelector('[data-calc-mass]')?.disabled ?? null,
       priceDataInDom: document.querySelector('#tariff-payload') !== null,

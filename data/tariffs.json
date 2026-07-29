@@ -19,7 +19,7 @@
       "950": 236.68,
       "958": 238.68
     },
-    "notes": "History only. Read from the Ministry's 2024 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2024 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "65",
@@ -41,7 +41,7 @@
       "950": 259.25,
       "958": 261.43
     },
-    "notes": "History only. Read from the Ministry's 2024 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2024 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "12",
@@ -63,7 +63,7 @@
       "950": 269.68,
       "958": 271.95
     },
-    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "61",
@@ -85,7 +85,7 @@
       "950": 277.51,
       "958": 279.85
     },
-    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "94",
@@ -107,7 +107,7 @@
       "950": 314.24,
       "958": 316.89
     },
-    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "115",
@@ -129,7 +129,7 @@
       "950": 345.97,
       "958": 348.88
     },
-    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2025 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "4",
@@ -151,7 +151,7 @@
       "950": 373.65,
       "958": 376.8
     },
-    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "16",
@@ -173,7 +173,7 @@
       "950": 386.4,
       "958": 389.66
     },
-    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "25",
@@ -195,7 +195,7 @@
       "950": 348.76,
       "958": 351.7
     },
-    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "27",
@@ -217,7 +217,7 @@
       "950": 339.8,
       "958": 342.66
     },
-    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line and carries a plus-or-minus-one-day uncertainty (QUESTIONS.md, the 17-versus-18 July conflict)."
+    "notes": "History only. Read from the Ministry's 2026 year-archive page, not from the act — see \"Archive records\" in data/README.md for what that means and why this record can never be treated as the act in force. Prices are Table 1, gold in items and scrap, where 583 and 585 share one merged cell, so both carry that one value. effective_from is the page's own 'Вступает в силу с ...' line. Evidence that this column states the legal date rather than the publication date: act № 27 of 18.06.2026 was officially published on 24.06.2026 (National Legal Internet Portal, ref 11-1/45001) and the archive dates it from the 25th - publication plus one day, which is when an act commencing 'после официального опубликования' takes force. One unresolved wrinkle remains: for act № 31 this column disagrees by a day with what the live prices page said at the time. See QUESTIONS.md."
   },
   {
     "act_number": "31",

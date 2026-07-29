@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  MAX_BUILD_AGE_DAYS,
+  isBuildStale,
   isPastExpiry,
   formatRuDate,
   formatRuDateShort,
@@ -122,5 +124,60 @@ describe('isPastExpiry — the stale-build guard', () => {
   it('a malformed expiry does not silently hide the figure', () => {
     // Wrong here means refusing to act, not blanking the page on a typo.
     expect(isPastExpiry('31.01.2000', new Date('2099-01-01T12:00:00Z'))).toBe(false);
+  });
+});
+
+describe('isBuildStale — the guard that covers an act with no end date', () => {
+  /*
+   * The case this exists for: an act naming no end date never expires, so
+   * isPastExpiry can never fire for it. Without an age limit on the build
+   * itself, a deployment that stopped being refreshed would show such an act's
+   * price for ever, looking entirely current.
+   */
+  const built = '2000-01-10';
+  const at = (iso: string) => new Date(`${iso}T09:00:00Z`); // noon in Minsk
+
+  it('a build from today is not stale', () => {
+    expect(isBuildStale(built, at('2000-01-10'))).toBe(false);
+  });
+
+  it('inside the window it is not stale', () => {
+    expect(isBuildStale(built, at('2000-01-16'))).toBe(false);
+  });
+
+  it('exactly at the limit it is still trusted', () => {
+    expect(isBuildStale(built, at('2000-01-17'), 7)).toBe(false);
+  });
+
+  it('one day past the limit it is stale', () => {
+    expect(isBuildStale(built, at('2000-01-18'), 7)).toBe(true);
+  });
+
+  it('the boundary is Minsk, not UTC', () => {
+    // 21:30 UTC on the 17th is already the 18th in Minsk.
+    expect(isBuildStale(built, new Date('2000-01-17T21:30:00Z'), 7)).toBe(true);
+    expect(isBuildStale(built, new Date('2000-01-17T20:30:00Z'), 7)).toBe(false);
+  });
+
+  it('a missing build date does not blank the page', () => {
+    // Every failure mode here must refuse to act rather than withhold a figure
+    // that is probably fine.
+    expect(isBuildStale(null, at('2099-01-01'))).toBe(false);
+  });
+
+  it('a malformed build date does not blank the page', () => {
+    expect(isBuildStale('10.01.2000', at('2099-01-01'))).toBe(false);
+    expect(isBuildStale('', at('2099-01-01'))).toBe(false);
+  });
+
+  it('a malformed limit does not blank the page', () => {
+    expect(isBuildStale(built, at('2099-01-01'), Number.NaN)).toBe(false);
+    expect(isBuildStale(built, at('2099-01-01'), -1)).toBe(false);
+  });
+
+  it('the default limit is shorter than the shortest gap between acts seen', () => {
+    // № 25 took force on 17 June 2026 and № 27 on the 25th — eight days. A
+    // build may not be trusted for longer than an act has been known to last.
+    expect(MAX_BUILD_AGE_DAYS).toBeLessThan(8);
   });
 });

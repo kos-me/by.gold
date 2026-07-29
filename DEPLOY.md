@@ -153,10 +153,16 @@ rebuild.
 ### How, concretely
 
 This site is **not** Cloudflare Pages — `wrangler.toml` serves `./dist` through
-a Worker's `[assets]` binding. So there is no "deploy hook" URL to poke: a new
-build means running `npm run build && wrangler deploy`, which needs a machine.
+a Worker's `[assets]` binding.
 
-That machine is **GitHub Actions**, and the workflow is committed:
+There are two ways to do it, and both work. What follows is committed and ready;
+the alternative is described afterwards and is arguably the better long-term
+answer.
+
+### Option A — GitHub Actions (committed, ready to use)
+
+A new build means running `npm run build && wrangler deploy`, which needs a
+machine. That machine is **GitHub Actions**, and the workflow is committed:
 [`.github/workflows/daily-rebuild.yml`](.github/workflows/daily-rebuild.yml).
 It checks out main, runs `npm run check`, builds, prints which act it just
 published, and deploys. It runs twice a day and has a manual button.
@@ -182,14 +188,38 @@ and are not part of a build.
 
 ### Two things to know about GitHub's scheduler
 
-- **It stops after 60 days of repository inactivity.** GitHub disables scheduled
-  workflows in dormant repositories and emails the owner. A repository nobody
-  has pushed to in two months stops rebuilding — which for this site means it
-  stops crossing date boundaries. If you go quiet for a while, check that the
-  workflow is still enabled.
-- **Schedules are best-effort**, and can run late or occasionally be skipped
-  under load. That is why there are two runs a day rather than one: 00:05 Minsk
-  so an act taking force today is live immediately, and 09:05 as a safety net.
+- **In a public repository it stops after 60 days of inactivity.** GitHub:
+  "In a public repository, scheduled workflows are automatically disabled when no
+  repository activity has occurred in 60 days." It applies to public
+  repositories only — so while this repository is private it does not bite, and
+  the day you open-source it, it does. A repository nobody pushes to for two
+  months stops rebuilding, which here means it stops crossing date boundaries.
+- **Schedules are best-effort.** GitHub: the schedule event "can be delayed
+  during periods of high loads", "high load times include the start of every
+  hour", and "some queued jobs may be dropped". Hence two runs a day, both
+  deliberately away from the top of the hour: 00:23 Minsk so an act taking force
+  today is live immediately, and 09:47 as a safety net.
+
+### Option B — Workers Builds and a deploy hook
+
+Cloudflare added **Deploy Hooks for Workers Builds** in April 2026: a unique URL
+that starts a build when you POST to it. Connect the repository under
+Workers & Pages → your Worker → Settings → Builds, set the build command to
+`npm run check && npm run build`, and create a deploy hook.
+
+Then the scheduler can be **this project's own cron Worker**, which already runs
+hourly — one `fetch()` to the hook URL, kept as a secret like any other
+credential. That is appealing for three reasons: it removes GitHub from the
+deployment path entirely, Cloudflare's cron triggers are more dependable than
+GitHub's best-effort scheduler, and there is no 60-day dormancy rule.
+
+It is not wired up, because it cannot be tested without a Cloudflare account. If
+you take this route, the deploy hook URL is a credential — anyone holding it can
+trigger builds — so it goes in via `wrangler secret put`, never into
+`wrangler.toml` or a commit.
+
+Whichever you choose, the requirement is the same: **something must trigger a
+build daily.** Do not run both, or you will deploy twice for no reason.
 
 ### What it deliberately does not do
 
