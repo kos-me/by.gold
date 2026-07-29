@@ -145,8 +145,10 @@ guessing here means computing something other than what was typed.
 **Decision — an empty field is not an error.** A separate `empty` reason and an
 `isEmptyInput` helper, so the page does not style "введите массу" as a fault.
 
-**Decision — an upper bound of 100,000 g.** Above that it is almost certainly a
-typo and the page says "проверьте массу". The number is mine; the brief has none.
+**Decision — an upper bound on the entered mass.** Above it the page says
+"проверьте массу". The number was mine (the brief has none); I first set
+100 000 g, and the client later lowered it to **10 000 g** — nobody carries
+more than ten kilograms of gold into a buyback counter (QUESTIONS.md, D8).
 
 **Decision — the mass is not rounded to weighing precision.** The brief gives
 the acceptance precision (gold 0.01 g), but applying it to the entered number

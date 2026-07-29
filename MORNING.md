@@ -143,8 +143,9 @@ are stored; a test snapshots the store and asserts no email, text or IP is there
 **D14. The worker's PR is deliberately red** — see 2.2 above.
 
 Also: consent in a cookie rather than localStorage; no Product/Offer structured
-data; a 100,000 g input cap (my number); mass not rounded to weighing
-precision; a bespoke font subset at 94.8 KB instead of 333 KB.
+data; an input cap on the entered mass (my number, since lowered to 10 000 g at
+your request); mass not rounded to weighing precision; a bespoke font subset at
+94.8 KB instead of 333 KB.
 
 ---
 
