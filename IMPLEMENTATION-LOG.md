@@ -604,3 +604,54 @@ anywhere in the document is the act date. That is the evidence behind the
 deliberately-red pull request (step 9): the parser genuinely cannot produce a
 complete record, so the gate is not a design preference but a fact about the
 source.
+
+---
+
+## The acceptance procedure, reconciled against the act
+
+The morning report flagged `/kak-proverit-otsenku` as the one place on the site
+whose claims were not backed by a primary source. That is now largely closed.
+
+The governing act is **Council of Ministers resolution № 1211 of 12 September
+2011**, "О правилах скупки у граждан драгоценных металлов и драгоценных камней
+в изделиях и ломе" (National Register 5/34430). Its verbatim original text is
+published in the National Register, and every step now cites the point it comes
+from.
+
+**Confirmed by the act.** All operations in the seller's presence (p. 9). The
+scales positioned so the seller can satisfy themselves as to the mass (p. 11).
+Removable non-precious parts taken out with the seller's agreement and returned,
+then the item re-weighed; where removal is impossible the correction is agreed
+with the seller (p. 13). Documents completed once the seller agrees to the
+valuation (p. 14). No return after payment (p. 15).
+
+**The weighing precision was right** — 0.01 g for gold, 0.1 g for silver — and
+the act adds a detail the brief did not carry: "без учёта математического
+округления". That is now on the page.
+
+**Removed as unsourced.** "Поверенных весах" and "с нулём на пустой чаше" were
+mine, not the act's; it says only that the scales are placed so the mass can be
+checked. Both are gone, from the steps, the photo caption, the alt text and the
+page description.
+
+**Gained.** Point 6 gives a concrete right the brief had missed: the buyback
+point must display the current prices, a copy of the licence **and an extract
+from the Rules covering how mass, assay and valuation are determined**. That
+became step 01, and it is more useful than what it replaced.
+
+**Still open.** The act was amended three times (№ 246/2017, № 301/2023,
+№ 268/2025) and the consolidated text sits behind ЭТАЛОН's subscription.
+Nothing on the page asserts anything the 2011 original does not say, but a
+provision could have moved since. The warning at the top of
+`src/lib/procedure.ts` now says exactly that, rather than "unverified".
+
+## Sources confirmed
+
+- State assay supervision: `minfin.gov.by/ru/activities_jewels/probirka/`,
+  H1 "Государственный пробирный надзор". Linked from /o-proekte, and the entry
+  renamed to match what the body is actually called.
+- The buyback rules themselves are now a fourth entry under Sources.
+- The National Bank remains unreachable: `www.nbrb.by` and `nbrb.by` time out
+  over both HTTP and HTTPS while `api.nbrb.by` answers instantly. Not a VPN
+  artefact — it persists with the VPN off, when every other Belarusian host
+  responds normally.

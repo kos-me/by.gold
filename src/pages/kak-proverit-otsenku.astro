@@ -3,9 +3,9 @@ import Base from '../layouts/Base.astro';
 import { IF_SOMETHING_WRONG, STEPS } from '../lib/procedure.ts';
 
 const description =
-  'Что должно происходить у стойки скупки: опробование при вас, поверенные ' +
-  'весы, зачётная масса и документ. Цена за грамм не обсуждается — её ' +
-  'установил Минфин.';
+  'Что должно происходить у стойки скупки: пробу определяют при вас, весы ' +
+  'стоят так, чтобы вы видели массу, снятые вставки возвращают. Цена за ' +
+  'грамм не обсуждается — её установил Минфин.';
 ---
 
 <Base
@@ -43,14 +43,14 @@ const description =
       <div class="figure__frame" style="height:210px">
         <img
           src="/images/scale-display.webp"
-          alt="Дисплей поверенных весов с массой изделия в граммах"
+          alt="Дисплей весов с массой изделия в граммах"
           width={900}
           height={352}
           loading="lazy"
           decoding="async"
         />
       </div>
-      <figcaption>Весы должны быть поверены, а взвешивание — при вас, с нуля.</figcaption>
+      <figcaption>Весы ставят так, чтобы вы могли сами убедиться в массе.</figcaption>
     </figure>
   </section>
 

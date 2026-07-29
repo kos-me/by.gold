@@ -1,10 +1,19 @@
 /**
  * The acceptance procedure — the content of `/kak-proverit-otsenku`.
  *
- * WARNING. This text describes a procedure rather than a price, but it is
- * verified worse than the figures are: it was assembled from the client brief
- * and the mockup, not reconciled against the published acceptance instruction
- * itself. Reconcile it line by line before production — see QUESTIONS.md, B2.
+ * SOURCE. Reconciled against the governing act: Council of Ministers
+ * resolution of 12 September 2011 № 1211, "О правилах скупки у граждан
+ * драгоценных металлов и драгоценных камней в изделиях и ломе" (National
+ * Register 5/34430). The text used was the verbatim original published in the
+ * National Register, read on 29 July 2026. Point numbers are cited per step
+ * below so any claim can be traced back.
+ *
+ * STILL UNVERIFIED. That act has been amended three times — by resolutions
+ * № 246 (03.04.2017), № 301 (10.05.2023) and № 268 (16.05.2025). Their
+ * consolidated text is only available through ЭТАЛОН, which needs a
+ * subscription, so the amendments have **not** been checked. Nothing below
+ * asserts anything the 2011 original does not say, but a provision could have
+ * changed since. See QUESTIONS.md, B2.
  *
  * No deduction percentage is named here, deliberately: the brief explicitly
  * forbids inventing one and asks for the procedure to be described instead.
@@ -23,53 +32,76 @@ export interface Step {
 
 export const STEPS: readonly Step[] = [
   {
+    // Rules, point 6: the buyback point must display, where the seller can
+    // conveniently read them, the current buyback prices, a copy of the
+    // licence, and an extract from the Rules covering how mass, assay and
+    // valuation are determined.
     n: '01',
-    title: 'Проверьте цену за грамм',
+    title: 'Посмотрите, что висит на стойке',
     text:
-      'На стойке должна быть цена из действующего постановления Минфина. ' +
-      'Ниже неё платить не вправе. Выше тарифа бывает только зачёт старого ' +
-      'изделия при покупке нового — это другая сделка, не скупка.',
+      'В пункте скупки на видном месте должны быть действующие скупочные цены, ' +
+      'копия лицензии и выписка из правил — о том, как определяют массу, пробу ' +
+      'и оценку. Ниже цены из постановления платить не вправе. Выше тарифа ' +
+      'бывает только зачёт старого изделия при покупке нового: это другая сделка.',
   },
   {
+    // Points 8 and 12: buyback happens regardless of maker's marks and assay
+    // hallmarks; the fineness is determined at points free of solder.
     n: '02',
     title: 'Смотрите, как определяют пробу',
     text:
-      'Клеймо только заявляет пробу. При приёмке проводят опробование — ' +
-      'реактивом на пробирном камне или прибором — и называют результат при вас. ' +
-      'Именно он идёт в расчёт, а не то, что выбито на изделии.',
+      'Скупка не зависит от того, есть на изделии клеймо или нет: пробу всё равно ' +
+      'определяют при приёмке — реактивом или прибором, в месте без припоя. ' +
+      'Именно этот результат идёт в расчёт, а не то, что выбито на изделии.',
   },
   {
+    // Points 9, 11 and 13: every operation happens in the seller's presence;
+    // the scales are placed so the seller can satisfy themselves as to the
+    // total mass; removable non-precious parts are taken out with the seller's
+    // agreement and returned, after which the item is weighed again; where
+    // removal is impossible the correction is agreed with the seller.
     n: '03',
     title: 'Следите за весом',
     text:
-      'Взвешивают на поверенных весах, при вас, с нулём на пустой чаше. ' +
-      'Камни, эмаль и детали из другого металла в зачётную массу не входят: ' +
-      'съёмные снимают и возвращают вам, после чего изделие взвешивают заново. ' +
-      'Если снять нельзя, поправку согласовывают с вами до расчёта.',
+      'Определение массы и пробы, удаление вставок, упаковку — всё это делают ' +
+      'при вас. Весы ставят так, чтобы вы могли сами убедиться в массе. Съёмные ' +
+      'части из недрагоценных материалов снимают с вашего согласия и возвращают ' +
+      'вам, после чего изделие взвешивают заново. Если снять нельзя — пружинки ' +
+      'в замках, эмаль — поправку на их массу считают при вас и по согласию.',
   },
   {
+    // Point 11: mass is determined to 0.1 g for silver and 0.01 g for other
+    // precious metals, "без учета математического округления".
     n: '04',
     title: 'Пересчитайте сумму',
     text:
-      'Сумма = зачётная масса × цена за грамм для установленной пробы. ' +
-      `Золото взвешивают с точностью до ${formatGrams(GOLD_WEIGHING_PRECISION_G)} г, ` +
-      `серебро — до ${formatGrams(SILVER_WEIGHING_PRECISION_G)} г. ` +
-      'Посчитайте на телефоне до того, как подписывать.',
+      'Сумма = зачётная масса × цена за грамм для установленной пробы. Массу ' +
+      `определяют с точностью до ${formatGrams(GOLD_WEIGHING_PRECISION_G)} г для золота и до ` +
+      `${formatGrams(SILVER_WEIGHING_PRECISION_G)} г для серебра, без математического округления. ` +
+      'Посчитайте на телефоне до того, как соглашаться.',
   },
   {
+    // Points 14 and 15: documents are filled in once the seller agrees to the
+    // valuation; once paid for, bought items are not returnable.
     n: '05',
     title: 'Возьмите документ',
     text:
-      'Договор или квитанция, где указаны масса, проба, цена за грамм и сумма. ' +
-      'Без документа сделку потом не подтвердить.',
+      'Документы заполняют, когда вы согласились с оценкой. Возьмите свой ' +
+      'экземпляр: в нём масса, проба, цена за грамм и сумма. После оплаты ' +
+      'сданное возврату не подлежит — поэтому проверять надо до, а не после.',
   },
 ];
 
+/**
+ * Every stage of the procedure requires the seller's agreement (points 13 and
+ * 14), and only point 15 closes the door — after payment. So walking away
+ * before agreeing is always available.
+ */
 export const IF_SOMETHING_WRONG =
-  'Отказаться от сделки можно на любом этапе до подписания и забрать изделие. ' +
-  'Если цена за грамм ниже постановления, попросите показать действующий ' +
-  'документ — он должен быть в скупке. Расхождение — повод обратиться ' +
-  'в Пробирную инспекцию.';
+  'Пока вы не согласились с оценкой и не получили оплату, сделки нет: можно ' +
+  'отказаться и забрать изделие. Если цена за грамм ниже постановления, ' +
+  'попросите показать действующие цены — они обязаны висеть в пункте скупки. ' +
+  'Расхождение — повод обратиться в пробирный надзор.';
 
 export interface SourceItem {
   readonly title: string;

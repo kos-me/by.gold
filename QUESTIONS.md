@@ -89,6 +89,25 @@ the one vouching for the figure.
 
 **Answer:** Why don't you download recent act and fill data yourself?
 
+> **Status: done. The site is live on real data.**
+>
+> `data/tariffs.json` now holds decree № 31 of 08.07.2026. I found the act
+> itself — it is linked as a PDF from the Minfin page — and read it directly.
+>
+> - **Prices**: from the act's appendix, Table 1. They match, digit for digit,
+>   what the parser independently read out of the HTML table. Two paths, same
+>   numbers.
+> - **stated_expiry = 2026-07-31**: point 3 of the act, verbatim —
+>   "Настоящее постановление вступает в силу после его официального
+>   опубликования и действует по 31 июля 2026 г."
+> - **effective_from = 2026-07-18**: the act itself names **no date** — only
+>   "after its official publication". So this one comes from the Ministry's own
+>   news headline, "Цены … с 18 июля 2026 г.". It is the single weakest field in
+>   the record, and `transcribed_by` currently reads "NOT yet verified by a
+>   human" for that reason. Please confirm it and put your name there.
+>
+> Full provenance is recorded field-by-field in the record's own `notes`.
+
 > **Status after your answer: partly done, one thing still needed from you.**
 >
 > The network is now the problem — see the note at the end of this file. But I
@@ -132,9 +151,36 @@ link to the act or its text and I'll do the reconciliation myself.
 
 **Answer:** Research act yourself online. Let me know if you fail
 
-> **Status: blocked on the network, not on you.** Every Belarusian host is
-> unreachable from here right now (TLS handshake reset). I will do this the
-> moment the connection works.
+> **Status: done, with one gap left that money or a subscription fixes.**
+>
+> The governing act is **Council of Ministers resolution № 1211 of
+> 12.09.2011**, "О правилах скупки у граждан драгоценных металлов и
+> драгоценных камней в изделиях и ломе" (National Register 5/34430). I found
+> its verbatim original text in the National Register and reconciled all five
+> steps against it, point by point. `src/lib/procedure.ts` now cites the point
+> number behind each step.
+>
+> What the act confirmed: every operation happens in your presence (p. 9); the
+> scales are placed so you can satisfy yourself as to the mass (p. 11);
+> removable non-precious parts come out with your agreement and are returned,
+> then the item is re-weighed (p. 13); documents are filled in once you agree
+> (p. 14); after payment there is no return (p. 15). **The weighing precision
+> was right**: 0.01 g for gold, 0.1 g for silver — and the act adds "без учёта
+> математического округления", which I have now included.
+>
+> What I removed, because the act does **not** say it: "поверенных весах" and
+> "с нулём на пустой чаше". Both were mine. The act says only that the scales
+> are positioned so you can check the mass.
+>
+> What I gained: p. 6 gives you a concrete right I had missed — the buyback
+> point must display the current prices, a copy of the licence, **and an
+> extract from the Rules**. That is now step 01.
+>
+> **The gap:** the act has been amended three times (№ 246/2017, № 301/2023,
+> № 268/2025). The consolidated current text is only in ЭТАЛОН, which needs a
+> subscription. Nothing on the page asserts anything the 2011 original does not
+> say, but a provision could have changed. If you have ЭТАЛОН access, that is a
+> ten-minute check.
 
 ---
 
@@ -166,10 +212,19 @@ it's a question about what the site promises.
 
 **Answer:** Try again, I connected VPN
 
-> **Status: still blocked, and the VPN made it worse.** `www.nbrb.by` fails as
-> before, and now `minfin.gov.by` fails too — it worked before the VPN. TCP
-> connects on port 443 and the TLS ClientHello is reset, which is a middlebox
-> in the path. Please try without the VPN, or from a different endpoint.
+> **Status: still blocked, and now clearly not the VPN.** With the VPN off,
+> `minfin.gov.by`, `pravo.by` and `etalonline.by` all answer normally.
+> `www.nbrb.by` and `nbrb.by` still time out on every attempt, over both HTTP
+> and HTTPS, while `api.nbrb.by/exrates` answers in under a second. So the
+> National Bank's web site specifically is unreachable from here; their API
+> host is not.
+>
+> Which leaves your original three options unchanged. I still lean to **(b)**:
+> bullion buyback prices are in the same act I already read — Table 4, with the
+> 5.5% surcharge for gold and 4.5% for silver, both stated in point 1 of the
+> resolution. It is a verified source and the parser sits next to it. It is a
+> scrap-buyer's price for a bar rather than a National Bank quote, and the
+> labelling would have to say so. Say the word and it is a small job.
 
 ---
 
@@ -269,9 +324,17 @@ root — I didn't confirm a deep link to the prices page either.
 
 **Answer:** confirm links yourself
 
-> **Status: blocked on the same network problem.** I will confirm both links
-> (Пробирная инспекция, and a deep link for NBRB) as soon as I can reach them.
-> Until then the entry stays deliberately link-less.
+> **Status: done.** Confirmed and linked:
+> `minfin.gov.by/ru/activities_jewels/probirka/` — H1 "Государственный
+> пробирный надзор". It sits under the Ministry of Finance, so the entry is now
+> titled that rather than "Пробирная инспекция".
+>
+> I also added a fourth source entry: the buyback rules themselves
+> (resolution № 1211 on pravo.by), since the whole "Как проверить оценку" page
+> now derives from them.
+>
+> The NBRB deep link is still unconfirmed — see B3; that host does not respond
+> at all. The entry keeps the root `nbrb.by`.
 
 ---
 
@@ -610,3 +673,28 @@ acceptance instruction), **B3** (NBRB), **B7** (link confirmation).
 
 Easiest fix is probably to drop the VPN and let me retry — Minfin was reachable
 without it. Failing that, an endpoint that does not break TLS to `.by` hosts.
+
+
+---
+
+## Added after the act was read: a stale-build guard
+
+Populating the data exposed a hole the empty state had been hiding.
+
+The site is static, so the tariff state is decided **when the site is built**.
+Act 31 lapses on 31 July. A build that stops being rebuilt would go on showing
+202,18 as a current price into August — which is precisely the failure this
+whole project exists to prevent.
+
+So the browser now re-checks the expiry on every visit
+(`src/scripts/staleness.ts`). Past it, the figure is withheld, the fineness
+table goes to dashes, the calculator switches off and the price payload is
+removed from the page. It can only ever take a figure away, never restore one,
+and the replacement copy is server-rendered rather than assembled in
+JavaScript.
+
+Verified in a real browser with the clock faked to 2026-08-01: every field
+flips. Unit tests cover the boundary, including the Minsk midnight either side.
+
+This is defence in depth, not a substitute for the cron worker — it makes the
+site honest rather than merely honest-if-rebuilt-on-time.

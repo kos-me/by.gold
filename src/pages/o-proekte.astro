@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import ReportForm from '../components/ReportForm.astro';
-import { MINFIN_URL, NBRB_URL } from '../lib/site.ts';
+import { BUYBACK_RULES_URL, MINFIN_URL, NBRB_URL, PROBIRKA_URL } from '../lib/site.ts';
 
 const description =
   'Откуда берутся цифры на gold.by, как они проверяются и как сообщить ' +
@@ -34,12 +34,22 @@ const SOURCES = [
     linkText: 'nbrb.by',
   },
   {
-    title: 'Пробирная инспекция',
+    title: 'Государственный пробирный надзор',
     text:
-      'Правила опробования и клеймения, порядок обращения при расхождении. ' +
-      'К ней имеет смысл идти, если у стойки назвали цену ниже постановления.',
-    href: null,
-    linkText: null,
+      'Опробование и клеймение, порядок обращения при расхождении. Туда имеет ' +
+      'смысл идти, если у стойки назвали цену ниже постановления.',
+    href: PROBIRKA_URL,
+    linkText: 'minfin.gov.by/ru/activities_jewels/probirka',
+  },
+  {
+    title: 'Правила скупки',
+    text:
+      'Постановление Совета Министров от 12 сентября 2011 г. № 1211 — что ' +
+      'обязаны делать при приёмке: определять массу и пробу при вас, ставить ' +
+      'весы так, чтобы вы видели, возвращать снятые вставки. Отсюда взята ' +
+      'страница «Как проверить оценку».',
+    href: BUYBACK_RULES_URL,
+    linkText: 'pravo.by',
   },
 ];
 ---
