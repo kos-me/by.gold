@@ -250,7 +250,7 @@ describe('калькулятор не изобретает цену', () => {
   });
 
   it('неизвестная проба на входе — отказ, а не ближайшая', () => {
-    const result = calculate('10', '900' as FinenessKey, PRICES);
+    const result = calculate('10', '999' as FinenessKey, PRICES);
     expect(result).toEqual({ ok: false, failure: { kind: 'no_price' } });
   });
 });

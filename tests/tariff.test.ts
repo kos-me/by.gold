@@ -269,12 +269,14 @@ describe('доступ к ценам', () => {
   const record = tariff();
 
   it('пробы отдаются в каноническом порядке', () => {
-    expect(finenessesOf(record)).toEqual(['375', '500', '585', '750', '958', '999']);
+    expect(finenessesOf(record)).toEqual([
+      '375', '500', '583', '585', '750', '900', '916', '950', '958',
+    ]);
   });
 
   it('отдаются только пробы, названные актом', () => {
-    const partial = tariff({ prices_byn_per_gram: { '999': 6.0, '585': 3.0 } });
-    expect(finenessesOf(partial)).toEqual(['585', '999']);
+    const partial = tariff({ prices_byn_per_gram: { '958': 5.0, '583': 2.5 } });
+    expect(finenessesOf(partial)).toEqual(['583', '958']);
   });
 
   it('несуществующая проба — null, а не ноль и не подстановка', () => {
@@ -288,7 +290,7 @@ describe('доступ к ценам', () => {
   });
 
   it('если 585 в акте нет — первая имеющаяся проба, а не выдуманная', () => {
-    const partial = tariff({ prices_byn_per_gram: { '750': 4.0, '999': 6.0 } });
+    const partial = tariff({ prices_byn_per_gram: { '750': 4.0, '958': 5.0 } });
     expect(headlinePrice(partial)).toEqual({ fineness: '750', price: 4.0 });
   });
 });

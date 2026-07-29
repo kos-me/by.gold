@@ -50,16 +50,42 @@ const browser = await puppeteer.launch({ executablePath: chrome, headless: true 
   check('пустое поле — подсказка, не ошибка', await value(), 'введите массу');
   check('пустое поле помечено как hint', await kind(), 'hint');
 
-  // Фикстура: 585 проба = 4.10 BYN/г. 10 г → 41,00.
+  /*
+   * Ожидаемые суммы считаются из цен, отрисованных сервером в таблице проб,
+   * а не зашиты числом. Это не подгонка под фикстуру: таблицу рисует Astro
+   * на сборке, сумму считает скрипт в браузере — сходятся два независимых
+   * пути. Заодно тест переживает правку фикстуры.
+   */
+  const tablePrices = await page.$$eval('[data-tariff-row]', (rows) =>
+    Object.fromEntries(
+      rows.map((row) => [
+        row.dataset.tariffRow,
+        row.querySelector('.tariff-row__price')?.textContent?.trim() ?? '',
+      ]),
+    ),
+  );
+
+  const toNumber = (shown) => Number(shown.replace(/\s/g, '').replace(',', '.'));
+  const money = (value) =>
+    `${Math.round(value * 100 + Number.EPSILON) / 100}`
+      .replace('.', ',')
+      .replace(/^(\d+)$/, '$1,00')
+      .replace(/,(\d)$/, ',$10');
+
+  const finenesses = Object.keys(tablePrices);
+  const headline = '585';
+  const other = finenesses.find((key) => key !== headline) ?? headline;
+
+  const priceOf = (key) => toNumber(tablePrices[key]);
+
   await page.type('[data-calc-mass]', '10');
-  check('10 г по 585 пробе', await value(), '41,00 BYN');
+  check(`10 г по ${headline} пробе`, await value(), `${money(priceOf(headline) * 10)} BYN`);
   check('результат помечен как сумма', await kind(), 'sum');
 
-  // Переключение на 999 (7.40 BYN/г): 10 г → 74,00.
-  await page.click('[data-calc-fineness="999"]');
-  check('переключение пробы пересчитывает', await value(), '74,00 BYN');
+  await page.click(`[data-calc-fineness="${other}"]`);
+  check('переключение пробы пересчитывает', await value(), `${money(priceOf(other) * 10)} BYN`);
 
-  const pressed = await page.$eval('[data-calc-fineness="999"]', (el) =>
+  const pressed = await page.$eval(`[data-calc-fineness="${other}"]`, (el) =>
     el.getAttribute('aria-pressed'),
   );
   check('выбранная проба отмечена', pressed, 'true');
@@ -67,14 +93,14 @@ const browser = await puppeteer.launch({ executablePath: chrome, headless: true 
   const rowSelected = await page.$$eval('.tariff-row--selected .tariff-row__fineness', (nodes) =>
     nodes.map((n) => n.textContent?.trim()).join(','),
   );
-  check('подсвечена строка выбранной пробы', rowSelected, '999');
+  check('подсвечена строка выбранной пробы', rowSelected, other);
 
   // Запятая как разделитель.
   await page.$eval('[data-calc-mass]', (el) => {
     el.value = '';
   });
   await page.type('[data-calc-mass]', '8,4');
-  check('8,4 г по 999 пробе', await value(), '62,16 BYN');
+  check(`8,4 г по ${other} пробе`, await value(), `${money(priceOf(other) * 8.4)} BYN`);
 
   // Мусор не считается.
   await page.$eval('[data-calc-mass]', (el) => {

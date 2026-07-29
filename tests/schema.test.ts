@@ -121,9 +121,10 @@ describe('validateTariffRecord — цены', () => {
 
   it('отвергает неизвестную пробу', () => {
     const issues = expectRejected(
-      tariff({ prices_byn_per_gram: { '585': 3.0, '900': 4.0 } as never }),
+      tariff({ prices_byn_per_gram: { '585': 3.0, '999': 4.0 } as never }),
     );
-    expect(issuePaths(issues)).toContain('prices_byn_per_gram.900');
+    // 999 в таблице скупки изделий и лома нет — это проба слитка, не изделия.
+    expect(issuePaths(issues)).toContain('prices_byn_per_gram.999');
   });
 
   it('отвергает нулевую, отрицательную и нечисловую цену', () => {

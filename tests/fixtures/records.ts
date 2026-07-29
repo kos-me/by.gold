@@ -20,13 +20,18 @@ export function tariff(overrides: Partial<TariffRecord> = {}): TariffRecord {
     source_url: SOURCE_URL,
     transcribed_at: '2000-01-10T09:00:00Z',
     transcribed_by: 'тест',
+    // Все девять проб, которые встречаются в акте. Значения различны,
+    // чтобы тест «разные пробы дают разные суммы» что-то проверял.
     prices_byn_per_gram: {
       '375': 1.0,
       '500': 2.0,
+      '583': 2.5,
       '585': 3.0,
       '750': 4.0,
+      '900': 4.5,
+      '916': 4.7,
+      '950': 4.9,
       '958': 5.0,
-      '999': 6.0,
     },
     ...overrides,
   };

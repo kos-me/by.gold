@@ -10,6 +10,7 @@
  */
 
 import { handleContact } from './contact.ts';
+import { runScheduled } from './scheduled.ts';
 import type { Env } from './env.ts';
 
 function notFound(): Response {
@@ -46,5 +47,9 @@ export default {
 
     if (env.ASSETS === undefined) return notFound();
     return env.ASSETS.fetch(request);
+  },
+
+  async scheduled(event: { cron: string }, env: Env): Promise<void> {
+    await runScheduled(event, env);
   },
 };
