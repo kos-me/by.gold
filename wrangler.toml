@@ -21,6 +21,28 @@ binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
 
+# No workers.dev URL. Three reasons, in order of weight.
+#
+# 1. The subdomain is an ACCOUNT-level name, shared with every other project in
+#    this account. Registering one to get a test URL for gold.by would name it
+#    for everything else too, and changing it later rewrites every Worker URL in
+#    the account. That decision is not this project's to make.
+# 2. A workers.dev copy would be a second publicly indexable origin serving the
+#    same pages. For a site whose entire purpose is to be the authoritative
+#    place to read an official figure, a duplicate is worth avoiding.
+# 3. The real Worker can be exercised without it: `wrangler dev --remote` runs
+#    it on Cloudflare, against these real KV namespaces, reachable only locally.
+#
+# Set here rather than only in the dashboard on purpose. Cloudflare's docs: "If
+# you disable your workers.dev route in the Cloudflare dashboard but do not
+# update your Worker's Wrangler file with workers_dev = false, the workers.dev
+# route will be re-enabled the next time you deploy."
+#
+# The site becomes reachable when gold.by is attached as a Custom Domain, which
+# writes a record in that zone and nowhere else. Never a wildcard route: a
+# pattern like */* would capture traffic for the other domains here.
+workers_dev = false
+
 [vars]
 ENVIRONMENT = "production"
 
