@@ -139,15 +139,63 @@ a lapsed price. But quiet is not correct when a valid successor is already
 sitting in `data/tariffs.json` — it just cannot reach the page without a
 rebuild.
 
-So: create a **Pages deploy hook** and call it daily. The scheduled worker in
-`worker/` already runs on cron and is the natural place to POST to it; that is
-not wired up yet, deliberately, because it could not be tested here. Until it
-is, a daily cron from anywhere — or a scheduled GitHub Action doing an empty
-commit — is enough. A daily rebuild is also cheap: the build is a few seconds
-and Pages does not charge for it.
+### How, concretely
 
-Note the deploy hook only rebuilds. It cannot add a figure: that still takes a
-person merging the cron worker's pull request.
+This site is **not** Cloudflare Pages — `wrangler.toml` serves `./dist` through
+a Worker's `[assets]` binding. So there is no "deploy hook" URL to poke: a new
+build means running `npm run build && wrangler deploy`, which needs a machine.
+
+That machine is **GitHub Actions**, and the workflow is committed:
+[`.github/workflows/daily-rebuild.yml`](.github/workflows/daily-rebuild.yml).
+It checks out main, runs `npm run check`, builds, prints which act it just
+published, and deploys. It runs twice a day and has a manual button.
+
+To turn it on, add these in the repository's settings — **Settings → Secrets and
+variables → Actions**:
+
+| kind | name | where to get it |
+|---|---|---|
+| secret | `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens → Create, template "Edit Cloudflare Workers", scoped to this account |
+| secret | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers → Account ID |
+| variable | `PUBLIC_TURNSTILE_SITE_KEY` | Turnstile widget → Site Key. Not secret: it ships in the HTML |
+| variable | `PUBLIC_GA4_ID` | GA4 → data stream. Optional |
+| variable | `PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console. Optional |
+| variable | `PUBLIC_YANDEX_VERIFICATION` | Yandex Webmaster. Optional |
+
+The four `PUBLIC_*` go in **Variables**, not Secrets. They are not secret —
+they are in the page source — and a masked value in the build log is a nuisance
+rather than protection.
+
+Nothing else is needed: `wrangler secret put` values already live in Cloudflare
+and are not part of a build.
+
+### Two things to know about GitHub's scheduler
+
+- **It stops after 60 days of repository inactivity.** GitHub disables scheduled
+  workflows in dormant repositories and emails the owner. A repository nobody
+  has pushed to in two months stops rebuilding — which for this site means it
+  stops crossing date boundaries. If you go quiet for a while, check that the
+  workflow is still enabled.
+- **Schedules are best-effort**, and can run late or occasionally be skipped
+  under load. That is why there are two runs a day rather than one: 00:05 Minsk
+  so an act taking force today is live immediately, and 09:05 as a safety net.
+
+### What it deliberately does not do
+
+The scheduled run **publishes nothing new**. It rebuilds the commit already on
+main, so the only thing that changes is the date the pages were rendered for. A
+figure still enters only one way: a person merging a pull request that adds a
+record to `data/tariffs.json`.
+
+It also refuses to deploy a build that fails `npm run check`, so an unattended
+run cannot push out something broken.
+
+### If you would rather CI owned deploys entirely
+
+Add `push: branches: [main]` to the workflow's `on:` block and it becomes your
+deploy path as well, replacing the manual `wrangler deploy` below. That is one
+line, and it is left out on purpose: nothing should start deploying on your
+behalf until you have deployed by hand once and seen it work.
 
 ---
 

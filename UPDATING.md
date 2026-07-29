@@ -153,8 +153,9 @@ same data renders act № 34 at 202,50.
 
 There are two defences, and they do different jobs:
 
-- **A daily rebuild**, which is the actual fix. Set up a scheduled deploy —
-  see DEPLOY.md. Without it the handover simply does not happen.
+- **A daily rebuild**, which is the actual fix. The workflow is committed —
+  `.github/workflows/daily-rebuild.yml` — and needs two GitHub secrets before
+  it can deploy. See DEPLOY.md. Without it the handover does not happen.
 - **The browser guard** (`src/scripts/staleness.ts`), which is the safety net.
   Every visitor's browser re-checks the expiry date and, if it has passed,
   takes the figure off the page and switches the calculator off. It can only
