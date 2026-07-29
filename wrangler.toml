@@ -1,0 +1,49 @@
+# Воркер gold.by: статика сайта + /api/* + расписание проверок.
+#
+# СЕКРЕТОВ ЗДЕСЬ НЕТ И БЫТЬ НЕ ДОЛЖНО. Всё, что секрет, кладётся через
+# `wrangler secret put` — перечень в DEPLOY.md.
+#
+# id KV-хранилищ заполняются после `wrangler kv namespace create` и не
+# являются секретами, но до первого деплоя их взять неоткуда: оставлены
+# пустыми намеренно, чтобы `wrangler deploy` упал, а не создал что-то не то.
+
+name = "gold-by"
+main = "worker/src/index.ts"
+compatibility_date = "2025-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Собранный сайт. `npm run build` кладёт его в dist/.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Пути без расширения (/o-proekte) отдаются как /o-proekte.html
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Счётчики обращений по актам, отметка о последней проверке, флаг блокировки.
+[[kv_namespaces]]
+binding = "REPORTS"
+id = ""
+
+# Счётчики частоты запросов. Только хеши адресов, TTL час.
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = ""
+
+# Расписание проверок.
+#   Минфин — раз в час: в макете обещана почасовая проверка.
+#   НБРБ   — раз в сутки: слитки обновляются раз в день.
+[triggers]
+crons = ["7 * * * *", "20 6 * * *"]
+
+[observability]
+enabled = true
+
+[env.staging]
+name = "gold-by-staging"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"

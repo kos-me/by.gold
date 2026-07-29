@@ -15,10 +15,8 @@
  * Хранилищ не трогаем — ни localStorage, ни sessionStorage.
  */
 
+import { validateReport } from '../lib/contact.ts';
 import { formatRuDate } from '../lib/date.ts';
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
-const MIN_NOTE_LENGTH = 12;
 
 type Panel = 'form' | 'sent' | 'dupe' | 'failed';
 
@@ -72,15 +70,15 @@ function init(): void {
     if (message !== null) invalidText.textContent = message;
   }
 
-  /** Проверка на клиенте — вежливость. Настоящая проверка на сервере. */
-  function localComplaint(): string | null {
-    if (!EMAIL_RE.test(email!.value.trim())) {
-      return 'Адрес почты выглядит неполным — без него мы не сможем ответить.';
-    }
-    if (note!.value.trim().length < MIN_NOTE_LENGTH) {
-      return 'Опишите расхождение хотя бы одной фразой: что и где не сходится.';
-    }
-    return null;
+  /**
+   * Проверка на клиенте — вежливость, настоящая всё равно на сервере.
+   * Правила и формулировки общие с воркером: расходиться им нельзя.
+   */
+  function localComplaint(): { message: string; field: 'email' | 'note' } | null {
+    const result = validateReport({ email: email!.value, note: note!.value });
+    if (result.ok) return null;
+    if (result.rejection.kind === 'honeypot') return null; // человек её не видит
+    return { message: result.rejection.message, field: result.rejection.kind };
   }
 
   function setSending(sending: boolean): void {
@@ -110,8 +108,8 @@ function init(): void {
 
     const complaint = localComplaint();
     if (complaint !== null) {
-      showInvalid(complaint);
-      (EMAIL_RE.test(email!.value.trim()) ? note! : email!).focus();
+      showInvalid(complaint.message);
+      (complaint.field === 'email' ? email! : note!).focus();
       return;
     }
     showInvalid(null);
