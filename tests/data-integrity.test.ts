@@ -16,6 +16,7 @@ import {
   validateStatusFile,
   validateTariffFile,
 } from '../src/lib/schema.ts';
+import { resolveTariffState } from '../src/lib/tariff.ts';
 import { bullionRecord, tariff } from './fixtures/records.ts';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -99,6 +100,62 @@ describe('фикстуры остаются заведомо ненастоящ�
 
   it('даты фикстур — 2000 год, а не текущий', () => {
     expect(tariff().effective_from.startsWith('2000-')).toBe(true);
+  });
+});
+
+describe('каталоги фикстур пригодны и заведомо ненастоящие', () => {
+  const DIRS = ['valid-state', 'expired-state'] as const;
+
+  it.each(DIRS)('%s проходит схему', (dir) => {
+    const base = resolve(import.meta.dirname, 'fixtures', dir);
+    const tariffResult = validateTariffFile(
+      JSON.parse(readFileSync(resolve(base, 'tariffs.json'), 'utf8')) as unknown,
+    );
+    if (!tariffResult.ok) throw new Error(`${dir}/tariffs.json:\n${formatIssues(tariffResult.issues)}`);
+
+    const bullionResult = validateBullionFile(
+      JSON.parse(readFileSync(resolve(base, 'bullion.json'), 'utf8')) as unknown,
+    );
+    if (!bullionResult.ok) throw new Error(`${dir}/bullion.json:\n${formatIssues(bullionResult.issues)}`);
+
+    const statusResult = validateStatusFile(
+      JSON.parse(readFileSync(resolve(base, 'status.json'), 'utf8')) as unknown,
+    );
+    if (!statusResult.ok) throw new Error(`${dir}/status.json:\n${formatIssues(statusResult.issues)}`);
+  });
+
+  it.each(DIRS)('%s: номера актов помечены TEST-, цены — единицы BYN', (dir) => {
+    const base = resolve(import.meta.dirname, 'fixtures', dir);
+    const result = validateTariffFile(
+      JSON.parse(readFileSync(resolve(base, 'tariffs.json'), 'utf8')) as unknown,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    for (const record of result.value) {
+      expect(record.act_number).toMatch(/^TEST-/);
+      for (const price of Object.values(record.prices_byn_per_gram)) {
+        expect(price, `${dir}: цена ${price} слишком похожа на настоящую`).toBeLessThan(10);
+      }
+    }
+  });
+
+  it('valid-state действительно даёт состояние valid, а expired-state — review_required', () => {
+    // Проверяется на «сейчас»: срок у valid-state доведён до 2099 года
+    // именно затем, чтобы фикстура не протухла молча.
+    const load = (dir: string) =>
+      validateTariffFile(
+        JSON.parse(
+          readFileSync(resolve(import.meta.dirname, 'fixtures', dir, 'tariffs.json'), 'utf8'),
+        ) as unknown,
+      );
+
+    const valid = load('valid-state');
+    const expired = load('expired-state');
+    expect(valid.ok && expired.ok).toBe(true);
+    if (!valid.ok || !expired.ok) return;
+
+    expect(resolveTariffState(valid.value, new Date()).status).toBe('valid');
+    expect(resolveTariffState(expired.value, new Date()).status).toBe('review_required');
   });
 });
 

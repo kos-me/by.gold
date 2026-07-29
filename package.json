@@ -17,6 +17,10 @@
     "test:watch": "vitest",
     "typecheck": "astro check",
     "validate:data": "vitest run tests/data-integrity.test.ts",
+    "dev:valid": "GOLD_DATA_DIR=tests/fixtures/valid-state astro dev",
+    "dev:expired": "GOLD_DATA_DIR=tests/fixtures/expired-state astro dev",
+    "build:valid": "GOLD_DATA_DIR=tests/fixtures/valid-state astro build --outDir dist-valid",
+    "build:expired": "GOLD_DATA_DIR=tests/fixtures/expired-state astro build --outDir dist-expired",
     "check": "npm run typecheck && npm run test && npm run build:only"
   },
   "dependencies": {

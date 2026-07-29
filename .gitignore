@@ -1,5 +1,8 @@
 # build output
 dist/
+dist-valid/
+dist-expired/
+shots/
 # generated types
 .astro/
 

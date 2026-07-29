@@ -72,6 +72,7 @@ const absent = absenceNote(state);
         const isHeadline = fineness === headline?.fineness;
         return (
           <div
+            data-tariff-row={fineness}
             class:list={[
               'tariff-row',
               price === undefined && 'tariff-row--muted',

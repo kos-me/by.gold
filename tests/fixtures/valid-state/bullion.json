@@ -1,0 +1,26 @@
+[
+  {
+    "mass_grams": 1,
+    "fineness": "999.9",
+    "buyback_byn": 7.0,
+    "quoted_on": "2001-01-02",
+    "source_url": "https://www.nbrb.by/",
+    "fetched_at": "2001-01-02T06:00:00Z"
+  },
+  {
+    "mass_grams": 5,
+    "fineness": "999.9",
+    "buyback_byn": 8.0,
+    "quoted_on": "2001-01-02",
+    "source_url": "https://www.nbrb.by/",
+    "fetched_at": "2001-01-02T06:00:00Z"
+  },
+  {
+    "mass_grams": 10,
+    "fineness": "999.9",
+    "buyback_byn": 9.0,
+    "quoted_on": "2001-01-02",
+    "source_url": "https://www.nbrb.by/",
+    "fetched_at": "2001-01-02T06:00:00Z"
+  }
+]

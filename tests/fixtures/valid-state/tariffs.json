@@ -1,0 +1,89 @@
+[
+  {
+    "act_number": "TEST-1",
+    "act_date": "1999-01-05",
+    "effective_from": "1999-01-10",
+    "stated_expiry": "1999-06-30",
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "1999-01-10T09:00:00Z",
+    "transcribed_by": "фикстура",
+    "prices_byn_per_gram": {
+      "375": 1.0,
+      "500": 1.5,
+      "585": 3.0,
+      "750": 4.0,
+      "958": 5.0,
+      "999": 6.0
+    },
+    "notes": "Тестовая запись. Цифры выдуманные и заведомо ненастоящие."
+  },
+  {
+    "act_number": "TEST-2",
+    "act_date": "1999-06-25",
+    "effective_from": "1999-07-01",
+    "stated_expiry": "1999-12-31",
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "1999-07-01T09:00:00Z",
+    "transcribed_by": "фикстура",
+    "prices_byn_per_gram": {
+      "375": 1.1,
+      "500": 1.6,
+      "585": 3.4,
+      "750": 4.3,
+      "958": 5.4,
+      "999": 6.4
+    }
+  },
+  {
+    "act_number": "TEST-3",
+    "act_date": "1999-12-20",
+    "effective_from": "2000-01-01",
+    "stated_expiry": "2000-06-30",
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "2000-01-01T09:00:00Z",
+    "transcribed_by": "фикстура",
+    "prices_byn_per_gram": {
+      "375": 1.05,
+      "500": 1.55,
+      "585": 3.2,
+      "750": 4.1,
+      "958": 5.1,
+      "999": 6.1
+    }
+  },
+  {
+    "act_number": "TEST-4",
+    "act_date": "2000-06-26",
+    "effective_from": "2000-07-01",
+    "stated_expiry": "2000-12-31",
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "2000-07-01T09:00:00Z",
+    "transcribed_by": "фикстура",
+    "prices_byn_per_gram": {
+      "375": 1.25,
+      "500": 1.8,
+      "585": 3.8,
+      "750": 4.8,
+      "958": 5.9,
+      "999": 6.9
+    }
+  },
+  {
+    "act_number": "TEST-5",
+    "act_date": "2000-12-27",
+    "effective_from": "2001-01-01",
+    "stated_expiry": "2099-12-31",
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "2001-01-01T09:00:00Z",
+    "transcribed_by": "фикстура",
+    "prices_byn_per_gram": {
+      "375": 1.35,
+      "500": 1.95,
+      "585": 4.1,
+      "750": 5.2,
+      "958": 6.4,
+      "999": 7.4
+    },
+    "notes": "Действующая запись фикстуры. Срок до 2099 года — чтобы состояние оставалось valid и через двадцать лет, а дата при этом не могла сойти за настоящую."
+  }
+]

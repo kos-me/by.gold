@@ -1,6 +1,6 @@
 ---
 import { NAV, SITE_NAME, SITE_TAGLINE, MINFIN_URL } from '../lib/site.ts';
-import { status } from '../lib/data.ts';
+import { DATA_DIR, status, USING_OVERRIDDEN_DATA } from '../lib/data.ts';
 import { minskDateTime } from '../lib/date.ts';
 import { formatRuDateShort } from '../lib/date.ts';
 import '../styles/global.css';
@@ -57,6 +57,20 @@ const checked =
   </head>
 
   <body>
+    {
+      /*
+       * Сборка на подставленных данных обязана быть видна с первого взгляда.
+       * Такой сборке нельзя дать доехать до продакшена молча: цифры в
+       * фикстурах выдуманные, и ровно этого сайт существует не допускать.
+       */
+      USING_OVERRIDDEN_DATA && (
+        <div class="fixture-banner" role="alert">
+          <strong>Сборка на тестовых данных.</strong> Все цифры на странице выдуманы и
+          ничего не значат. Каталог: <code>{DATA_DIR}</code>
+        </div>
+      )
+    }
+
     <header class="masthead">
       <div class="masthead__inner">
         <a class="wordmark" href="/">gold<span class="wordmark__tld">.by</span></a>
