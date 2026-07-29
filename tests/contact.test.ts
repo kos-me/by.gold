@@ -109,12 +109,12 @@ describe('validateReport', () => {
 
 describe('extractActNumber', () => {
   it('находит номер в разных написаниях', () => {
-    expect(extractActNumber('Постановление № 41 неверное')).toBe('41');
-    expect(extractActNumber('в акте No 41 другая цифра')).toBe('41');
-    expect(extractActNumber('постановление 41 от июля')).toBe('41');
-    expect(extractActNumber('пост. 41 расходится')).toBe('41');
-    expect(extractActNumber('№41')).toBe('41');
-    expect(extractActNumber('№ 41-1')).toBe('41-1');
+    expect(extractActNumber('Постановление № 9999 неверное')).toBe('9999');
+    expect(extractActNumber('в акте No 9999 другая цифра')).toBe('9999');
+    expect(extractActNumber('постановление 9999 от июля')).toBe('9999');
+    expect(extractActNumber('пост. 9999 расходится')).toBe('9999');
+    expect(extractActNumber('№9999')).toBe('9999');
+    expect(extractActNumber('№ 9999-1')).toBe('9999-1');
   });
 
   it('не выдумывает номер, если его нет', () => {
@@ -233,7 +233,7 @@ describe('POST /api/contact', () => {
     const reports = new FakeKV();
     const { fetchImpl } = recorder();
     const env = baseEnv({ REPORTS: reports });
-    const note = 'Постановление № 41: цифра на главной не совпадает с актом';
+    const note = 'Постановление № 9999: цифра на главной не совпадает с актом';
 
     const first = await handleContact(post({ email: 'a@mail.by', note }), env, deps(fetchImpl));
     expect((await first.json() as { status: string }).status).toBe('accepted');
@@ -242,7 +242,7 @@ describe('POST /api/contact', () => {
     expect(second.status).toBe(200);
     expect(await second.json()).toEqual({
       status: 'duplicate',
-      act: '41',
+      act: '9999',
       since: '2000-01-10',
       count: 2,
     });
@@ -252,7 +252,7 @@ describe('POST /api/contact', () => {
     const reports = new FakeKV();
     const { fetchImpl, calls } = recorder();
     const env = baseEnv({ REPORTS: reports });
-    const note = 'Постановление № 41: цифра не та';
+    const note = 'Постановление № 9999: цифра не та';
 
     await handleContact(post({ email: 'a@mail.by', note }), env, deps(fetchImpl));
     const before = calls.filter((call) => call.url.includes('resend')).length;
@@ -270,7 +270,7 @@ describe('POST /api/contact', () => {
 
     await handleContact(
       post(
-        { email: 'chelovek@mail.by', note: 'Постановление № 41: цифра не та' },
+        { email: 'chelovek@mail.by', note: 'Постановление № 9999: цифра не та' },
         { 'CF-Connecting-IP': '192.0.2.77' },
       ),
       env,
@@ -282,7 +282,7 @@ describe('POST /api/contact', () => {
     expect(everything).not.toContain('цифра не та');
     expect(everything).not.toContain('192.0.2.77');
     // Только счётчик по акту и счётчик частоты.
-    expect(Object.keys(reports.snapshot())).toEqual(['act:41']);
+    expect(Object.keys(reports.snapshot())).toEqual(['act:9999']);
     expect(Object.keys(rateLimit.snapshot())[0]).toMatch(/^rl:[0-9a-f]{32}$/);
   });
 

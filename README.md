@@ -1,43 +1,82 @@
-# Astro Starter Kit: Minimal
+# gold.by
+
+Страница, которая говорит, сколько официально стоит старое золото в Беларуси
+и что должно происходить у стойки скупки.
+
+Цену скупки устанавливает Министерство финансов; во всех лицензированных
+скупках она одинакова. Поэтому это не сайт сравнения цен, а сайт «вот
+официальная цифра и вот чем она подтверждена».
+
+## Главное правило
+
+**Калькулятор молчит, а не врёт.**
+
+Цена живёт только в `data/tariffs.json`, вместе с номером постановления,
+датой и ссылкой на источник. Записи без любого из этих трёх полей на сайт не
+попадают. Когда срок действия акта истёк, а преемник ещё не перенесён, цифра
+скрывается, калькулятор выключается, последняя известная цифра показывается
+как архив. Это обычное состояние сайта, а не поломка, и собрано оно первым.
+
+Ни одна цифра не появляется на сайте автоматически. Cron-воркер умеет только
+открыть PR; чтобы он позеленел, человек должен открыть акт и вписать даты,
+которых на странице источника нет.
+
+## Запуск
 
 ```sh
-npm create astro@latest -- --template minimal
+npm ci
+npm run dev            # http://localhost:4321 — на настоящих данных
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+`data/tariffs.json` сейчас пустой, поэтому по умолчанию открывается состояние
+«цифры пока нет». Чтобы посмотреть остальные:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```sh
+npm run dev:valid      # рабочее состояние, на фикстуре из tests/
+npm run dev:expired    # срок истёк, преемника нет
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Сборки на фикстурах помечены жёлто-чёрной плашкой сверху. Спутать их
+с настоящим сайтом невозможно, и это сделано намеренно.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Проверки
 
-Any static assets, like images, can be placed in the `public/` directory.
+```sh
+npm run check          # типы + тесты + сборка
+npm test               # 216 тестов
+npm run typecheck
+```
 
-## 🧞 Commands
+Проверка глазами и на переполнение по ширине (нужен установленный Chrome):
 
-All commands are run from the root of the project, from a terminal:
+```sh
+npm run build && npx serve dist -l 4399
+node scripts/shoot.mjs http://localhost:4399 shots / /kak-proverit-otsenku /o-proekte
+node scripts/smoke.mjs http://localhost:4401/ http://localhost:4399/ http://localhost:4399/o-proekte
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Где что
 
-## 👀 Want to learn more?
+```
+data/            единственный источник цифр. Пустой массив — рабочее состояние
+src/lib/         schema, tariff (состояние), calc (арифметика), copy (тексты)
+src/pages/       три страницы, sitemap, robots
+src/components/  блоки главной и форма
+worker/          /api/contact и проверка источника по расписанию
+tests/           216 тестов; фикстуры здесь и только здесь
+handoff/         исходники дизайна
+scripts/         шрифты, съёмка страниц, смоук-тест в браузере
+```
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Подробности решений — `IMPLEMENTATION-LOG.md`.
+Развёртывание и секреты — `DEPLOY.md`.
+
+## Чего здесь нет и не должно быть
+
+- Цен, номеров актов и дат где-либо, кроме `data/` и фикстур в `tests/`.
+- Прогнозов, «лучшей цены», «выгодно сдать».
+- Утверждений, что кто-то платит за скупку больше другого.
+- Намёка на то, что через сайт можно что-то купить или продать.
+- Скрапинга скупок и ювелирных сетей: источники только государственные.
+- `localStorage` и `sessionStorage`.
+- Счётчиков, кроме GA4.

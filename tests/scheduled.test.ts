@@ -347,7 +347,7 @@ describe('черновик записи', () => {
 
 describe('base64 для GitHub', () => {
   it('кириллица не ломается', () => {
-    const text = 'Постановление № 41 — цена 202,18 BYN';
+    const text = 'Постановление № TEST-1 — цена 1,00 BYN';
     expect(fromBase64(toBase64(text))).toBe(text);
   });
 
