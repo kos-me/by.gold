@@ -7,6 +7,50 @@ substituted to make something "work".**
 
 ---
 
+## Working safely in a shared Cloudflare account
+
+The account this deploys into (`onestar`, id `4afc3083…cc33`) holds other
+domains. Nothing here may put them at risk. A read-only audit on 30 July 2026,
+before anything was created:
+
+| checked | result |
+|---|---|
+| a Worker already named `gold-by` | **none** — `deployments list` returns "This Worker does not exist" |
+| existing KV namespaces | **none** — `kv namespace list` returns `[]` |
+| routes or custom domains in `wrangler.toml` | **none configured** |
+| `wrangler deploy --dry-run` | valid; 22 assets, 58.6 KiB; bindings `ASSETS` and `ENVIRONMENT` only |
+
+So the first deploy creates a new Worker and cannot overwrite one, and the KV
+namespaces are additive.
+
+### The rules that keep it that way
+
+- **Never add a wildcard route.** `wrangler.toml` deliberately defines no
+  `routes`, so a deploy publishes only to a `workers.dev` URL and touches no
+  zone. When the time comes, attach `gold.by` as a **Custom Domain** on the
+  Worker — that writes a record in the `gold.by` zone and nowhere else. A route
+  pattern such as `*/*` or `*.by/*` would capture traffic for other domains in
+  the account. Never write one.
+- **Always deploy with `--env=""`.** `wrangler.toml` also defines
+  `[env.staging]`, and without the flag wrangler warns that no target was
+  chosen. Be explicit.
+- **Don't reuse your interactive login for CI.** The OAuth token wrangler
+  created on your machine carries write access to Workers, KV, D1, Pages,
+  Queues, email sending, containers and more, across the whole account. A CI
+  token must be a *new* token with only **Workers Scripts: Edit** (plus Account
+  Settings: Read), and nothing else.
+- **Note what even that cannot be narrowed to.** A Workers Scripts token is
+  account-scoped: Cloudflare has no per-Worker API token, so if it leaked it
+  could edit any Worker in the account. A **deploy hook** (Option B below) can
+  only trigger a build of *one* Worker, which is a materially smaller blast
+  radius. In a shared account that is a real argument for Option B over storing
+  an API token in GitHub.
+- **Deleting is the dangerous verb.** Nothing in this document asks you to run
+  `wrangler delete`, `kv namespace delete`, or anything with `--force`. If a
+  command ever suggests removing something you did not just create, stop.
+
+---
+
 ## Accounts needed
 
 | service | what for | plan |
