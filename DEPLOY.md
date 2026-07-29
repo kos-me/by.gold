@@ -284,6 +284,29 @@ behalf until you have deployed by hand once and seen it work.
 
 ---
 
+## The workers.dev subdomain: required to exist, not used
+
+Learned on the first real deploy, 30 July 2026. The Worker and its assets
+upload fine, but attaching the cron triggers fails with **403, code 10063**:
+"You need a workers.dev subdomain in order to proceed."
+
+Cloudflare requires the *account* to have a workers.dev subdomain registered
+before cron triggers can be attached to any Worker in it — even a Worker with
+`workers_dev = false` that will never be served there. The two settings are
+independent: the subdomain is an account-level name that must exist; whether a
+given Worker publishes to it is per-Worker, and ours does not.
+
+So the sequence is:
+
+1. The account owner registers the subdomain once, in the dashboard
+   (Workers & Pages — it prompts on first visit). **The owner picks the name**,
+   not this project: it names every Worker in the account.
+2. `wrangler deploy --env=""` again. The triggers then attach.
+3. Verify the site is still not being served from
+   `gold-by.<subdomain>.workers.dev` — `workers_dev = false` is what keeps it
+   that way, and the dashboard alone is not enough: disabling it there without
+   the config line gets re-enabled on the next deploy.
+
 ## Post-deploy checklist
 
 - [ ] `/` loads and its state matches `data/tariffs.json`
