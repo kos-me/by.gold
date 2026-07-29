@@ -40,7 +40,7 @@ Everything you answered has been acted on. Nothing is waiting on me.
 
 | # | question | state |
 |---|---|---|
-| **B1** | Transcribe the current decree | ✅ done — **one field needs your eyes**, see below |
+| **B1** | Transcribe the current decree | ✅ done — every field now traced to a Ministry source |
 | **B2** | Check the counter-procedure text | ✅ done against the 2011 act; 3 amendments unread (ЭТАЛОН) |
 | **B3** | What to do about bullion | ⏳ **your call** — NBRB unreachable, I recommend option (b) |
 | **B4** | Accounts and secrets | ✅ answered; templates committed. **Nothing needed until you deploy** |
@@ -51,15 +51,44 @@ Everything you answered has been acted on. Nothing is waiting on me.
 | **D8** | Input cap | ✅ lowered to 10 000 g |
 | **D1–D16** (rest) | decisions made on your behalf | unanswered → standing as built, which is safe |
 
-### The two things still open
+### What is still open
 
-1. **`effective_from` in `data/tariffs.json`.** The act names no date, only
-   "after official publication", so 2026-07-18 comes from the Ministry's news
-   headline rather than the act. `transcribed_by` currently reads "NOT yet
-   verified by a human". Confirm the date and put your name there.
+1. **The act expires on 31 July 2026 — that is in two days.** Not a question,
+   a calendar fact. From 1 August the site correctly withholds the figure until
+   a successor act is transcribed. See "The 31 July handover" below.
 2. **B3, bullion.** Three options below; I recommend (b).
+3. **`transcribed_by`.** Every field is now traced to a Ministry source
+   (see B1), but the field still reads "NOT yet verified by a human", because
+   that is true. Read the act and put your name there when you are ready to
+   vouch for it. Nothing on the site depends on this.
 
-Neither blocks anything else. The site builds, deploys and works without them.
+None of these block anything else. The site builds, deploys and works as is.
+
+### The 31 July handover
+
+Point 3 of the act ends its life on 31 July 2026. What happens then, in order:
+
+- **1 August, with no successor transcribed:** the state machine returns
+  `expired_no_successor`, the figure is withheld, the calculator switches off
+  and the expired figure is shown as an archive. That is the designed
+  behaviour, not a fault.
+- **A build served past 31 July without a rebuild** is covered too: the
+  browser re-checks the expiry on every visit and takes the figure away
+  client-side (`src/scripts/staleness.ts`). It can only remove a figure,
+  never restore one.
+- **Getting the successor in** means adding a record to `data/tariffs.json`.
+  The cron worker would open a PR for it, but it only runs once deployed, and
+  it deliberately cannot fill in the dates itself.
+
+The predecessor act was № 27 of 18 June 2026, this one is № 31 of 8 July —
+so the Ministry is reissuing these roughly monthly and the next one should
+appear around the end of July.
+
+**One caveat on my side:** as of 29 July I cannot reach `minfin.gov.by` from
+this machine — every request to any `.by` host is reset during the TLS
+handshake, the same symptom as when the VPN was up. So I could not check
+whether a successor has already been published. Everything above about
+act № 31 was read directly from the source while it was reachable.
 
 ---
 
@@ -115,11 +144,23 @@ the one vouching for the figure.
 > - **stated_expiry = 2026-07-31**: point 3 of the act, verbatim —
 >   "Настоящее постановление вступает в силу после его официального
 >   опубликования и действует по 31 июля 2026 г."
-> - **effective_from = 2026-07-18**: the act itself names **no date** — only
->   "after its official publication". So this one comes from the Ministry's own
->   news headline, "Цены … с 18 июля 2026 г.". It is the single weakest field in
->   the record, and `transcribed_by` currently reads "NOT yet verified by a
->   human" for that reason. Please confirm it and put your name there.
+> - **effective_from = 2026-07-18**: the act names no date of its own — point 3
+>   defers commencement to "официальное опубликование". The Ministry supplies
+>   the date twice: on the prices page directly above Table 1, "Вступает в силу
+>   с 18 июля 2026 года", and in the news headline "Цены … с 18 июля 2026 г.".
+> - **act_number = 31, act_date = 2026-07-08**: from the appendix heading
+>   "08.07.2026 № 31" on the prices page. Worth knowing: the PDF is the
+>   unsigned publication form and leaves both the number and the date blank, so
+>   the heading is the only source for these two.
+>
+> **Why the effective date is not the act date.** They are different events.
+> 8 July is when the Minister signed it. Official publication — inclusion in
+> the National Legal Register — happens afterwards, and that is what point 3
+> hangs commencement on. The act corroborates the gap itself: point 2 repeals
+> resolution № 27 of 18 June 2026, and a repeal contained in an act cannot bite
+> before that act is in force. So № 27 governed 8–17 July, № 31 from the 18th,
+> and no two acts are in force at once. Reading `effective_from` as 8 July
+> would put both in force simultaneously and contradict the repeal.
 >
 > Full provenance is recorded field-by-field in the record's own `notes`.
 
