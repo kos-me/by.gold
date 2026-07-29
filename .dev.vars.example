@@ -1,0 +1,31 @@
+# Local worker development only. Copy to `.dev.vars` and fill in.
+#
+#   cp .dev.vars.example .dev.vars
+#
+# `.dev.vars` is gitignored. Wrangler loads it automatically for
+# `wrangler dev`. It is NOT how production secrets are set — see DEPLOY.md:
+# production uses `wrangler secret put`, and the values live in Cloudflare,
+# never on disk and never in a file.
+#
+# Leave a line commented out to exercise the "not configured" path, which is
+# a real state the code handles.
+
+# Not needed locally: outside production, Turnstile is verified only when a
+# key is present. Uncomment to test the verification path for real.
+# TURNSTILE_SECRET_KEY=
+
+# Without this the form answers 502 and shows the "didn't send" state —
+# which is the correct behaviour, and worth seeing at least once.
+# RESEND_API_KEY=
+# REPORT_TO_EMAIL=you@example.com
+# REPORT_FROM_EMAIL=robot@yourdomain
+
+# Any non-empty string works locally; production wants `openssl rand -hex 32`.
+RATE_LIMIT_SALT=local-development-salt-not-for-production
+
+# Only needed to exercise the scheduled check against a real repository.
+# GITHUB_TOKEN=
+# GITHUB_REPO=kos-me/by.gold
+
+# `production` makes Turnstile mandatory. Leave as-is locally.
+ENVIRONMENT=development

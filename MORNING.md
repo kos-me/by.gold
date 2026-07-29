@@ -220,8 +220,11 @@ Refresh the fonts: `node scripts/fetch-fonts.mjs`.
 ### Decent, but no human has looked at it
 
 - **The Minfin parser.** Structure from the real page, 51 tests, six fixtures.
-  But I built those fixtures myself: if I misread the markup, the tests confirm
-  my own misreading. Read the worker's first real PR with particular care.
+  I later ran it over a real copy of the live page: act number, act date and
+  all nine finenesses came out correctly, with no warnings, and the shared
+  583/585 cell resolved properly. The "my fixtures might encode my own
+  misreading" worry is resolved. Still read the worker's first real PR with
+  care — the GitHub side has never run against real GitHub.
 - **The GitHub flow.** Logic covered against a fake API. Never exercised
   against real GitHub — there is no token.
 - **Layout on real devices.** Checked in headless Chrome at 360/768/1200. No

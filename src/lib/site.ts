@@ -17,8 +17,11 @@ export const MINFIN_URL = 'https://minfin.gov.by/ru/activities_jewels/fund/pokup
 /** National Bank — bullion prices. Different regime, different source. */
 export const NBRB_URL = 'https://www.nbrb.by/';
 
-/** Address for reports of an error in a figure. */
-export const CONTACT_EMAIL = 'pravka@gold.by';
+/*
+ * No contact email is published on the site, deliberately: the form is the
+ * only channel. Where reports actually land is the worker's REPORT_TO_EMAIL
+ * secret, which never reaches the browser.
+ */
 
 export interface NavItem {
   readonly href: string;

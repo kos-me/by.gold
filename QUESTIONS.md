@@ -27,9 +27,10 @@ It prints what you've answered and what you haven't. It changes nothing.
 ## About those commits
 
 You didn't give me a repo — the folder wasn't one. I ran `git init` myself
-because the brief asked for a commit per step and a clean tree. **There is no
-remote and nothing was pushed anywhere**; all 12 commits sit on your disk.
-If you don't want it: `rm -rf .git`, nothing else changes.
+because the brief asked for a commit per step and a clean tree.
+
+**Since then you gave me `git@github.com:kos-me/by.gold.git` and it is pushed
+there**, with the history rewritten into English commit messages.
 
 ---
 
@@ -86,7 +87,26 @@ I can transcribe it if you want — but I'd need an explicit yes, and I'd still
 attach the source link and leave `transcribed_by` as you. A person should be
 the one vouching for the figure.
 
-**Answer:** _(unanswered)_
+**Answer:** Why don't you download recent act and fill data yourself?
+
+> **Status after your answer: partly done, one thing still needed from you.**
+>
+> The network is now the problem — see the note at the end of this file. But I
+> did get the prices: I ran the real parser over the copy of the Minfin page I
+> fetched before the VPN went up. It read act **№ 31 of 08.07.2026**, all nine
+> finenesses, no warnings, and correctly detected that 583 and 585 share a price.
+>
+> What I still cannot get is `effective_from` and `stated_expiry`. I searched
+> the whole page: the **only** date anywhere on it is 08.07.2026, the act date.
+> Both other dates live in the text of the act, on pravo.by or etalonline.by,
+> which I currently cannot reach.
+>
+> Note that **your own build notes state act 31 runs 18 July → 31 July 2026**,
+> and that is consistent with the live page. I have deliberately **not** used
+> them: the build notes are a secondary source, and the site's entire premise
+> is that dates come from the act. Confirm those two dates are what the act
+> says and I will write the record immediately — or drop the VPN and I will
+> read the act myself.
 
 ---
 
@@ -110,7 +130,11 @@ source.** The warning sits at the top of `src/lib/procedure.ts`.
 Needed: walk the five steps line by line against the instruction. Give me a
 link to the act or its text and I'll do the reconciliation myself.
 
-**Answer:** _(unanswered)_
+**Answer:** Research act yourself online. Let me know if you fail
+
+> **Status: blocked on the network, not on you.** Every Belarusian host is
+> unreachable from here right now (TLS handshake reset). I will do this the
+> moment the connection works.
 
 ---
 
@@ -140,7 +164,12 @@ I'd take (b) — verifiable source, and it's the figure a person actually wants:
 what they'll be given if they carry a bar in. But the call is yours, because
 it's a question about what the site promises.
 
-**Answer:** _(unanswered)_
+**Answer:** Try again, I connected VPN
+
+> **Status: still blocked, and the VPN made it worse.** `www.nbrb.by` fails as
+> before, and now `minfin.gov.by` fails too — it worked before the VPN. TCP
+> connects on port 443 and the TLS ClientHello is reset, which is a middlebox
+> in the path. Please try without the VPN, or from a different endpoint.
 
 ---
 
@@ -170,7 +199,21 @@ Plus public build-time ones: `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_GA4_ID`,
 I won't deploy this myself and shouldn't. Tell me when the accounts exist and
 I'll walk the `DEPLOY.md` checklist.
 
-**Answer:** _(unanswered)_
+**Answer:** Does it make sense to create .evn file and put keys there? Or how do you want me to proceed?
+
+> **Status: answered, and templates added.**
+>
+> Short answer: **no `.env` for real secrets.** Three different places:
+>
+> - **Production secrets** → `wrangler secret put NAME`. They live in
+>   Cloudflare, never on disk, never in a file. This is the only place
+>   `RESEND_API_KEY`, `TURNSTILE_SECRET_KEY` and `GITHUB_TOKEN` should exist.
+> - **Local worker development** → `.dev.vars` (Cloudflare's own convention,
+>   already gitignored). I added **`.dev.vars.example`** to copy from.
+> - **Build-time public values** (`PUBLIC_*`) → `.env`, also gitignored. These
+>   end up in the HTML and are not secret. I added **`.env.example`**.
+>
+> Both example files are committed and contain no real values.
 
 ---
 
@@ -185,7 +228,11 @@ touch them and can't verify them.
 Either confirm the right to use them or reshoot. HANDOFF already has notes on
 how to shoot them if it comes to that.
 
-**Answer:** _(unanswered)_
+**Answer:** ignore, i don't care
+
+> **Status: done — ignored as instructed.** The photographs stay as they are.
+> Noting once, without pressing: the risk is a rights holder's claim, not
+> anything technical, and it does not go away by our not looking at it.
 
 ---
 
@@ -199,7 +246,13 @@ failed. No mailbox, no last line.
 
 Different address? Tell me which and I'll change it in `src/lib/site.ts`.
 
-**Answer:** _(unanswered)_
+**Answer:** no direct emails should be mentioned on website, only form
+
+> **Status: done.** `pravka@gold.by` is gone from the site entirely, along
+> with the `CONTACT_EMAIL` constant. The "didn't send" state now offers only
+> "Повторить" and says the form is the only channel. Where reports actually
+> land is the worker's `REPORT_TO_EMAIL` secret, which never reaches the
+> browser.
 
 ---
 
@@ -214,7 +267,11 @@ link in a section called "Sources" is the same sin as an unverified figure.
 Give me the address and I'll add it. Related: `nbrb.by` currently points at the
 root — I didn't confirm a deep link to the prices page either.
 
-**Answer:** _(unanswered)_
+**Answer:** confirm links yourself
+
+> **Status: blocked on the same network problem.** I will confirm both links
+> (Пробирная инспекция, and a deep link for NBRB) as soon as I can reach them.
+> Until then the entry stays deliberately link-less.
 
 ---
 
@@ -226,7 +283,11 @@ root — I didn't confirm a deep link to the prices page either.
 `SITE_URL` variable). Questions: is the domain yours? Is it on Cloudflare
 (nameservers pointed at CF)? If not, what address goes in canonical and sitemap?
 
-**Answer:** _(unanswered)_
+**Answer:** it's my domain, ns setup to cloudflare
+
+> **Status: noted, nothing to change.** `SITE_URL` already defaults to
+> `https://gold.by` and the canonical, sitemap and Open Graph tags follow it.
+> Nothing further is needed until deployment.
 
 ---
 
@@ -244,6 +305,8 @@ their own buyback programmes or when trading an old item for a new one."
 else for ordinary cash buyback. That can't be true — the tariff is identical
 everywhere — and your HANDOFF itself flags the sentence as unsupported. My brief
 listed it under things not to do.
+
+=> it can be true if you buy something from that chain at the same time. Verify, confirm or push back.
 
 **Now:** above-tariff only happens as a trade-in credit when buying a new item
 from a producer; that's a different transaction. The mechanism is described,
@@ -378,7 +441,11 @@ The point is catching a typo, not restricting anyone.
 
 **If you say nothing:** 100,000 stands.
 
-**Answer:** _(unanswered)_
+**Answer:** 10,000. I don't think anyone is selling more than 10kg of gold
+
+> **Status: done.** `MAX_GRAMS` is now 10 000. Above it the calculator says
+> "проверьте массу". The tests derive their bounds from the constant, so they
+> followed automatically.
 
 ---
 
@@ -519,3 +586,27 @@ Listing them so none surfaces later as a surprise. Each is a one-line change.
 Answer what you care about and leave the rest. I'll read the document, do what
 has answers, and write back into this same file what got done. Anything
 unanswered stays visible here rather than getting lost.
+
+
+---
+
+## Network note (added after your answers)
+
+Right now **every Belarusian host is unreachable from this machine**:
+
+```
+minfin.gov.by   TCP connects on :443, TLS ClientHello → connection reset
+www.nbrb.by     same
+pravo.by        DNS does not even resolve
+```
+
+General internet is fine (npm, GitHub answer in under a second), so this is
+specific to that route. **`minfin.gov.by` worked earlier today, before the
+VPN** — I fetched the page at 09:25 and still have that copy. So the VPN did
+not fix NBRB and did break Minfin.
+
+Blocked on this: **B1** (the act text for the two dates), **B2** (the
+acceptance instruction), **B3** (NBRB), **B7** (link confirmation).
+
+Easiest fix is probably to drop the VPN and let me retry — Minfin was reachable
+without it. Failing that, an endpoint that does not break TLS to `.by` hosts.

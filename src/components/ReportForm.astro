@@ -9,7 +9,7 @@
  * Without JavaScript the form posts normally to the same address; the worker
  * accepts both form-encoded and JSON bodies — see worker/.
  */
-import { CONTACT_EMAIL, MINFIN_URL } from '../lib/site.ts';
+import { MINFIN_URL } from '../lib/site.ts';
 
 interface Props {
   /** Turnstile site key. Empty means no widget is rendered (local development). */
@@ -167,16 +167,15 @@ const { turnstileSiteKey } = Astro.props;
         Письмо не ушло — форма не отвечает
       </div>
       <p style="font-size:14px;line-height:1.6;color:var(--warn-ink)">
-        Текст сохранён, он никуда не пропал. Нажмите «Повторить» или напишите
-        на почту напрямую — так дойдёт наверняка.
+        Текст сохранён, он никуда не пропал. Нажмите «Повторить» — обычно со
+        второй попытки уходит. Если не уходит и со второй, форма сейчас
+        недоступна: попробуйте позже, текст останется в поле.
       </p>
     </div>
     <div
       style="padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between"
     >
-      <a href={`mailto:${CONTACT_EMAIL}`} style="font-size:13.5px;font-weight:600">
-        {CONTACT_EMAIL}
-      </a>
+      <span class="note">Форма — единственный способ связи с нами.</span>
       <button type="button" data-report-retry class="chip" style="font-weight:600">
         Повторить
       </button>

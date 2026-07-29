@@ -14,8 +14,11 @@
 
 import type { FinenessKey } from './schema.ts';
 
-/** Upper bound on sane input. Above this it is almost certainly a typo. */
-export const MAX_GRAMS = 100_000;
+/**
+ * Upper bound on sane input. Above this it is almost certainly a typo: nobody
+ * is walking into a buyback counter with more than ten kilograms of gold.
+ */
+export const MAX_GRAMS = 10_000;
 
 /** Weighing precision for gold at the counter, in grams. From the acceptance rules. */
 export const GOLD_WEIGHING_PRECISION_G = 0.01;

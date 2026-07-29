@@ -576,3 +576,29 @@ Left in Russian, deliberately:
 `QUESTIONS.md` was added at the same time: the blocking questions and the
 decisions taken without the client, in a form that can be annotated in place.
 `scripts/answers.mjs` reports which items have been answered.
+
+---
+
+## Parser verified against the real page
+
+A weakness flagged in the morning report was that the Minfin fixtures are my
+own reconstruction: if I had misread the markup, the tests would confirm my own
+misreading. That is now resolved.
+
+I ran the real parser over the copy of the live page fetched at 09:25 on
+29 July 2026. It returned:
+
+- act number and act date extracted correctly;
+- **all nine finenesses**, matching the corrected `FINENESSES` list exactly;
+- **no warnings** — so nothing was missing and nothing unexpected appeared;
+- 583 and 585 resolved to the same price, confirming the shared-cell handling.
+
+The hand-built fixtures were faithful. This cannot be made into a repeatable
+test, because the real HTML must not be committed (it contains real prices).
+
+The same run also settled the other open question definitively: a search of the
+whole page for effective/expiry wording found **nothing**, and the only date
+anywhere in the document is the act date. That is the evidence behind the
+deliberately-red pull request (step 9): the parser genuinely cannot produce a
+complete record, so the gate is not a design preference but a fact about the
+source.
