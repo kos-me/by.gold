@@ -191,6 +191,24 @@ export async function handleContact(
   }
 
   // --- 3. Rate ---------------------------------------------------------------
+  /*
+   * In production the rate limiter is not optional. Without the KV binding the
+   * checks below simply do not run, and a silently unlimited form is the kind
+   * of half-working deployment this project refuses elsewhere. Refuse loudly
+   * instead: the visitor is told it did not send and offered the alternative,
+   * exactly as when Turnstile is unconfigured.
+   */
+  if (isProduction(env) && env.RATE_LIMIT === undefined) {
+    console.error('RATE_LIMIT KV binding missing in production — refusing the submission');
+    return json(
+      {
+        status: 'error',
+        message: 'Форма сейчас не работает. Напишите нам через пробирный надзор или попробуйте позже.',
+      },
+      503,
+    );
+  }
+
   if (env.RATE_LIMIT !== undefined && clientIp !== null) {
     const salt = requireSecret(env, 'RATE_LIMIT_SALT');
     const verdict = await consume(env.RATE_LIMIT, await hashClient(clientIp, salt));

@@ -337,7 +337,13 @@ describe('POST /api/contact', () => {
 
   it('in production a report without Turnstile does not pass', async () => {
     const { fetchImpl, calls } = recorder({ 'siteverify': () => okTurnstile() });
-    const env = baseEnv({ ENVIRONMENT: 'production', TURNSTILE_SECRET_KEY: 'секрет-теста' });
+    // A fully configured production env: the rate limiter is mandatory there,
+    // and its own refusal is asserted separately below.
+    const env = baseEnv({
+      ENVIRONMENT: 'production',
+      TURNSTILE_SECRET_KEY: 'секрет-теста',
+      RATE_LIMIT: new FakeKV(),
+    });
 
     const withoutToken = await handleContact(
       post({ email: 'a@mail.by', note: GOOD_NOTE }),
@@ -353,6 +359,36 @@ describe('POST /api/contact', () => {
       deps(fetchImpl),
     );
     expect(withToken.status).toBe(200);
+  });
+
+  it('in production without the rate-limit KV, the form refuses rather than accepting', async () => {
+    /*
+     * Missing KV used to mean the rate checks silently did not run — an
+     * unlimited form that looked fine. Visibly not working beats quietly
+     * accepting, the same rule Turnstile follows.
+     */
+    const { fetchImpl, calls } = recorder({ 'siteverify': () => okTurnstile() });
+    const env = baseEnv({ ENVIRONMENT: 'production', TURNSTILE_SECRET_KEY: 'секрет-теста' });
+
+    const response = await handleContact(
+      post({ email: 'a@mail.by', note: GOOD_NOTE, turnstile: 'токен' }),
+      env,
+      deps(fetchImpl),
+    );
+
+    expect(response.status).toBe(503);
+    expect((await response.json() as { status: string }).status).toBe('error');
+    expect(calls.some((call) => call.url.includes('resend'))).toBe(false);
+  });
+
+  it('outside production a missing rate-limit KV is fine — local development', async () => {
+    const { fetchImpl } = recorder();
+    const response = await handleContact(
+      post({ email: 'a@mail.by', note: GOOD_NOTE }),
+      baseEnv({}),
+      deps(fetchImpl),
+    );
+    expect(response.status).toBe(200);
   });
 
   it('in production a Turnstile refusal stops the send', async () => {

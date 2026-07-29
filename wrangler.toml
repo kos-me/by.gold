@@ -24,15 +24,32 @@ not_found_handling = "404-page"
 [vars]
 ENVIRONMENT = "production"
 
+# KV — commented out until the namespaces exist.
+#
+# These were previously left with `id = ""` so that `wrangler deploy` would fail
+# rather than deploy something half-configured. That turned out to be too blunt:
+# an invalid id fails *every* wrangler command that reads this file, including
+# `wrangler login` and `wrangler kv namespace create`, so it blocked the very
+# setup it was guarding. Commented out instead.
+#
+# The intent is preserved in the worker rather than here: in production the form
+# refuses a submission when the RATE_LIMIT binding is missing, with a 503 and a
+# message, instead of quietly accepting an unlimited number. See contact.ts.
+#
+# To enable, run:
+#   npx wrangler@4 kv namespace create REPORTS
+#   npx wrangler@4 kv namespace create RATE_LIMIT
+# then uncomment these blocks and paste in the ids it prints.
+
 # Per-decree report counters, the last-check stamp, the publish-block flag.
-[[kv_namespaces]]
-binding = "REPORTS"
-id = ""
+# [[kv_namespaces]]
+# binding = "REPORTS"
+# id = "paste the id here"
 
 # Rate-limit counters. Hashed addresses only, one-hour TTL.
-[[kv_namespaces]]
-binding = "RATE_LIMIT"
-id = ""
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "paste the id here"
 
 # Check schedule.
 #   Minfin — hourly: the mockup promises an hourly check.

@@ -67,8 +67,19 @@ wrangler kv namespace create REPORTS
 wrangler kv namespace create RATE_LIMIT
 ```
 
-Put the resulting ids into `wrangler.toml` (they are empty strings there now,
-so `wrangler deploy` fails — by design).
+The two `[[kv_namespaces]]` blocks in `wrangler.toml` are **commented out**.
+Uncomment them and paste in the ids these commands print.
+
+They used to carry `id = ""` so that `wrangler deploy` would fail rather than
+deploy something half-configured. That was too blunt: an invalid id fails every
+wrangler command that reads the file — including `wrangler login` and
+`wrangler kv namespace create`, so it blocked the very setup it was guarding.
+
+The guarantee moved into the worker instead, where it belongs: **in production
+the form returns 503 and tells the visitor it is not working if the `RATE_LIMIT`
+binding is missing.** It no longer quietly accepts an unlimited number of
+submissions. Two tests hold that, one for production and one confirming local
+development still works without KV.
 
 **What they hold.** No messages, no addresses, no IPs in the clear:
 

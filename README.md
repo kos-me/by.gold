@@ -46,7 +46,7 @@ be mistaken for the real site, and that is deliberate.
 
 ```sh
 npm run check          # types + tests + build
-npm test               # 234 tests
+npm test               # 236 tests
 npm run typecheck
 ```
 
@@ -74,7 +74,7 @@ src/lib/         schema, tariff (state), calc (arithmetic), copy (page text)
 src/pages/       three pages, sitemap, robots
 src/components/  homepage blocks and the report form
 worker/          /api/contact and the scheduled source check
-tests/           234 tests; fixtures live here and only here
+tests/           236 tests; fixtures live here and only here
 handoff/         design source material
 scripts/         fonts, page screenshots, browser smoke test
 ```
