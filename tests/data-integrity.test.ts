@@ -1,9 +1,9 @@
 /**
- * Проверки границы между настоящими данными и тестовыми.
+ * Guards on the boundary between real data and test data.
  *
- * Этот тест — не про логику, а про единственную ошибку, ради предотвращения
- * которой затеян проект: правдоподобная выдуманная цифра, случайно попавшая
- * в продакшен. Он следит за обеими сторонами границы.
+ * This file is not about logic but about the single failure the project
+ * exists to prevent: a plausible invented figure reaching production by
+ * accident. It watches both sides of the boundary.
  */
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -37,7 +37,7 @@ function walk(dir: string, extensions: readonly string[]): string[] {
   return found;
 }
 
-describe('data/ проходит собственную схему', () => {
+describe('data/ passes its own schema', () => {
   it('tariffs.json', () => {
     const result = validateTariffFile(readDataFile('tariffs.json'));
     if (!result.ok) throw new Error(`data/tariffs.json:\n${formatIssues(result.issues)}`);
@@ -57,16 +57,17 @@ describe('data/ проходит собственную схему', () => {
   });
 });
 
-describe('в data/ не должно быть тестовых записей', () => {
+describe('data/ must contain no test records', () => {
   const raw = readFileSync(resolve(DATA_DIR, 'tariffs.json'), 'utf8');
 
-  it('ни одного признака фикстуры в файле', () => {
-    for (const marker of ['TEST-', 'FIXTURE', 'example.com', 'example.by', 'заглушка', 'placeholder']) {
+  it('not a single fixture marker in the file', () => {
+    // Both spellings: the guard must hold whichever language a stub is written in.
+    for (const marker of ['TEST-', 'FIXTURE', 'example.com', 'example.by', 'заглушка', 'placeholder', 'stub', 'dummy']) {
       expect(raw.toLowerCase()).not.toContain(marker.toLowerCase());
     }
   });
 
-  it('никто не переносил цифры под именем «тест»', () => {
+  it("nobody transcribed figures under the name \'test\'", () => {
     const result = validateTariffFile(readDataFile('tariffs.json'));
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -76,37 +77,37 @@ describe('в data/ не должно быть тестовых записей', 
     }
   });
 
-  it('в каталоге data/ лежат только известные файлы', () => {
+  it('data/ holds only known files', () => {
     const allowed = new Set(['tariffs.json', 'bullion.json', 'status.json', 'README.md']);
     for (const entry of readdirSync(DATA_DIR)) {
-      expect(allowed.has(entry), `неожиданный файл в data/: ${entry}`).toBe(true);
+      expect(allowed.has(entry), `unexpected file in data/: ${entry}`).toBe(true);
     }
   });
 });
 
-describe('фикстуры остаются заведомо ненастоящими', () => {
-  it('номер акта помечен как тестовый', () => {
+describe('fixtures stay unmistakably fake', () => {
+  it('the act number is marked as a test', () => {
     expect(tariff().act_number).toMatch(/^TEST-/);
   });
 
-  it('цены на порядок ниже любой настоящей — спутать нельзя', () => {
-    // Реальная цена золота 585 пробы — сотни BYN за грамм. Всё, что здесь,
-    // должно быть единицами: правдоподобная фикстура опаснее сломанного теста.
+  it('prices are orders below any real one — they cannot be confused', () => {
+    // A real 585 gold price is hundreds of BYN per gram. Everything here must
+    // be single digits: a plausible fixture is worse than a broken test.
     for (const price of Object.values(tariff().prices_byn_per_gram)) {
       expect(price).toBeLessThan(10);
     }
     expect(bullionRecord().buyback_byn).toBeLessThan(10);
   });
 
-  it('даты фикстур — 2000 год, а не текущий', () => {
+  it('fixture dates are from 2000, not the present', () => {
     expect(tariff().effective_from.startsWith('2000-')).toBe(true);
   });
 });
 
-describe('каталоги фикстур пригодны и заведомо ненастоящие', () => {
+describe('fixture directories are usable and unmistakably fake', () => {
   const DIRS = ['valid-state', 'expired-state'] as const;
 
-  it.each(DIRS)('%s проходит схему', (dir) => {
+  it.each(DIRS)('%s passes the schema', (dir) => {
     const base = resolve(import.meta.dirname, 'fixtures', dir);
     const tariffResult = validateTariffFile(
       JSON.parse(readFileSync(resolve(base, 'tariffs.json'), 'utf8')) as unknown,
@@ -124,7 +125,7 @@ describe('каталоги фикстур пригодны и заведомо �
     if (!statusResult.ok) throw new Error(`${dir}/status.json:\n${formatIssues(statusResult.issues)}`);
   });
 
-  it.each(DIRS)('%s: номера актов помечены TEST-, цены — единицы BYN', (dir) => {
+  it.each(DIRS)('%s: act numbers carry TEST-, prices are single-digit BYN', (dir) => {
     const base = resolve(import.meta.dirname, 'fixtures', dir);
     const result = validateTariffFile(
       JSON.parse(readFileSync(resolve(base, 'tariffs.json'), 'utf8')) as unknown,
@@ -134,14 +135,14 @@ describe('каталоги фикстур пригодны и заведомо �
     for (const record of result.value) {
       expect(record.act_number).toMatch(/^TEST-/);
       for (const price of Object.values(record.prices_byn_per_gram)) {
-        expect(price, `${dir}: цена ${price} слишком похожа на настоящую`).toBeLessThan(10);
+        expect(price, `${dir}: price ${price} looks too much like a real one`).toBeLessThan(10);
       }
     }
   });
 
-  it('valid-state действительно даёт состояние valid, а expired-state — review_required', () => {
-    // Проверяется на «сейчас»: срок у valid-state доведён до 2099 года
-    // именно затем, чтобы фикстура не протухла молча.
+  it('valid-state really resolves to valid, expired-state to review_required', () => {
+    // Checked against "now": the valid-state expiry runs to 2099 precisely so
+    // the fixture cannot rot silently.
     const load = (dir: string) =>
       validateTariffFile(
         JSON.parse(
@@ -159,28 +160,28 @@ describe('каталоги фикстур пригодны и заведомо �
   });
 });
 
-describe('в исходниках нет захардкоженных цен', () => {
+describe('no hard-coded prices in the sources', () => {
   const sourceFiles = walk(SRC_DIR, ['.ts', '.astro', '.js', '.mjs']);
 
-  it('ни одного числа рядом с BYN', () => {
-    // Ловит любое число рядом с BYN в любом файле сайта. Цены живут
-    // только в data/, попадают на страницу только через схему.
+  it('not a single number next to BYN', () => {
+    // Catches any number next to BYN in any site file. Prices live only in
+    // data/ and reach a page only through the schema.
     const offenders: string[] = [];
     for (const file of sourceFiles) {
       const text = readFileSync(file, 'utf8');
       const match = /\d{1,5}[.,]\d{2}\s*(?:BYN|byn|бел\.?\s*руб)/.exec(text);
       if (match) offenders.push(`${relative(ROOT, file)}: «${match[0]}»`);
     }
-    expect(offenders, `цена в исходнике:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `price in a source file:\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('ни одной таблицы цен вне схемы и данных', () => {
+  it('no price table outside the schema and the data', () => {
     const offenders: string[] = [];
     for (const file of sourceFiles) {
-      if (file.endsWith('schema.ts')) continue; // здесь имя поля — часть типа
+      if (file.endsWith('schema.ts')) continue; // the field name is part of the type here
       const text = readFileSync(file, 'utf8');
       if (/prices_byn_per_gram\s*[:=]\s*\{[^}]*\d/.test(text)) offenders.push(relative(ROOT, file));
     }
-    expect(offenders, `таблица цен в исходнике: ${offenders.join(', ')}`).toEqual([]);
+    expect(offenders, `price table in a source file: ${offenders.join(', ')}`).toEqual([]);
   });
 });

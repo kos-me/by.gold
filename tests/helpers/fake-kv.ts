@@ -1,6 +1,6 @@
 /**
- * KV в памяти для тестов. TTL хранится, но сам по себе не истекает —
- * тесты, которым нужно истечение, сдвигают время вызовом `expire`.
+ * An in-memory KV for tests. TTLs are stored but never expire on their own —
+ * a test that needs expiry advances the clock with `expire`.
  */
 
 import type { KVLike } from '../../worker/src/env.ts';
@@ -36,12 +36,12 @@ export class FakeKV implements KVLike {
     this.store.delete(key);
   }
 
-  /** Сдвигает часы хранилища на N секунд — чтобы TTL действительно истекал. */
+  /** Advances the store's clock by N seconds so TTLs really do expire. */
   expire(seconds: number): void {
     this.clock += seconds;
   }
 
-  /** Всё содержимое — чтобы тест мог убедиться, что лишнего не записано. */
+  /** The full contents, so a test can assert nothing extra was written. */
   snapshot(): Record<string, string> {
     const out: Record<string, string> = {};
     for (const [key, entry] of this.store) out[key] = entry.value;

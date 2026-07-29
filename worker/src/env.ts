@@ -1,12 +1,11 @@
 /**
- * Окружение воркера.
+ * The worker's environment.
  *
- * Все секреты приходят отсюда и только отсюда. Ни одного значения по
- * умолчанию, которое позволило бы чему-то «заработать» без настоящего
- * ключа: подставленный фиктивный ключ хуже неработающей формы, потому что
- * выглядит как работающая.
+ * Every secret arrives from here and nowhere else. Not a single default that
+ * would let something "work" without a real key: a substituted dummy key is
+ * worse than a broken form, because it looks like a working one.
  *
- * Что куда класть — в DEPLOY.md.
+ * What goes where is documented in DEPLOY.md.
  */
 
 export interface KVLike {
@@ -16,28 +15,28 @@ export interface KVLike {
 }
 
 export interface Env {
-  /** Статика сайта. Отдаётся всем, что не начинается с /api/. */
+  /** The site's static assets. Served for anything not under /api/. */
   readonly ASSETS?: { fetch(request: Request): Promise<Response> };
 
-  /** Счётчики обращений по актам и флаг блокировки публикации. */
+  /** Per-decree report counters and the publish-block flag. */
   readonly REPORTS?: KVLike;
-  /** Счётчики частоты запросов по хешу адреса. */
+  /** Rate-limit counters keyed by hashed address. */
   readonly RATE_LIMIT?: KVLike;
 
   readonly TURNSTILE_SECRET_KEY?: string;
   readonly RESEND_API_KEY?: string;
-  /** Куда приходят сообщения об ошибках. */
+  /** Where error reports arrive. */
   readonly REPORT_TO_EMAIL?: string;
-  /** От кого. Домен должен быть подтверждён в Resend. */
+  /** Sender. The domain must be verified in Resend. */
   readonly REPORT_FROM_EMAIL?: string;
-  /** Соль для хеширования адреса перед записью в KV. */
+  /** Salt for hashing the address before it goes into KV. */
   readonly RATE_LIMIT_SALT?: string;
 
-  /** GitHub — для PR с новым постановлением (шаг 9). */
+  /** GitHub — for the pull request carrying a new decree. */
   readonly GITHUB_TOKEN?: string;
   readonly GITHUB_REPO?: string;
 
-  /** `production` включает обязательную проверку Turnstile. */
+  /** `production` makes Turnstile verification mandatory. */
   readonly ENVIRONMENT?: string;
 }
 
@@ -46,16 +45,16 @@ export function isProduction(env: Env): boolean {
 }
 
 /**
- * Обязательный секрет. Отсутствие — ошибка конфигурации, а не повод
- * тихо продолжить с пустым значением.
+ * A mandatory secret. Its absence is a configuration error, not a reason to
+ * quietly carry on with an empty value.
  */
 export function requireSecret(env: Env, key: keyof Env): string {
   const value = env[key];
   if (typeof value !== 'string' || value.trim() === '') {
     throw new Error(
-      `Не задан секрет ${String(key)}. См. DEPLOY.md. Подставлять сюда ` +
-        'значение-заглушку нельзя: форма должна честно не работать, а не ' +
-        'делать вид, что работает.',
+      `Secret ${String(key)} is not set. See DEPLOY.md. Substituting a ` +
+        'placeholder here is not allowed: the form must visibly not work ' +
+        'rather than pretend that it does.',
     );
   }
   return value;

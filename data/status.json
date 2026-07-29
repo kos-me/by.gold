@@ -1,5 +1,5 @@
 {
   "last_checked": null,
   "last_checked_source": null,
-  "note": "Пишется cron-воркером после реальной проверки источника. Пока проверок не было — null, и футер не показывает время проверки."
+  "note": "Written by the cron worker after a real check of the source. Null while no check has happened — the footer then shows no check time."
 }

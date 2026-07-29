@@ -1,16 +1,16 @@
 ---
 /**
- * Клеймо — знак проверенных данных.
+ * The hallmark — the site's mark of verified data.
  *
- * Сплошная рамка: постановление действует. Пунктир: действующего нет.
- * Появляется ТОЛЬКО рядом с цифрой, у которой есть номер и дата. Поставить
- * его где-то ещё значит обесценить его везде.
+ * Solid border: a decree is in force. Dashed: there is none. It appears ONLY
+ * beside a figure that carries a decree number and date. Putting it anywhere
+ * else devalues it everywhere.
  */
 import { formatRuDate, formatRuDateShort } from '../lib/date.ts';
 import type { TariffRecord } from '../lib/schema.ts';
 
 interface Props {
-  /** Действующая запись, либо `null` — тогда клеймо пунктирное и пустое. */
+  /** The record in force, or `null` — then the hallmark is dashed and empty. */
   record: TariffRecord | null;
 }
 

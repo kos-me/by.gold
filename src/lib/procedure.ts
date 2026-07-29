@@ -1,13 +1,15 @@
 /**
- * Порядок приёмки — содержимое `/kak-proverit-otsenku`.
+ * The acceptance procedure — the content of `/kak-proverit-otsenku`.
  *
- * ВНИМАНИЕ. Этот текст описывает процедуру, а не цену, но проверен он хуже,
- * чем цифры: он собран из брифа заказчика и макета, а не сверен с самой
- * опубликованной инструкцией по приёмке. До продакшена сверить построчно —
- * см. MORNING.md, раздел «что нужно от вас».
+ * WARNING. This text describes a procedure rather than a price, but it is
+ * verified worse than the figures are: it was assembled from the client brief
+ * and the mockup, not reconciled against the published acceptance instruction
+ * itself. Reconcile it line by line before production — see QUESTIONS.md, B2.
  *
- * Проценты вычетов здесь не называются намеренно: в брифе прямо сказано
- * не выдумывать процент удержания, а описывать процедуру.
+ * No deduction percentage is named here, deliberately: the brief explicitly
+ * forbids inventing one and asks for the procedure to be described instead.
+ *
+ * The step copy is visitor-facing and therefore Russian.
  */
 
 import { GOLD_WEIGHING_PRECISION_G, SILVER_WEIGHING_PRECISION_G } from './calc.ts';

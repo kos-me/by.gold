@@ -1,16 +1,16 @@
 ---
 /**
- * Кадр в карточке. Три штуки на весь сайт, все три — реальные материалы
- * предмета: клеймо, реактив на пробирном камне, дисплей весов.
+ * A photograph in a card. Three on the whole site, all of them the subject's
+ * real materials: a hallmark, reagent on a touchstone, a scale display.
  *
- * `loading="lazy"` на всех: ни один не входит в LCP.
+ * `loading="lazy"` on all of them: none is part of the LCP.
  */
 interface Props {
   src: string;
   alt: string;
   width: number;
   height: number;
-  /** Высота рамки в вёрстке — кадр обрезается по ней. */
+  /** Frame height in the layout — the image is cropped to it. */
   frameHeight: number;
 }
 

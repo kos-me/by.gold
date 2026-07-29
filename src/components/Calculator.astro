@@ -1,13 +1,13 @@
 ---
 /**
- * Калькулятор: масса × цена за грамм по действующему постановлению.
+ * The calculator: mass × price per gram from the decree in force.
  *
- * Без действующего акта поля выключены на сервере — не скриптом. Страница
- * без JavaScript в этом состоянии выглядит и ведёт себя так же.
+ * With no act in force the fields are disabled server-side, not by script. A
+ * page without JavaScript looks and behaves identically in that state.
  *
- * Подпись результата — «стоимость по официальным ценам Минфина», и никогда
- * «сколько вы получите»: итоговая сумма зависит от опробования и зачётной
- * массы, и этот разрыв закрывать нельзя.
+ * The result is labelled "стоимость по официальным ценам Минфина" and never
+ * "what you will get": the final sum depends on the assay and the accepted
+ * metal mass, and that gap must not be closed.
  */
 import { CALC_ASIDE_COPY, CALC_CAVEATS, calcOutCopy } from '../lib/copy.ts';
 import { FINENESSES, HEADLINE_FINENESS } from '../lib/schema.ts';

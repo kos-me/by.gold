@@ -1,18 +1,18 @@
 ---
 /**
- * Форма сообщения об ошибке в цифре.
+ * The form for reporting an error in a figure.
  *
- * Состояния из макета: idle, invalid, sending, sent, dupe, failed. Все они
- * лежат в разметке сразу и переключаются скриптом — так состояние «не
- * отправилось» показывается вместе с сохранённым текстом, не теряя его.
+ * States from the mockup: idle, invalid, sending, sent, dupe, failed. All of
+ * them sit in the markup at once and are swapped by script — that way the
+ * "didn't send" state appears alongside the preserved text instead of losing it.
  *
- * Без JavaScript форма отправляется обычным POST на тот же адрес; воркер
- * умеет ответить и разметкой, и JSON — см. worker/.
+ * Without JavaScript the form posts normally to the same address; the worker
+ * accepts both form-encoded and JSON bodies — see worker/.
  */
 import { CONTACT_EMAIL, MINFIN_URL } from '../lib/site.ts';
 
 interface Props {
-  /** Ключ Turnstile. Пусто — виджет не рисуется (локальная разработка). */
+  /** Turnstile site key. Empty means no widget is rendered (local development). */
   turnstileSiteKey: string | null;
 }
 
@@ -61,10 +61,10 @@ const { turnstileSiteKey } = Astro.props;
     </div>
 
     {/*
-      Ловушка для ботов. Не `type=hidden` — наивный бот заполняет только те
-      поля, которые видит в разметке как обычные. И не `.sr-only`: то средство
-      как раз показывает содержимое скринридеру, а здесь надо наоборот —
-      поле должно быть невидимо всем, включая читающие программы.
+      Bot honeypot. Not `type=hidden` — a naive bot fills only the fields it
+      sees as ordinary ones in the markup. And not `.sr-only` either: that tool
+      exists precisely to expose content to a screen reader, whereas here the
+      field must be invisible to everyone, assistive technology included.
     */}
     <div class="honeypot" aria-hidden="true">
       <label for="report-city">Не заполняйте это поле</label>
@@ -105,7 +105,7 @@ const { turnstileSiteKey } = Astro.props;
     </div>
   </form>
 
-  {/* принято */}
+  {/* accepted */}
   <div class="card" data-report-sent hidden style="border:1.5px solid var(--stamp)">
     <div style="padding:18px 20px;background:var(--wash);border-bottom:1px solid var(--stamp-line)">
       <div class="label label--stamp">сообщение принято</div>
@@ -129,7 +129,7 @@ const { turnstileSiteKey } = Astro.props;
     </div>
   </div>
 
-  {/* уже в работе */}
+  {/* already under review */}
   <div class="card" data-report-dupe hidden>
     <div style="padding:18px 20px;border-bottom:1px solid var(--line-inner)">
       <div class="label">уже в работе</div>
@@ -155,7 +155,7 @@ const { turnstileSiteKey } = Astro.props;
     </div>
   </div>
 
-  {/* не отправилось */}
+  {/* didn't send */}
   <div class="card" data-report-failed hidden style="border-color:var(--warn-card-line)">
     <div
       style="padding:18px 20px;background:var(--warn-bg-2);border-bottom:1px solid var(--warn-line-2)"

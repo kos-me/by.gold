@@ -1,8 +1,8 @@
 /**
- * Приём сообщения об ошибке: проверка полей, ловушка, частота, письмо.
+ * Accepting an error report: field validation, honeypot, rate, email.
  *
- * Сеть и хранилище подставлены, поэтому тест ничего никуда не отправляет
- * и не требует запущенного wrangler.
+ * The network and the store are faked, so the test sends nothing anywhere and
+ * needs no running wrangler.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -20,7 +20,7 @@ import { FakeKV } from './helpers/fake-kv.ts';
 
 const GOOD_NOTE = 'В скупке назвали цену ниже постановления, проверьте пожалуйста';
 
-/** Записывает все исходящие запросы и отвечает по заданному сценарию. */
+/** Records every outgoing request and answers per the given script. */
 function recorder(
   handlers: Record<string, () => Response> = {},
 ): { fetchImpl: typeof fetch; calls: { url: string; body: string }[] } {
@@ -71,36 +71,36 @@ const deps = (fetchImpl: typeof fetch) => ({
 // ---------------------------------------------------------------------------
 
 describe('validateReport', () => {
-  it('принимает нормальное сообщение', () => {
+  it('accepts an ordinary report', () => {
     const result = validateReport({ email: 'a@mail.by', note: GOOD_NOTE });
     expect(result.ok).toBe(true);
   });
 
-  it('отвергает неполный адрес', () => {
+  it('rejects an incomplete address', () => {
     const result = validateReport({ email: 'не-почта', note: GOOD_NOTE });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.rejection.kind).toBe('email');
   });
 
-  it('отвергает слишком короткое описание', () => {
+  it('rejects too short a description', () => {
     const result = validateReport({ email: 'a@mail.by', note: 'ошибка' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.rejection.kind).toBe('note');
   });
 
-  it('отвергает слишком длинное описание', () => {
+  it('rejects too long a description', () => {
     const result = validateReport({ email: 'a@mail.by', note: 'я'.repeat(MAX_NOTE_LENGTH + 1) });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.rejection.kind).toBe('note');
   });
 
-  it('ловушка важнее всего остального', () => {
+  it('the honeypot outranks everything else', () => {
     const result = validateReport({ email: 'не-почта', note: 'x', city: 'Минск' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.rejection.kind).toBe('honeypot');
   });
 
-  it('обрезает пробелы', () => {
+  it('trims whitespace', () => {
     const result = validateReport({ email: '  a@mail.by ', note: `  ${GOOD_NOTE}  ` });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.email).toBe('a@mail.by');
@@ -108,7 +108,7 @@ describe('validateReport', () => {
 });
 
 describe('extractActNumber', () => {
-  it('находит номер в разных написаниях', () => {
+  it('finds the number in various spellings', () => {
     expect(extractActNumber('Постановление № 9999 неверное')).toBe('9999');
     expect(extractActNumber('в акте No 9999 другая цифра')).toBe('9999');
     expect(extractActNumber('постановление 9999 от июля')).toBe('9999');
@@ -117,30 +117,30 @@ describe('extractActNumber', () => {
     expect(extractActNumber('№ 9999-1')).toBe('9999-1');
   });
 
-  it('не выдумывает номер, если его нет', () => {
+  it('invents no number when there is none', () => {
     expect(extractActNumber('У вас цена не та, что в скупке')).toBeNull();
     expect(extractActNumber('')).toBeNull();
   });
 
-  it('не принимает случайное число за номер акта', () => {
+  it('does not mistake a stray number for a decree number', () => {
     expect(extractActNumber('мне дали 8,4 грамма вместо 9')).toBeNull();
   });
 });
 
 describe('formatTicket', () => {
-  it('шесть цифр с префиксом', () => {
+  it('six digits with a prefix', () => {
     expect(formatTicket(482913)).toBe('GB-482913');
     expect(formatTicket(7)).toBe('GB-000007');
   });
 
-  it('не ломается на больших и отрицательных числах', () => {
+  it('survives large and negative numbers', () => {
     expect(formatTicket(4294967295)).toMatch(/^GB-\d{6}$/);
     expect(formatTicket(-5)).toBe('GB-000005');
   });
 });
 
-describe('ограничение частоты', () => {
-  it('хеш зависит от соли, адрес в открытом виде не сохраняется', async () => {
+describe('rate limiting', () => {
+  it('the hash depends on the salt; no address is stored in the clear', async () => {
     const a = await hashClient('192.0.2.1', 'соль-один');
     const b = await hashClient('192.0.2.1', 'соль-два');
     expect(a).not.toBe(b);
@@ -148,7 +148,7 @@ describe('ограничение частоты', () => {
     expect(a).not.toContain('192.0.2.1');
   });
 
-  it('пропускает до лимита и отсекает дальше', async () => {
+  it('allows up to the limit and cuts off beyond it', async () => {
     const kv = new FakeKV();
     const key = await hashClient('192.0.2.1', 'соль');
     for (let i = 0; i < LIMIT_PER_WINDOW; i += 1) {
@@ -157,7 +157,7 @@ describe('ограничение частоты', () => {
     expect((await consume(kv, key)).allowed).toBe(false);
   });
 
-  it('после истечения окна снова пропускает', async () => {
+  it('allows again once the window expires', async () => {
     const kv = new FakeKV();
     const key = await hashClient('192.0.2.1', 'соль');
     for (let i = 0; i < LIMIT_PER_WINDOW; i += 1) await consume(kv, key);
@@ -166,7 +166,7 @@ describe('ограничение частоты', () => {
     expect((await consume(kv, key)).allowed).toBe(true);
   });
 
-  it('разные адреса считаются отдельно', async () => {
+  it('different addresses are counted separately', async () => {
     const kv = new FakeKV();
     const first = await hashClient('192.0.2.1', 'соль');
     const second = await hashClient('192.0.2.2', 'соль');
@@ -177,7 +177,7 @@ describe('ограничение частоты', () => {
 });
 
 describe('POST /api/contact', () => {
-  it('принимает сообщение и отправляет письмо', async () => {
+  it('accepts a report and sends the email', async () => {
     const { fetchImpl, calls } = recorder();
     const response = await handleContact(
       post({ email: 'a@mail.by', note: GOOD_NOTE }),
@@ -194,7 +194,7 @@ describe('POST /api/contact', () => {
     expect(resend?.body).toContain('a@mail.by');
   });
 
-  it('только POST', async () => {
+  it('POST only', async () => {
     const response = await handleContact(
       new Request('https://gold.by/api/contact'),
       baseEnv(),
@@ -203,7 +203,7 @@ describe('POST /api/contact', () => {
     expect(response.status).toBe(405);
   });
 
-  it('отвергает неполный адрес с формулировкой из макета', async () => {
+  it("rejects an incomplete address with the mockup's wording", async () => {
     const { fetchImpl, calls } = recorder();
     const response = await handleContact(
       post({ email: 'не-почта', note: GOOD_NOTE }),
@@ -217,7 +217,7 @@ describe('POST /api/contact', () => {
     expect(calls.some((call) => call.url.includes('resend'))).toBe(false);
   });
 
-  it('на заполненную ловушку отвечает «принято», но письма не шлёт', async () => {
+  it("answers a filled honeypot with \'accepted\' but sends no email", async () => {
     const { fetchImpl, calls } = recorder();
     const response = await handleContact(
       post({ email: 'bot@spam.test', note: GOOD_NOTE, city: 'Минск' }),
@@ -229,7 +229,7 @@ describe('POST /api/contact', () => {
     expect(calls.some((call) => call.url.includes('resend'))).toBe(false);
   });
 
-  it('второе сообщение по тому же акту — «уже в работе»', async () => {
+  it("a second report about the same act is \'already under review\'", async () => {
     const reports = new FakeKV();
     const { fetchImpl } = recorder();
     const env = baseEnv({ REPORTS: reports });
@@ -248,7 +248,7 @@ describe('POST /api/contact', () => {
     });
   });
 
-  it('дубликат всё равно доходит письмом — обращение не теряется', async () => {
+  it('a duplicate still arrives by email — no report is lost', async () => {
     const reports = new FakeKV();
     const { fetchImpl, calls } = recorder();
     const env = baseEnv({ REPORTS: reports });
@@ -262,7 +262,7 @@ describe('POST /api/contact', () => {
     expect(after).toBe(before + 1);
   });
 
-  it('в KV не попадает ни текста, ни почты, ни адреса', async () => {
+  it('no text, no email address and no IP reach KV', async () => {
     const reports = new FakeKV();
     const rateLimit = new FakeKV();
     const { fetchImpl } = recorder();
@@ -286,7 +286,7 @@ describe('POST /api/contact', () => {
     expect(Object.keys(rateLimit.snapshot())[0]).toMatch(/^rl:[0-9a-f]{32}$/);
   });
 
-  it('превышение частоты — 429 и никакого письма', async () => {
+  it('exceeding the rate gives 429 and no email', async () => {
     const rateLimit = new FakeKV();
     const { fetchImpl, calls } = recorder();
     const env = baseEnv({ RATE_LIMIT: rateLimit });
@@ -312,7 +312,7 @@ describe('POST /api/contact', () => {
     expect(calls.filter((call) => call.url.includes('resend'))).toHaveLength(sentBefore);
   });
 
-  it('Resend не принял — честное «не отправилось», а не «принято»', async () => {
+  it("Resend refused — an honest \'didn't send\', not \'accepted\'", async () => {
     const { fetchImpl } = recorder({
       'api.resend.com': () => new Response('{"message":"nope"}', { status: 422 }),
     });
@@ -325,7 +325,7 @@ describe('POST /api/contact', () => {
     expect((await response.json() as { status: string }).status).toBe('failed');
   });
 
-  it('нет ключа Resend — «не отправилось», а не тихий успех', async () => {
+  it("no Resend key — \'didn't send\', not a quiet success", async () => {
     const { fetchImpl } = recorder();
     const response = await handleContact(
       post({ email: 'a@mail.by', note: GOOD_NOTE }),
@@ -335,7 +335,7 @@ describe('POST /api/contact', () => {
     expect(response.status).toBe(502);
   });
 
-  it('в продакшене без Turnstile сообщение не проходит', async () => {
+  it('in production a report without Turnstile does not pass', async () => {
     const { fetchImpl, calls } = recorder({ 'siteverify': () => okTurnstile() });
     const env = baseEnv({ ENVIRONMENT: 'production', TURNSTILE_SECRET_KEY: 'секрет-теста' });
 
@@ -355,7 +355,7 @@ describe('POST /api/contact', () => {
     expect(withToken.status).toBe(200);
   });
 
-  it('в продакшене отказ Turnstile останавливает отправку', async () => {
+  it('in production a Turnstile refusal stops the send', async () => {
     const { fetchImpl, calls } = recorder({
       siteverify: () =>
         new Response(JSON.stringify({ success: false, 'error-codes': ['invalid-input-response'] }), {
@@ -371,7 +371,7 @@ describe('POST /api/contact', () => {
     expect(calls.some((call) => call.url.includes('resend'))).toBe(false);
   });
 
-  it('форма без JavaScript тоже принимается', async () => {
+  it('a form without JavaScript is accepted too', async () => {
     const { fetchImpl } = recorder();
     const form = new FormData();
     form.append('email', 'a@mail.by');
@@ -382,7 +382,7 @@ describe('POST /api/contact', () => {
     expect(response.status).toBe(200);
   });
 
-  it('ответы не кэшируются', async () => {
+  it('responses are not cached', async () => {
     const { fetchImpl } = recorder();
     const response = await handleContact(
       post({ email: 'a@mail.by', note: GOOD_NOTE }),

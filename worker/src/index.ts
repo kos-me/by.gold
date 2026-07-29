@@ -1,12 +1,12 @@
 /**
- * Воркер gold.by.
+ * The gold.by worker.
  *
- * Делает две вещи:
- *   1. `/api/*` — форма сообщения об ошибке и служебный статус.
- *   2. cron — проверка источников (шаг 9). Ничего не публикует сам:
- *      только открывает PR или заводит issue.
+ * It does two things:
+ *   1. `/api/*` — the error-report form and a status endpoint.
+ *   2. cron — checking the sources. It publishes nothing itself: it only
+ *      opens a pull request or files an issue.
  *
- * Всё остальное отдаёт статика сайта.
+ * Everything else is served from the site's static assets.
  */
 
 import { handleContact } from './contact.ts';
@@ -20,7 +20,7 @@ function notFound(): Response {
   });
 }
 
-/** Отметка о последней проверке — её читает страница, чтобы не врать в подвале. */
+/** The last-check stamp — read by the page so the footer need not lie. */
 async function handleStatus(env: Env): Promise<Response> {
   const raw = (await env.REPORTS?.get('status:last_check')) ?? null;
   return new Response(raw ?? JSON.stringify({ last_checked: null, last_checked_source: null }), {

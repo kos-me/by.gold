@@ -1,13 +1,13 @@
 /**
- * Проверка источника по расписанию.
+ * The scheduled source check.
  *
- * Ход: скачать страницу → разобрать → сравнить с последней известной записью
- * → если акт новый, открыть PR с черновиком и сырым HTML как доказательством.
- * Разбор не удался — завести issue и поставить флаг блокировки.
+ * The run: fetch the page → parse → compare against the last known record →
+ * if the act is new, open a pull request with a draft and the raw HTML as
+ * evidence. If parsing failed, file an issue and set the block flag.
  *
- * Воркер не публикует ничего и никогда. Единственное, что он пишет мимо
- * GitHub, — отметка о времени проверки в KV, чтобы подвал сайта мог честно
- * сказать, когда источник смотрели в последний раз.
+ * The worker publishes nothing, ever. The only thing it writes outside GitHub
+ * is the check timestamp in KV, so the site's footer can say honestly when the
+ * source was last looked at.
  */
 
 import { MINFIN_URL } from '../../src/lib/site.ts';
@@ -23,7 +23,7 @@ import {
 } from './proposal.ts';
 import { requireSecret, type Env } from './env.ts';
 
-/** Пока флаг стоит, воркер ничего не предлагает. Снимается руками. */
+/** While this flag is set the worker proposes nothing. Cleared by hand. */
 export const BLOCK_KEY = 'block:publish';
 const STATUS_KEY = 'status:last_check';
 const LAST_ACT_KEY = 'minfin:last_act';
@@ -57,9 +57,9 @@ async function knownAct(env: Env): Promise<{ act_number: string; act_date: strin
 }
 
 /**
- * Последняя известная запись из репозитория — нужна, чтобы сравнить цены
- * и заметить крупное движение. Читается через GitHub, а не из сборки:
- * воркер живёт дольше, чем конкретная сборка сайта.
+ * The last known record from the repository — needed to compare prices and
+ * notice a large move. Read through GitHub rather than from the build: the
+ * worker outlives any particular build of the site.
  */
 async function latestRecord(github: GitHub): Promise<TariffRecord | null> {
   const file = await github.readFile('data/tariffs.json', 'main').catch(() => null);
@@ -84,7 +84,7 @@ export async function checkMinfin(env: Env, deps: ScheduledDeps = {}): Promise<S
     return { kind: 'blocked' };
   }
 
-  // --- скачать --------------------------------------------------------------
+  // --- fetch -----------------------------------------------------------------
   let html: string;
   try {
     const response = await fetchImpl(MINFIN_URL, { headers: { 'user-agent': UA } });
@@ -94,14 +94,14 @@ export async function checkMinfin(env: Env, deps: ScheduledDeps = {}): Promise<S
     return { kind: 'fetch_failed', status: 0 };
   }
 
-  // Отметку о проверке ставим независимо от исхода разбора: страницу
-  // действительно смотрели, и подвал сайта вправе это показать.
+  // The check stamp is written regardless of the parse outcome: the page
+  // really was looked at, and the site's footer is entitled to say so.
   await env.REPORTS?.put(
     STATUS_KEY,
     JSON.stringify({ last_checked: checkedAt, last_checked_source: MINFIN_URL }),
   );
 
-  // --- разобрать ------------------------------------------------------------
+  // --- parse ------------------------------------------------------------------
   const parseResult = parseMinfinPage(html, MINFIN_URL);
 
   let token: string;
@@ -115,19 +115,19 @@ export async function checkMinfin(env: Env, deps: ScheduledDeps = {}): Promise<S
   const github = new GitHub({ token, repo, fetchImpl });
 
   if (!parseResult.ok) {
-    // Блокируем публикацию: изменившаяся вёрстка опаснее отсутствия данных,
-    // потому что парсер может начать читать не ту таблицу.
+    // Block publication: changed markup is more dangerous than missing data,
+    // because the parser may start reading the wrong table.
     await env.REPORTS?.put(BLOCK_KEY, `${checkedAt}: ${parseResult.reason}`);
     const issue = failureIssueTexts(parseResult.reason, parseResult.detail, MINFIN_URL, checkedAt);
     if (!(await github.hasOpenIssue(issue.title))) {
-      await github.openIssue(issue.title, issue.body, ['парсер']);
+      await github.openIssue(issue.title, issue.body, ['parser']);
     }
     return { kind: 'parse_failed', reason: parseResult.reason };
   }
 
   const { act, warnings } = parseResult;
 
-  // --- изменилось ли ---------------------------------------------------------
+  // --- has anything changed? --------------------------------------------------
   const previous = await knownAct(env);
   if (!isNewAct(act, previous)) {
     return { kind: 'unchanged', act: act.act_number };
@@ -135,11 +135,11 @@ export async function checkMinfin(env: Env, deps: ScheduledDeps = {}): Promise<S
 
   const branch = branchNameFor(act);
   if (await github.branchExists(branch)) {
-    // PR об этом акте уже открыт. Второй заводить незачем.
+    // A PR about this act is already open. No reason to open a second.
     return { kind: 'proposal_exists', act: act.act_number };
   }
 
-  // --- предложить -----------------------------------------------------------
+  // --- propose -----------------------------------------------------------------
   const latest = await latestRecord(github);
   const moves = checkPriceMoves(act.prices_byn_per_gram, latest?.prices_byn_per_gram ?? null);
   const allWarnings = [...warnings, ...moves];
@@ -158,12 +158,12 @@ export async function checkMinfin(env: Env, deps: ScheduledDeps = {}): Promise<S
     current?.sha,
   );
 
-  // Сырой HTML рядом с записью — доказательство, а не источник данных.
+  // Raw HTML beside the record is evidence, not a data source.
   await github.writeFile(
     texts.evidencePath,
     branch,
     html,
-    `Доказательство: страница Минфина на ${checkedAt}`,
+    `Evidence: the Minfin page as of ${checkedAt}`,
   );
 
   const pr = await github.openPullRequest(branch, texts.title, texts.body);

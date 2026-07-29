@@ -8,9 +8,10 @@ const description =
   'об ошибке. Мы ничего не покупаем и не продаём.';
 
 /*
- * Ключ Turnstile берётся из окружения. Нет ключа — виджета нет, и форма
- * просто отправляется без него; воркер в продакшене такую отправку не примет.
- * Подставлять сюда чужой или выдуманный ключ нельзя.
+ * The Turnstile site key comes from the environment. No key, no widget, and
+ * the form simply submits without one; in production the worker will refuse
+ * such a submission. Substituting someone else's key, or an invented one, is
+ * not allowed.
  */
 const turnstileSiteKey = import.meta.env['PUBLIC_TURNSTILE_SITE_KEY'] ?? null;
 

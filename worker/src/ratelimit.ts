@@ -1,24 +1,24 @@
 /**
- * Ограничение частоты запросов.
+ * Request rate limiting.
  *
- * В KV попадает только хеш адреса с солью и счётчик, на час. Ни самого
- * адреса, ни чего-либо из письма. По истечении TTL запись исчезает сама —
- * чистить нечего.
+ * Only a salted hash of the address and a counter reach KV, for an hour.
+ * Neither the address itself nor anything from the message. When the TTL
+ * expires the entry disappears on its own — there is nothing to clean up.
  */
 
 import type { KVLike } from './env.ts';
 
-/** Сколько сообщений с одного адреса за окно. */
+/** How many reports one address may send per window. */
 export const LIMIT_PER_WINDOW = 5;
 
-/** Длина окна в секундах. */
+/** Window length in seconds. */
 export const WINDOW_SECONDS = 3600;
 
 /**
- * SHA-256 от «соль + адрес», первые 32 hex-символа.
+ * SHA-256 of "salt + address", first 32 hex characters.
  *
- * Соль обязательна: без неё пространство IPv4 перебирается за секунды,
- * и «хеш» перестаёт что-либо скрывать.
+ * The salt is mandatory: without it the IPv4 space is exhaustible in seconds
+ * and the "hash" stops concealing anything.
  */
 export async function hashClient(ip: string, salt: string): Promise<string> {
   const data = new TextEncoder().encode(`${salt}:${ip}`);
@@ -36,10 +36,10 @@ export interface RateLimitVerdict {
 }
 
 /**
- * Считает обращение и говорит, пропускать ли его.
+ * Counts a request and says whether to allow it.
  *
- * Окно фиксированное, не скользящее: на форме сообщений об ошибке это
- * достаточная точность, а KV-операций втрое меньше.
+ * A fixed window rather than a sliding one: for an error-report form that is
+ * accurate enough, and it costs a third of the KV operations.
  */
 export async function consume(
   kv: KVLike,

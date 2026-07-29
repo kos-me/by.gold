@@ -1,12 +1,12 @@
 /**
- * Чтение данных на сборке.
+ * Reading the data at build time.
  *
- * Данные читаются один раз, проверяются схемой и, если не прошли, сборка
- * падает с перечнем замечаний. Молча подставить «что получилось» нельзя:
- * страница либо стоит на проверенной записи, либо честно говорит, что цифры нет.
+ * Data is read once and validated; if it fails, the build dies with a list of
+ * issues. Quietly substituting "whatever parsed" is not an option: the page
+ * either stands on a verified record or says plainly that there is no figure.
  *
- * Каталог данных переопределяется переменной `GOLD_DATA_DIR` — этим на шаге 6
- * пользуется превью с тестовой фикстурой. В самом `data/` фикстур не бывает.
+ * The data directory can be overridden with `GOLD_DATA_DIR` — that is how the
+ * fixture previews work. `data/` itself never contains fixtures.
  */
 
 import { readFileSync } from 'node:fs';
@@ -24,7 +24,7 @@ import {
 
 export const DATA_DIR = resolve(process.cwd(), process.env['GOLD_DATA_DIR'] ?? 'data');
 
-/** `true`, когда сборка идёт не на настоящих данных. Показывается в консоли. */
+/** True when the build is not running on the real data. Surfaced on the page. */
 export const USING_OVERRIDDEN_DATA = process.env['GOLD_DATA_DIR'] !== undefined;
 
 function readJson(fileName: string, fallback: unknown): unknown {
@@ -33,15 +33,15 @@ function readJson(fileName: string, fallback: unknown): unknown {
   try {
     raw = readFileSync(path, 'utf8');
   } catch {
-    // Отсутствующий файл — это «данных нет», законное состояние сайта.
+    // A missing file means "there is no data", which is a legal site state.
     return fallback;
   }
   try {
     return JSON.parse(raw) as unknown;
   } catch (error) {
     throw new Error(
-      `${path}: файл не разбирается как JSON. Сборка остановлена, чтобы не показать ` +
-        `страницу на непроверенных данных.\n${String(error)}`,
+      `${path}: file does not parse as JSON. Build stopped so the page is not ` +
+        `rendered on unverified data.\n${String(error)}`,
     );
   }
 }
@@ -50,11 +50,11 @@ function loadTariffs(): readonly TariffRecord[] {
   const result = validateTariffFile(readJson('tariffs.json', []));
   if (!result.ok) {
     throw new Error(
-      `data/tariffs.json не прошёл проверку схемы — сборка остановлена.\n` +
+      `data/tariffs.json failed schema validation — build stopped.\n` +
         `${formatIssues(result.issues)}\n\n` +
-        `Запись без номера акта, даты вступления в силу или ссылки на источник ` +
-        `на сайт не попадает. Исправьте запись или удалите её: пустой файл — ` +
-        `рабочее состояние, страница умеет обходиться без цифры.`,
+        `A record without an act number, an effective date or a source link ` +
+        `does not reach the site. Fix the record or remove it: an empty file ` +
+        `is a working state, and the page knows how to manage without a figure.`,
     );
   }
   return result.value;
@@ -64,7 +64,7 @@ function loadBullion(): readonly BullionRecord[] {
   const result = validateBullionFile(readJson('bullion.json', []));
   if (!result.ok) {
     throw new Error(
-      `data/bullion.json не прошёл проверку схемы — сборка остановлена.\n${formatIssues(result.issues)}`,
+      `data/bullion.json failed schema validation — build stopped.\n${formatIssues(result.issues)}`,
     );
   }
   return result.value;
@@ -76,7 +76,7 @@ function loadStatus(): StatusRecord {
   );
   if (!result.ok) {
     throw new Error(
-      `data/status.json не прошёл проверку схемы — сборка остановлена.\n${formatIssues(result.issues)}`,
+      `data/status.json failed schema validation — build stopped.\n${formatIssues(result.issues)}`,
     );
   }
   return result.value;

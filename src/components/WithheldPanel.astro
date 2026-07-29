@@ -1,13 +1,14 @@
 ---
 /**
- * Панель состояния «цифры нет».
+ * The "no figure" panel.
  *
- * Ключевой экран сайта. Тон задан брифом: это не ошибка и не извинение.
- * Что известно, что уточняем, ссылка на источник, последняя цифра — явно
- * как архив, а не как ответ. Ни иконок предупреждения, ни «упс».
+ * The site's key screen. The tone comes from the brief: this is neither an
+ * error nor an apology. What is known, what is being confirmed, a link to the
+ * source, and the last figure marked plainly as an archive rather than an
+ * answer. No warning icons, no "oops".
  *
- * Архивный блок появляется только если есть что архивировать: при пустом
- * файле данных прошлой цифры не существует, и придумывать её нельзя.
+ * The archive block appears only when there is something to archive: with an
+ * empty data file no past figure exists, and inventing one is forbidden.
  */
 import { KNOWN_COPY, pendingCopy } from '../lib/copy.ts';
 import { formatByn } from '../lib/calc.ts';
@@ -17,7 +18,7 @@ import { headlinePrice, type TariffState } from '../lib/tariff.ts';
 
 interface Props {
   state: TariffState;
-  /** Есть ли реальный лог проверок — от этого зависит, что обещает текст. */
+  /** Whether a real check log exists — decides what the copy promises. */
   hasCheckLog: boolean;
 }
 

@@ -1,20 +1,23 @@
 /**
- * Константы сайта: адреса, навигация, подписи источников.
+ * Site-wide constants: addresses, navigation, source labels.
  *
- * Цифр здесь нет и быть не может — они живут только в `data/`.
+ * No figures here, and none may be added — prices live only in `data/`.
+ *
+ * Note on language: user-facing strings stay Russian throughout the codebase,
+ * because the site is Russian. Comments and identifiers are English.
  */
 
 export const SITE_NAME = 'gold.by';
 
 export const SITE_TAGLINE = 'цена скупки золота, установленная Минфином';
 
-/** Страница Минфина о ценах скупки у физических лиц. Источник главной цифры. */
+/** Minfin's page on buyback prices from individuals. Source of the headline figure. */
 export const MINFIN_URL = 'https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/';
 
-/** Национальный банк — цены на мерные слитки. Другой регламент, другой источник. */
+/** National Bank — bullion prices. Different regime, different source. */
 export const NBRB_URL = 'https://www.nbrb.by/';
 
-/** Адрес для сообщений об ошибке в цифре. */
+/** Address for reports of an error in a figure. */
 export const CONTACT_EMAIL = 'pravka@gold.by';
 
 export interface NavItem {

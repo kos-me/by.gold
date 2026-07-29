@@ -1,48 +1,54 @@
 # data/
 
-Единственный источник цифр для сайта. Всё, что показывается на страницах,
-приходит отсюда. Нигде в коде цен нет.
+The single source of every figure on the site. Everything the pages display
+comes from here. There are no prices anywhere in the code.
 
-## Правила
+## Rules
 
-1. **Ничего не выдумывать.** Каждая запись переписывается вручную из самого
-   акта (или с официальной страницы), а не из новостей и не по памяти.
-2. **Пустой массив — рабочее состояние**, а не ошибка. Сайт умеет показывать
-   страницу без цифры: калькулятор выключен, объяснение и ссылка на источник.
-3. Тестовые записи живут в `tests/fixtures/`, сюда их класть нельзя.
-   `npm test` проверяет это отдельным тестом.
+1. **Invent nothing.** Every record is transcribed by hand from the act itself
+   (or from the official page), never from news coverage and never from memory.
+2. **An empty array is a working state**, not an error. The site knows how to
+   render without a figure: calculator off, an explanation, a link to the source.
+3. Test records live in `tests/fixtures/` and must never be placed here.
+   `npm test` enforces that with a dedicated check.
 
 ## `tariffs.json`
 
-Массив записей о постановлениях Минфина о ценах скупки драгоценных металлов
-у физических лиц. Порядок в файле значения не имеет — код сортирует сам.
+An array of records of Minfin decrees on buyback prices for precious metals
+from individuals. Order in the file does not matter — the code sorts for itself.
 
 ```jsonc
 {
-  "act_number": "31",                  // обязательно, как в акте, без «№»
-  "act_date": "2026-07-08",            // дата принятия, ISO, обязательно
-  "effective_from": "2026-07-18",      // дата вступления в силу, ISO, обязательно
-  "stated_expiry": "2026-07-31",       // до какой даты действует — ИЛИ null,
-                                       // если акт срока не называет. Не выдумывать.
-  "source_url": "https://minfin.gov.by/...",  // обязательно
-  "transcribed_at": "2026-07-18T09:00:00Z",   // когда человек перенёс цифры
-  "transcribed_by": "имя или ник",            // кто перенёс
-  "prices_byn_per_gram": {             // BYN за грамм лигатурной массы
-    "375": 0, "500": 0, "585": 0, "750": 0, "958": 0, "999": 0
+  "act_number": "31",                  // required, as printed in the act, without «№»
+  "act_date": "2026-07-08",            // date of adoption, ISO, required
+  "effective_from": "2026-07-18",      // date it takes force, ISO, required
+  "stated_expiry": "2026-07-31",       // date through which it applies — OR null
+                                       // if the act names no end date. Do not invent one.
+  "source_url": "https://minfin.gov.by/...",  // required
+  "transcribed_at": "2026-07-18T09:00:00Z",   // when a person transcribed the figures
+  "transcribed_by": "name or handle",         // who transcribed them
+  "prices_byn_per_gram": {             // BYN per gram of alloy mass
+    "375": 0, "500": 0, "583": 0, "585": 0, "750": 0,
+    "900": 0, "916": 0, "950": 0, "958": 0
   },
-  "notes": "необязательный комментарий"
+  "notes": "optional comment"
 }
 ```
 
-`stated_expiry` **nullable**: часть актов не называет конечной даты. В этом
-случае — `null`, и запись действует, пока её не сменит следующая.
+`stated_expiry` is **nullable**: some acts name no end date. In that case use
+`null`, and the record stands until the next one replaces it.
+
+Nine finenesses, taken from the source page rather than the mockup. Note that
+**583 is a real fineness** (the Soviet standard, and very common on inherited
+jewellery) and that **999 does not appear** in the scrap table — it belongs to
+pure metal and bullion bars.
 
 ## `bullion.json`
 
-Цены обратного выкупа мерных слитков НБРБ. Другой регламент, другой источник,
-в калькулятор лома не попадает. Формат — см. `src/lib/schema.ts`.
+National Bank buyback prices for bullion bars. A different regime, a different
+source; it never enters the scrap calculator. Format: see `src/lib/schema.ts`.
 
 ## `status.json`
 
-Отметка о последней реальной проверке источника. Пишется воркером, не руками.
-`null` — проверок ещё не было, и сайт тогда ничего не обещает.
+A record of the last real check of the source. Written by the worker, never by
+hand. `null` means no check has happened, and the site then promises nothing.

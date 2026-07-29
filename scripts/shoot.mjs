@@ -1,14 +1,14 @@
 /**
- * Съёмка страниц и проверка на горизонтальное переполнение.
+ * Screenshots pages and checks for horizontal overflow.
  *
- * Бриф требует 360px и «таблицы переносятся, а не скроллятся вбок». Это надо
- * проверять машиной: на глаз обрезанный на пиксель блок не виден, а на
- * телефоне превращается в горизонтальный скролл всей страницы.
+ * The brief demands 360px and "tables wrap rather than scroll sideways". That
+ * needs a machine to check: a block clipped by one pixel is invisible to the
+ * eye but turns into a sideways scroll of the whole page on a phone.
  *
- * Запуск:
- *   node scripts/shoot.mjs <baseUrl> <outDir> [путь ...]
+ * Run:
+ *   node scripts/shoot.mjs <baseUrl> <outDir> [path ...]
  *
- * Драйвит уже установленный Chrome, свой не качает.
+ * Drives an already-installed Chrome; downloads none of its own.
  */
 
 import { mkdir } from 'node:fs/promises';
@@ -30,11 +30,11 @@ const PAGES = paths.length > 0 ? paths : ['/'];
 
 function findChrome() {
   const found = CHROME_CANDIDATES.find((path) => existsSync(path));
-  if (found === undefined) throw new Error('Chrome не найден ни по одному из известных путей');
+  if (found === undefined) throw new Error('Chrome was not found at any known path');
   return found;
 }
 
-/** Элементы, вылезающие за правый край окна. Возвращает описание, а не узлы. */
+/** Elements spilling past the right edge. Returns descriptions, not nodes. */
 function collectOverflow() {
   const limit = document.documentElement.clientWidth;
   const offenders = [];
@@ -42,7 +42,7 @@ function collectOverflow() {
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) continue;
     if (rect.right <= limit + 0.5) continue;
-    // Интересен самый глубокий виновник, а не все его предки.
+    // Only the deepest offender is interesting, not all its ancestors.
     if ([...el.children].some((child) => child.getBoundingClientRect().right > limit + 0.5)) {
       continue;
     }
@@ -74,21 +74,21 @@ for (const path of PAGES) {
   for (const width of WIDTHS) {
     const page = await browser.newPage();
     await page.setViewport({ width, height: 900, deviceScaleFactor: 1 });
-    // Без кэша: иначе повторный заход отдаёт 304 и снимок берётся со старой вёрстки.
+    // No cache: otherwise a repeat visit gets a 304 and shoots stale markup.
     await page.setCacheEnabled(false);
     const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
     if (response === null || response.status() >= 400) {
-      console.error(`✗ ${path} @${width} → HTTP ${response?.status() ?? 'нет ответа'}`);
+      console.error(`✗ ${path} @${width} → HTTP ${response?.status() ?? 'no response'}`);
       failures += 1;
       await page.close();
       continue;
     }
     await page.evaluate(() => document.fonts.ready);
 
-    // Снимок всей страницы её не прокручивает, поэтому loading="lazy" ниже
-    // сгиба так и остаётся незагруженным и кадр выходит пустым. На сайте это
-    // правильное поведение; здесь надо прокрутить, чтобы увидеть настоящую
-    // страницу. Смена атрибута постфактум загрузку не запускает — только скролл.
+    // A full-page screenshot does not scroll, so loading="lazy" images below
+    // the fold never load and come out blank. On the site that is correct
+    // behaviour; here we must scroll to see the real page. Changing the
+    // attribute after the fact does not trigger a load — only scrolling does.
     await page.evaluate(async () => {
       const step = window.innerHeight;
       for (let y = 0; y < document.body.scrollHeight; y += step) {
@@ -117,12 +117,12 @@ for (const path of PAGES) {
     if (overflows) {
       failures += 1;
       console.error(
-        `✗ ${path} @${width}px — страница шире окна: ${report.scrollWidth} > ${report.clientWidth}`,
+        `✗ ${path} @${width}px — page wider than the viewport: ${report.scrollWidth} > ${report.clientWidth}`,
       );
       for (const item of report.offenders) {
         console.error(
-          `    ${item.tag}.${item.cls} — правый край ${item.right}, ширина ${item.width}` +
-            (item.text ? `  «${item.text}»` : ''),
+          `    ${item.tag}.${item.cls} — right edge ${item.right}, width ${item.width}` +
+            (item.text ? `  "${item.text}"` : ''),
         );
       }
     } else {
@@ -133,5 +133,5 @@ for (const path of PAGES) {
 }
 
 await browser.close();
-console.log(failures === 0 ? '\nПереполнений нет.' : `\nПроблем: ${failures}`);
+console.log(failures === 0 ? '\nNo overflow.' : `\nProblems: ${failures}`);
 process.exit(failures === 0 ? 0 : 1);

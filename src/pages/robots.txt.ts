@@ -1,8 +1,8 @@
 /**
  * robots.txt.
  *
- * Закрыт только `/api/` — там нечего индексировать. Всё остальное открыто:
- * сайт существует затем, чтобы его нашли.
+ * Only `/api/` is closed — there is nothing there to index. Everything else is
+ * open: the site exists to be found.
  */
 
 import type { APIRoute } from 'astro';

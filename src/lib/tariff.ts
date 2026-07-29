@@ -1,22 +1,23 @@
 /**
- * Состояние тарифа: показывать цифру или молчать.
+ * Tariff state: show the figure, or stay quiet.
  *
- * Единственная функция, которая решает этот вопрос, и она чистая — на вход
- * записи и момент времени, на выходе состояние. Никаких `new Date()` внутри:
- * иначе поведение на границе срока нельзя проверить, не дождавшись полуночи.
+ * The one function that answers that question, and it is pure — records and
+ * an instant in, state out. No `new Date()` inside: otherwise behaviour at
+ * the expiry boundary cannot be checked without waiting for midnight.
  *
- * Три состояния:
+ * Three states:
  *
- * - `valid`            — есть действующее постановление. Цифра показывается,
- *                        калькулятор работает.
- * - `review_required`  — постановление было, его срок истёк, преемника нет.
- *                        Цифра скрыта, калькулятор выключен, последняя
- *                        известная цифра показывается как архив.
- * - `unavailable`      — действовавшего постановления нет вовсе (пустой файл
- *                        или только будущие записи). Цифры нет и архива нет.
+ * - `valid`            — a decree is in force. The figure is shown and the
+ *                        calculator works.
+ * - `review_required`  — a decree existed, its period has ended, and no
+ *                        successor has arrived. The figure is withheld, the
+ *                        calculator is off, the last known figure is shown
+ *                        as an archive.
+ * - `unavailable`      — no decree has ever been in force (empty file, or
+ *                        only future-dated records). No figure and no archive.
  *
- * `review_required` и `unavailable` — не ошибки. Это обычные состояния
- * страницы, и именно ради них всё построено.
+ * `review_required` and `unavailable` are not errors. They are ordinary
+ * states of the page, and the whole thing was built around them.
  */
 
 import { minskDate } from './date.ts';
@@ -24,43 +25,43 @@ import { FINENESSES, HEADLINE_FINENESS, type FinenessKey, type TariffRecord } fr
 
 export type TariffStatus = 'valid' | 'review_required' | 'unavailable';
 
-/** Почему состояние такое. Определяет текст на странице. */
+/** Why the state is what it is. Determines the copy on the page. */
 export type TariffReason =
-  /** Действует постановление с названным сроком. */
+  /** A decree with a stated end date is in force. */
   | 'in_force_until'
-  /** Действует постановление, срок в акте не назван. */
+  /** A decree is in force and names no end date. */
   | 'in_force_no_expiry'
-  /** Срок истёк, преемник не опубликован. */
+  /** The period has ended and no successor has been published. */
   | 'expired_no_successor'
-  /** В репозитории нет ни одной записи. */
+  /** There is not a single record in the repository. */
   | 'no_records'
-  /** Записи есть, но ни одна ещё не вступила в силу. */
+  /** Records exist, but none has taken force yet. */
   | 'not_yet_effective';
 
 export interface TariffState {
   readonly status: TariffStatus;
-  /** Дата, на которую посчитано состояние, `YYYY-MM-DD` по Минску. */
+  /** The date the state was computed for, `YYYY-MM-DD` in Minsk. */
   readonly asOf: string;
   readonly reason: TariffReason;
-  /** Запись, по которой можно считать. Не `null` только при `valid`. */
+  /** The record to compute against. Non-null only when `valid`. */
   readonly current: TariffRecord | null;
   /**
-   * Последняя вступавшая в силу запись — независимо от того, действует она
-   * сейчас или нет. При `review_required` это то, что показывается как архив.
+   * The last record that ever took force, whether or not it is still in
+   * force. Under `review_required` this is what is shown as the archive.
    */
   readonly lastKnown: TariffRecord | null;
-  /** Запись, вступающая в силу позже сегодняшнего дня, если такая есть. */
+  /** A record taking force later than today, if there is one. */
   readonly upcoming: TariffRecord | null;
-  /** Все вступавшие в силу записи, новые сначала. Питает историю и спарклайн. */
+  /** Every record that has taken force, newest first. Feeds history and sparkline. */
   readonly history: readonly TariffRecord[];
-  /** Сколько дней прошло с истечения срока. Только при `review_required`. */
+  /** Days elapsed since expiry. Only under `review_required`. */
   readonly daysSinceExpiry: number | null;
 }
 
 /**
- * Порядок записей: сначала по дате вступления в силу, потом по дате акта,
- * потом по номеру. Два акта с одной датой вступления — редкость, но порядок
- * должен быть определённым, иначе сборка будет невоспроизводимой.
+ * Record ordering: by effective date, then act date, then number. Two acts
+ * sharing an effective date is rare, but the order must be determined or the
+ * build stops being reproducible.
  */
 function compareRecords(a: TariffRecord, b: TariffRecord): number {
   if (a.effective_from !== b.effective_from) return a.effective_from < b.effective_from ? -1 : 1;
@@ -68,7 +69,7 @@ function compareRecords(a: TariffRecord, b: TariffRecord): number {
   return a.act_number.localeCompare(b.act_number, 'ru');
 }
 
-/** Число полных суток между двумя ISO-датами. Обе трактуются как UTC-полночь. */
+/** Whole days between two ISO dates. Both are read as UTC midnight. */
 function daysBetween(fromIso: string, toIso: string): number {
   const from = Date.parse(`${fromIso}T00:00:00Z`);
   const to = Date.parse(`${toIso}T00:00:00Z`);
@@ -76,10 +77,10 @@ function daysBetween(fromIso: string, toIso: string): number {
 }
 
 /**
- * Считает состояние тарифа на момент `now`.
+ * Computes the tariff state at instant `now`.
  *
- * @param records записи из `data/tariffs.json`, в любом порядке
- * @param now     момент, на который считаем. Часы передаются снаружи.
+ * @param records records from `data/tariffs.json`, in any order
+ * @param now     the instant to compute for. The clock comes from outside.
  */
 export function resolveTariffState(
   records: readonly TariffRecord[],
@@ -92,8 +93,9 @@ export function resolveTariffState(
   const future = ordered.filter((record) => record.effective_from > asOf);
   const upcoming = future[0] ?? null;
 
-  // Последняя вступившая в силу запись. Она же вытесняет все предыдущие,
-  // включая бессрочные: акт без названного срока действует до замены, а не вечно.
+  // The last record to take force. It supersedes every earlier one, including
+  // open-ended ones: an act with no stated end date runs until replaced, not
+  // forever.
   const lastKnown = effective.at(-1) ?? null;
   const history = [...effective].reverse();
 
@@ -111,7 +113,7 @@ export function resolveTariffState(
   }
 
   if (lastKnown.stated_expiry === null) {
-    // Срок в акте не назван — держим, пока не заменят. Так сказано в брифе.
+    // The act states no end date — hold it until replaced, as the brief says.
     return {
       status: 'valid',
       asOf,
@@ -137,7 +139,7 @@ export function resolveTariffState(
     };
   }
 
-  // Срок истёк, преемника нет: цифру не показываем и не считаем.
+  // Expired with no successor: neither show the figure nor compute with it.
   return {
     status: 'review_required',
     asOf,
@@ -150,25 +152,26 @@ export function resolveTariffState(
   };
 }
 
-/** Можно ли считать калькулятором. Один вопрос — один ответ. */
+/** Whether the calculator may compute. One question, one answer. */
 export function isCalculatorEnabled(state: TariffState): boolean {
   return state.status === 'valid' && state.current !== null;
 }
 
-/** Пробы записи в каноническом порядке — только те, что назвал акт. */
+/** The record's finenesses in canonical order — only those the act names. */
 export function finenessesOf(record: TariffRecord): readonly FinenessKey[] {
   return FINENESSES.filter((key) => record.prices_byn_per_gram[key] !== undefined);
 }
 
-/** Цена за грамм для пробы, либо `null`, если акт эту пробу не называет. */
+/** The price per gram for a fineness, or `null` if the act does not name it. */
 export function priceFor(record: TariffRecord, fineness: FinenessKey): number | null {
   return record.prices_byn_per_gram[fineness] ?? null;
 }
 
 /**
- * Проба и цена для крупной цифры наверху. 585 — если акт её назвал; иначе
- * первая имеющаяся. Пустой таблицы цен схема не пропускает, но `null`
- * возвращается честно, а не подставляется нулём.
+ * The fineness and price for the large figure at the top. 585 if the act
+ * names it, otherwise the first available. The schema does not allow an
+ * empty price table, but `null` is returned honestly rather than filled
+ * in with a zero.
  */
 export function headlinePrice(
   record: TariffRecord,
@@ -182,9 +185,9 @@ export function headlinePrice(
 }
 
 /**
- * Ряд цен одной пробы по истории, от старых к новым — для спарклайна.
- * Записи без этой пробы пропускаются: разрыв в ряду честнее, чем
- * подставленное «примерно столько же».
+ * The price series for one fineness across history, oldest first — for the
+ * sparkline. Records lacking that fineness are skipped: a gap in the series
+ * is more honest than an interpolated "about the same".
  */
 export function priceSeries(
   state: TariffState,

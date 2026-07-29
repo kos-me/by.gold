@@ -9,39 +9,39 @@ import {
 } from '../src/lib/schema.ts';
 import { bullionRecord, tariff, SOURCE_URL } from './fixtures/records.ts';
 
-/** Пути, по которым нашлись замечания — так тесты читаются короче. */
+/** The paths issues were found at — keeps the assertions short. */
 function issuePaths(issues: readonly ValidationIssue[]): string[] {
   return issues.map((issue) => issue.path);
 }
 
 function expectRejected(input: unknown): readonly ValidationIssue[] {
   const result = validateTariffRecord(input);
-  if (result.ok) throw new Error('запись принята, хотя должна была быть отвергнута');
+  if (result.ok) throw new Error('record was accepted when it should have been rejected');
   return result.issues;
 }
 
-describe('validateTariffRecord — три обязательных поля происхождения', () => {
-  it('принимает полную корректную запись', () => {
+describe('validateTariffRecord — the three mandatory provenance fields', () => {
+  it('accepts a complete, correct record', () => {
     const result = validateTariffRecord(tariff());
     expect(result.ok).toBe(true);
   });
 
-  it('отвергает запись без act_number', () => {
+  it('rejects a record with no act_number', () => {
     const { act_number: _omitted, ...withoutActNumber } = tariff();
     expect(issuePaths(expectRejected(withoutActNumber))).toContain('act_number');
   });
 
-  it('отвергает пустой и пробельный act_number', () => {
+  it('rejects an empty or whitespace act_number', () => {
     expect(issuePaths(expectRejected(tariff({ act_number: '' })))).toContain('act_number');
     expect(issuePaths(expectRejected(tariff({ act_number: '   ' })))).toContain('act_number');
   });
 
-  it('отвергает запись без effective_from', () => {
+  it('rejects a record with no effective_from', () => {
     const { effective_from: _omitted, ...withoutEffectiveFrom } = tariff();
     expect(issuePaths(expectRejected(withoutEffectiveFrom))).toContain('effective_from');
   });
 
-  it('отвергает effective_from не в формате YYYY-MM-DD', () => {
+  it('rejects an effective_from not in YYYY-MM-DD', () => {
     expect(issuePaths(expectRejected(tariff({ effective_from: '10.01.2000' })))).toContain(
       'effective_from',
     );
@@ -53,18 +53,18 @@ describe('validateTariffRecord — три обязательных поля пр
     );
   });
 
-  it('отвергает запись без source_url', () => {
+  it('rejects a record with no source_url', () => {
     const { source_url: _omitted, ...withoutSource } = tariff();
     expect(issuePaths(expectRejected(withoutSource))).toContain('source_url');
   });
 
-  it('отвергает источник вне списка официальных хостов', () => {
+  it('rejects a source outside the official host list', () => {
     const issues = expectRejected(tariff({ source_url: 'https://news.example.by/gold-price' }));
     expect(issuePaths(issues)).toContain('source_url');
     expect(issues.map((i) => i.message).join(' ')).toContain('news.example.by');
   });
 
-  it('принимает pravo.by и etalonline.by как источник акта', () => {
+  it('accepts pravo.by and etalonline.by as act sources', () => {
     expect(validateTariffRecord(tariff({ source_url: 'https://pravo.by/document/?guid=1' })).ok).toBe(
       true,
     );
@@ -73,7 +73,7 @@ describe('validateTariffRecord — три обязательных поля пр
     );
   });
 
-  it('отвергает не-ссылку в source_url', () => {
+  it('rejects a non-link in source_url', () => {
     expect(issuePaths(expectRejected(tariff({ source_url: 'минфин, страница скупки' })))).toContain(
       'source_url',
     );
@@ -81,53 +81,53 @@ describe('validateTariffRecord — три обязательных поля пр
 });
 
 describe('validateTariffRecord — stated_expiry', () => {
-  it('принимает null: акт без названного срока — обычное дело', () => {
+  it('accepts null: an act with no stated end date is ordinary', () => {
     const result = validateTariffRecord(tariff({ stated_expiry: null }));
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.stated_expiry).toBeNull();
   });
 
-  it('требует, чтобы поле присутствовало: отсутствие ≠ null', () => {
+  it('requires the field to be present: absent ≠ null', () => {
     const { stated_expiry: _omitted, ...withoutExpiry } = tariff();
     const issues = expectRejected(withoutExpiry);
     expect(issuePaths(issues)).toContain('stated_expiry');
   });
 
-  it('отвергает срок раньше вступления в силу', () => {
+  it('rejects an expiry earlier than the effective date', () => {
     const issues = expectRejected(
       tariff({ effective_from: '2000-01-10', stated_expiry: '2000-01-05' }),
     );
     expect(issuePaths(issues)).toContain('stated_expiry');
   });
 
-  it('отвергает строку, которая не дата и не null', () => {
+  it('rejects a string that is neither a date nor null', () => {
     expect(issuePaths(expectRejected(tariff({ stated_expiry: 'бессрочно' as never })))).toContain(
       'stated_expiry',
     );
   });
 });
 
-describe('validateTariffRecord — цены', () => {
-  it('отвергает пустую таблицу цен', () => {
+describe('validateTariffRecord — prices', () => {
+  it('rejects an empty price table', () => {
     expect(issuePaths(expectRejected(tariff({ prices_byn_per_gram: {} })))).toContain(
       'prices_byn_per_gram',
     );
   });
 
-  it('принимает неполный набор проб: какие пробы назвал акт, такие и есть', () => {
+  it('accepts a partial fineness set: whichever the act names', () => {
     const result = validateTariffRecord(tariff({ prices_byn_per_gram: { '585': 3.0 } }));
     expect(result.ok).toBe(true);
   });
 
-  it('отвергает неизвестную пробу', () => {
+  it('rejects an unknown fineness', () => {
     const issues = expectRejected(
       tariff({ prices_byn_per_gram: { '585': 3.0, '999': 4.0 } as never }),
     );
-    // 999 в таблице скупки изделий и лома нет — это проба слитка, не изделия.
+    // 999 is absent from the scrap table — it is a bullion fineness, not an item's.
     expect(issuePaths(issues)).toContain('prices_byn_per_gram.999');
   });
 
-  it('отвергает нулевую, отрицательную и нечисловую цену', () => {
+  it('rejects a zero, negative or non-numeric price', () => {
     expect(issuePaths(expectRejected(tariff({ prices_byn_per_gram: { '585': 0 } })))).toContain(
       'prices_byn_per_gram.585',
     );
@@ -143,8 +143,8 @@ describe('validateTariffRecord — цены', () => {
   });
 });
 
-describe('validateTariffRecord — перенос', () => {
-  it('требует момент переноса с часовым поясом', () => {
+describe('validateTariffRecord — transcription', () => {
+  it('requires a transcription instant with a time zone', () => {
     expect(issuePaths(expectRejected(tariff({ transcribed_at: '2000-01-10' })))).toContain(
       'transcribed_at',
     );
@@ -153,18 +153,18 @@ describe('validateTariffRecord — перенос', () => {
     );
   });
 
-  it('требует, чтобы было указано, кто переносил', () => {
+  it('requires who did the transcribing', () => {
     expect(issuePaths(expectRejected(tariff({ transcribed_by: '' })))).toContain('transcribed_by');
   });
 
-  it('отвергает вступление в силу раньше принятия акта', () => {
+  it('rejects taking force before the act was adopted', () => {
     const issues = expectRejected(
       tariff({ act_date: '2000-01-10', effective_from: '2000-01-01' }),
     );
     expect(issuePaths(issues)).toContain('effective_from');
   });
 
-  it('копирует запись, а не отдаёт ссылку на входной объект', () => {
+  it('copies the record rather than returning the input object', () => {
     const input = tariff();
     const result = validateTariffRecord(input);
     expect(result.ok).toBe(true);
@@ -173,7 +173,7 @@ describe('validateTariffRecord — перенос', () => {
     expect(result.value.prices_byn_per_gram).not.toBe(input.prices_byn_per_gram);
   });
 
-  it('обрезает пробелы в номере акта и ссылке', () => {
+  it('trims whitespace in the act number and the link', () => {
     const result = validateTariffRecord(tariff({ act_number: '  TEST-1 ' }));
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.act_number).toBe('TEST-1');
@@ -181,32 +181,32 @@ describe('validateTariffRecord — перенос', () => {
 });
 
 describe('validateTariffFile', () => {
-  it('принимает пустой массив: это рабочее состояние, а не ошибка', () => {
+  it('accepts an empty array: a working state, not an error', () => {
     const result = validateTariffFile([]);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value).toEqual([]);
   });
 
-  it('отвергает не-массив', () => {
+  it('rejects a non-array', () => {
     expect(validateTariffFile({}).ok).toBe(false);
     expect(validateTariffFile(null).ok).toBe(false);
   });
 
-  it('указывает индекс записи в пути замечания', () => {
+  it('names the record index in the issue path', () => {
     const result = validateTariffFile([tariff(), tariff({ act_number: '' })]);
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(issuePaths(result.issues)).toContain('[1].act_number');
   });
 
-  it('ловит дубликат акта — типичный недосмотр при слиянии', () => {
+  it('catches a duplicate act — a typical merge oversight', () => {
     const result = validateTariffFile([tariff(), tariff()]);
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.issues.some((i) => i.message.includes('уже есть в записи [0]'))).toBe(true);
+    expect(result.issues.some((i) => i.message.includes('already present as record [0]'))).toBe(true);
   });
 
-  it('разные акты с одним номером, но разными датами — не дубликат', () => {
+  it('different acts sharing a number but not a date are not duplicates', () => {
     const result = validateTariffFile([
       tariff({ act_number: 'TEST-1', effective_from: '2000-01-10', stated_expiry: '2000-01-31' }),
       tariff({
@@ -221,15 +221,15 @@ describe('validateTariffFile', () => {
 });
 
 describe('validateBullionFile', () => {
-  it('принимает пустой массив', () => {
+  it('accepts an empty array', () => {
     expect(validateBullionFile([]).ok).toBe(true);
   });
 
-  it('принимает корректную запись НБРБ', () => {
+  it('accepts a valid National Bank record', () => {
     expect(validateBullionFile([bullionRecord()]).ok).toBe(true);
   });
 
-  it('не берёт цены слитков ниоткуда, кроме nbrb.by', () => {
+  it('takes bullion prices from nowhere but nbrb.by', () => {
     const result = validateBullionFile([bullionRecord({ source_url: SOURCE_URL })]);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(issuePaths(result.issues)).toContain('[0].source_url');
@@ -237,13 +237,13 @@ describe('validateBullionFile', () => {
 });
 
 describe('validateStatusFile', () => {
-  it('принимает null: проверок ещё не было', () => {
+  it('accepts null: no check has happened yet', () => {
     const result = validateStatusFile({ last_checked: null, last_checked_source: null });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.last_checked).toBeNull();
   });
 
-  it('требует часовой пояс у момента проверки', () => {
+  it('requires a time zone on the check instant', () => {
     expect(validateStatusFile({ last_checked: '2000-01-10', last_checked_source: null }).ok).toBe(
       false,
     );

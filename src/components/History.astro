@@ -1,10 +1,10 @@
 ---
 /**
- * История цены: спарклайн и компактная таблица.
+ * Price history: a sparkline and a compact table.
  *
- * Целиком питается прошлыми записями. Нет записей — секции нет вовсе:
- * пустая карточка «истории пока нет» ничего не сообщает, а место занимает.
- * Спарклайн появляется от трёх точек — по двум рисовать нечего.
+ * Driven entirely by past records. No records means no section at all: an
+ * empty "no history yet" card says nothing and takes up room. The sparkline
+ * appears from three points — there is nothing to draw with two.
  */
 import { formatByn } from '../lib/calc.ts';
 import { formatRuPeriod } from '../lib/date.ts';
@@ -21,8 +21,8 @@ const series = priceSeries(state, HEADLINE_FINENESS);
 const showSparkline = series.length >= 3;
 
 /*
- * Высота столбика. Нижняя граница берётся с запасом ниже минимума, иначе
- * самый дешёвый месяц выглядит как ноль и ряд читается как обвал.
+ * Bar height. The floor sits some way below the minimum, otherwise the
+ * cheapest month renders as zero and the series reads as a collapse.
  */
 const values = series.map((entry) => entry.price);
 const max = values.length === 0 ? 0 : Math.max(...values);

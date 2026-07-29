@@ -12,10 +12,10 @@ import { headCopy, ROUTES, TRADE_IN_COPY, TRADE_IN_LABEL } from '../lib/copy.ts'
 import { resolveTariffState } from '../lib/tariff.ts';
 
 /*
- * Состояние считается один раз на сборке. Часы — момент сборки: сайт
- * статический, и «сегодня» на странице означает день, когда её собрали.
- * Cron-воркер пересобирает сайт, поэтому в проде это не расходится больше
- * чем на интервал проверки.
+ * State is computed once, at build time. The clock is the build instant: the
+ * site is static, so "today" on the page means the day it was built. The cron
+ * worker rebuilds the site, so in production this never drifts by more than
+ * one check interval.
  */
 const state = resolveTariffState(tariffs, new Date());
 const head = headCopy(state);

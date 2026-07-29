@@ -1,14 +1,16 @@
 /**
- * Тексты, зависящие от состояния данных.
+ * Copy that depends on the state of the data.
  *
- * Собраны в одном модуле, потому что состояние «цифры нет» — не подпись
- * к ошибке, а полноценный экран со своим заголовком, объяснением и
- * подписью к калькулятору. Разложенные по компонентам, эти фразы неизбежно
- * начнут расходиться между собой.
+ * Gathered in one module because "there is no figure" is not an error label
+ * but a full screen with its own headline, explanation and calculator
+ * caption. Scattered across components, these phrases would inevitably
+ * drift apart.
  *
- * Правила тона (из брифа): без извинений, без иконок предупреждения, без
- * «упс». Что известно, что уточняем, ссылка на источник. И ни при каких
- * условиях — обещания суммы, прогноза или «лучшей цены».
+ * Tone rules from the brief: no apology, no warning icons, no "oops". What
+ * is known, what is being confirmed, a link to the source. And under no
+ * circumstances a promise of a sum, a forecast or a "best price".
+ *
+ * Everything below is visitor-facing and therefore Russian.
  */
 
 import { formatRuDate } from './date.ts';
@@ -19,7 +21,7 @@ export interface HeadCopy {
   readonly lede: string;
 }
 
-/** Заголовок и подзаголовок главной. */
+/** Headline and standfirst for the homepage. */
 export function headCopy(state: TariffState): HeadCopy {
   switch (state.reason) {
     case 'in_force_until':
@@ -63,7 +65,7 @@ export function headCopy(state: TariffState): HeadCopy {
   }
 }
 
-/** Короткая подпись рядом с «Цифры пока нет» в блоке цены. */
+/** Short caption beside "Цифры пока нет" in the price block. */
 export function absenceNote(state: TariffState): string {
   switch (state.reason) {
     case 'expired_no_successor':
@@ -80,7 +82,7 @@ export function absenceNote(state: TariffState): string {
   }
 }
 
-/** Правая колонка панели: что именно уточняется. */
+/** Right-hand panel column: what exactly is being confirmed. */
 export function pendingCopy(state: TariffState, hasCheckLog: boolean): string {
   const cadence = hasCheckLog
     ? 'Проверяем сайт Минфина каждый час; страница обновится сама.'
@@ -99,7 +101,7 @@ export function pendingCopy(state: TariffState, hasCheckLog: boolean): string {
   }
 }
 
-/** Левая колонка панели: что не меняется независимо от цифры. */
+/** Left-hand panel column: what does not change whatever the figure is. */
 export const KNOWN_COPY =
   'Порядок не менялся: цену устанавливает Минфин, и во всех лицензированных ' +
   'скупках она одинакова. Меняется только цифра.';
@@ -109,12 +111,12 @@ export interface CalcOutCopy {
   readonly note: string;
 }
 
-/** Подписи вокруг результата расчёта. */
+/** Captions around the calculation result. */
 export function calcOutCopy(state: TariffState): CalcOutCopy {
   if (state.status === 'valid') {
     return {
-      // Ровно эта формулировка, а не «сколько вы получите»: итоговая сумма
-      // зависит от опробования и зачётной массы, и этот разрыв не закрывается.
+      // Exactly this wording, never "what you will get": the final sum
+      // depends on the assay and the accepted mass, and that gap stays open.
       label: 'Стоимость по официальным ценам Минфина',
       note: 'Итоговая сумма зависит от пробы и зачётной массы, определённых при приёмке.',
     };
@@ -136,14 +138,14 @@ export function calcOutCopy(state: TariffState): CalcOutCopy {
 }
 
 /**
- * Врезка про зачёт при обмене.
+ * The trade-in callout.
  *
- * Формулировка сознательно отличается от макета. В макете было «ювелирные
- * сети иногда платят выше... по своим программам выкупа» — это утверждение
- * о том, что за обычную скупку за наличные кто-то платит больше другого,
- * а такого быть не может: тариф один для всех. Выше тарифа бывает только
- * зачёт при покупке нового изделия, и это другая сделка. Описываем механизм,
- * ничьих условий не цитируем.
+ * The wording deliberately departs from the mockup, which said "jewellery
+ * chains sometimes pay above this price… under their own buyback programmes".
+ * That asserts someone pays more than someone else for ordinary cash buyback,
+ * which cannot be true: the tariff is identical everywhere. Above-tariff only
+ * happens as a trade-in credit against a new purchase, and that is a different
+ * transaction. Describe the mechanism; quote nobody's terms.
  */
 export const TRADE_IN_LABEL = 'бывает иначе';
 
@@ -158,7 +160,7 @@ export const CALC_ASIDE_COPY =
   'Здесь посчитана скупка за наличные. Если вы меняете старое изделие на ' +
   'новое, это другая сделка и другой расчёт — уточняйте у продавца.';
 
-/** Три маршрута «не ваш случай». */
+/** The three "not your case" routes. */
 export const ROUTES: readonly { readonly title: string; readonly text: string }[] = [
   {
     title: 'Обмен на новое изделие',
@@ -181,13 +183,13 @@ export const ROUTES: readonly { readonly title: string; readonly text: string }[
   },
 ];
 
-/** Пояснение к таблице проб. */
+/** Note under the fineness table. */
 export const TARIFF_TABLE_NOTE =
   'Цена указана за грамм лигатурной массы изделия соответствующей пробы. ' +
   'Пробу определяют при приёмке — клеймо на изделии не всегда совпадает ' +
   'с результатом опробования.';
 
-/** Оговорки рядом с полем ввода. Главное, что страница вообще сообщает. */
+/** Caveats beside the input. The most useful thing the page says at all. */
 export const CALC_CAVEATS: readonly string[] = [
   'Вес брутто не равен зачётной массе: камни, эмаль, замки из другого металла не считаются.',
   'Клеймо — заявленная проба. Итоговую определит опробование при приёмке.',

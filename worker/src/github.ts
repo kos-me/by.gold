@@ -1,26 +1,26 @@
 /**
- * Открыть PR или завести issue.
+ * Opening a pull request or filing an issue.
  *
- * Воркер ничего не публикует. Он только предлагает: складывает разобранную
- * запись и сырой HTML страницы в ветку и открывает PR. Цифра попадает на сайт
- * ровно тогда, когда человек откроет акт, впишет даты, которых на странице
- * нет, и сольёт PR руками.
+ * The worker publishes nothing. It only proposes: it puts the parsed record
+ * and the page's raw HTML on a branch and opens a pull request. A figure
+ * reaches the site exactly when a person opens the act, fills in the dates
+ * that are absent from the page, and merges the PR by hand.
  *
- * Все обращения к API идут через переданный `fetch`, чтобы тест мог
- * проверить последовательность запросов, ничего никуда не отправляя.
+ * Every API call goes through the injected `fetch`, so a test can assert on
+ * the sequence of requests without sending anything anywhere.
  */
 
 const API = 'https://api.github.com';
 
 export interface GitHubConfig {
   readonly token: string;
-  /** `владелец/репозиторий`. */
+  /** `owner/repository`. */
   readonly repo: string;
   readonly baseBranch?: string;
   readonly fetchImpl?: typeof fetch;
 }
 
-/** UTF-8 → base64. `btoa` работает только с latin1 и на кириллице падает. */
+/** UTF-8 → base64. `btoa` handles latin1 only and throws on Cyrillic. */
 export function toBase64(text: string): string {
   const bytes = new TextEncoder().encode(text);
   let binary = '';
@@ -73,7 +73,7 @@ export class GitHub {
     return (await response.json()) as T;
   }
 
-  /** Существует ли ветка. Нужна, чтобы не открывать второй PR о том же акте. */
+  /** Whether a branch exists. Prevents a second PR about the same decree. */
   async branchExists(branch: string): Promise<boolean> {
     try {
       await this.call(`/repos/${this.config.repo}/git/ref/heads/${encodeURIComponent(branch)}`);
@@ -138,7 +138,7 @@ export class GitHub {
     });
   }
 
-  /** Открытые issue с таким заголовком — чтобы не заводить одно и то же каждый час. */
+  /** Open issues with this title — so the same one isn't filed every hour. */
   async hasOpenIssue(title: string): Promise<boolean> {
     const issues = await this.call<{ title: string }[]>(
       `/repos/${this.config.repo}/issues?state=open&per_page=100`,

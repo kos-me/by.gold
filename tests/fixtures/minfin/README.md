@@ -1,32 +1,34 @@
 # tests/fixtures/minfin/
 
-HTML-страницы для парсера. **Собраны вручную. Все цифры выдуманы.**
+HTML pages for the parser. **Hand-built. Every figure is invented.**
 
-Структура — вёрстка, порядок таблиц, слипшаяся ячейка «583 585», порядок
-ячеек в строке золота — снята с живой страницы Минфина
-(`minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/`, прочитана
-29 июля 2026 года). Сами числа и номера актов заменены на заведомо
-ненастоящие: номера `TEST-*`, цены единицами BYN за грамм.
+The structure — markup, table order, the merged "583 585" cell, the cell order
+in the gold row — was taken from the live Minfin page
+(`minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/`, read on
+29 July 2026). The numbers and act numbers were replaced with knowingly fake
+ones: `TEST-*` act numbers, prices in single-digit BYN per gram.
 
-Настоящий HTML страницы в репозиторий **не кладётся**: он содержит настоящие
-цены, а всё, что лежит в репозитории и похоже на цену, рано или поздно
-кто-нибудь примет за данные. Достоверность фикстур — в структуре, а не
-в значениях.
+The page's real HTML is **not committed**: it contains real prices, and
+anything in a repository that looks like a price will eventually be taken for
+data. The fidelity of these fixtures is in their structure, not their values.
 
-Настоящий HTML попадает в репозиторий только один раз и в одном месте:
-воркер прикладывает его к своему PR как доказательство разбора, рядом
-с записью, которую предлагает. Там он не источник данных, а улика.
+Real HTML enters the repository in exactly one place: the worker attaches it
+to its pull request as evidence of what it parsed, next to the record it
+proposes. There it is an exhibit, not a data source.
 
-## Случаи
+The Russian text in these files is deliberate — it is what the parser matches
+against.
 
-| файл | что проверяет | ожидаемо |
+## Cases
+
+| file | what it covers | expected |
 |---|---|---|
-| `current.html` | обычная страница, акт `TEST-1` | разбор проходит |
-| `changed.html` | вышел новый акт `TEST-2`, цены другие | разбор проходит, акт новый |
-| `big-move.html` | акт `TEST-3`, цена ушла больше чем на 15% | разбор проходит + предупреждение, **не** отказ |
-| `maintenance.html` | техобслуживание, HTTP 200, но нет ни акта, ни таблицы | отказ `no_act_line` |
-| `archive.html` | страница архива: несколько актов подряд | отказ `multiple_acts` |
-| `missing-fineness.html` | в таблице нет 583 | разбор проходит + предупреждение |
+| `current.html` | an ordinary page, act `TEST-1` | parses |
+| `changed.html` | a new act `TEST-2`, different prices | parses, act is new |
+| `big-move.html` | act `TEST-3`, a price moved more than 15% | parses **with a warning**, not a refusal |
+| `maintenance.html` | maintenance, HTTP 200, but no act and no table | refusal `no_act_line` |
+| `archive.html` | the archive page: several acts in a row | refusal `multiple_acts` |
+| `missing-fineness.html` | 583 absent from the table | parses with a warning |
 
-Случай с техобслуживанием отдаёт именно 200, а не 503 — в этом и подвох:
-по коду ответа такую страницу не отличить от нормальной.
+The maintenance case answers 200, not 503 — that is the trap: by status code
+alone it is indistinguishable from a healthy page.

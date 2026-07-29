@@ -1,22 +1,22 @@
 /**
- * Проверка Turnstile.
+ * Turnstile verification.
  *
- * В HANDOFF просили обойтись без капчи — «капча ломает тон страницы».
- * Возражение принято и учтено в выборе режима: Turnstile в managed-режиме
- * обычно ничего не спрашивает у человека и выглядит как тонкая полоска,
- * а не как «выберите светофоры». Само требование проверки — из ночного
- * задания, оно приоритетнее.
+ * HANDOFF asked for no captcha — "a captcha breaks the page's tone". The
+ * objection is taken and reflected in the mode: Turnstile in Managed mode
+ * usually asks the visitor nothing and renders as a thin strip rather than
+ * "select all the traffic lights". The requirement to verify comes from the
+ * overnight brief, which takes precedence.
  *
- * Если решите отказаться совсем: убрать вызов `verifyTurnstile` из
- * `contact.ts` и виджет из `ReportForm.astro`. Honeypot и лимит частоты
- * останутся и продолжат работать.
+ * To drop it entirely: remove the `verifyTurnstile` call from `contact.ts`
+ * and the widget from `ReportForm.astro`. The honeypot and the rate limit
+ * stay and keep working.
  */
 
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 export interface TurnstileResult {
   readonly ok: boolean;
-  /** Коды ошибок Cloudflare — только в лог, посетителю их не показываем. */
+  /** Cloudflare error codes — for the log only, never shown to a visitor. */
   readonly errorCodes: readonly string[];
 }
 
@@ -37,7 +37,7 @@ export async function verifyTurnstile(
   try {
     response = await fetchImpl(VERIFY_URL, { method: 'POST', body });
   } catch {
-    // Cloudflare недоступен. Закрываемся: пропустить непроверенным нельзя.
+    // Cloudflare is unreachable. Fail closed: letting it through unverified is not an option.
     return { ok: false, errorCodes: ['verify-unreachable'] };
   }
 

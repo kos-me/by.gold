@@ -6,7 +6,7 @@
     "stated_expiry": "1999-06-30",
     "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
     "transcribed_at": "1999-01-10T09:00:00Z",
-    "transcribed_by": "фикстура",
+    "transcribed_by": "fixture",
     "prices_byn_per_gram": {
       "375": 1.0,
       "500": 1.5,
@@ -18,7 +18,7 @@
       "950": 4.9,
       "958": 5.0
     },
-    "notes": "Тестовая запись. Цифры выдуманные и заведомо ненастоящие."
+    "notes": "Test record. The figures are invented and unmistakably fake."
   },
   {
     "act_number": "TEST-2",
@@ -27,7 +27,7 @@
     "stated_expiry": "1999-12-31",
     "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
     "transcribed_at": "1999-07-01T09:00:00Z",
-    "transcribed_by": "фикстура",
+    "transcribed_by": "fixture",
     "prices_byn_per_gram": {
       "375": 1.13,
       "500": 1.69,
@@ -47,7 +47,7 @@
     "stated_expiry": "2000-06-30",
     "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
     "transcribed_at": "2000-01-01T09:00:00Z",
-    "transcribed_by": "фикстура",
+    "transcribed_by": "fixture",
     "prices_byn_per_gram": {
       "375": 1.07,
       "500": 1.6,
@@ -67,7 +67,7 @@
     "stated_expiry": "2000-12-31",
     "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
     "transcribed_at": "2000-07-01T09:00:00Z",
-    "transcribed_by": "фикстура",
+    "transcribed_by": "fixture",
     "prices_byn_per_gram": {
       "375": 1.27,
       "500": 1.91,
@@ -87,7 +87,7 @@
     "stated_expiry": "2099-12-31",
     "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
     "transcribed_at": "2001-01-01T09:00:00Z",
-    "transcribed_by": "фикстура",
+    "transcribed_by": "fixture",
     "prices_byn_per_gram": {
       "375": 1.37,
       "500": 2.06,
@@ -99,6 +99,6 @@
       "950": 6.71,
       "958": 6.85
     },
-    "notes": "Действующая запись фикстуры. Срок до 2099 года — чтобы состояние оставалось valid и через двадцать лет, а дата при этом не могла сойти за настоящую."
+    "notes": "The fixture record in force. Expiry set to 2099 so the state stays valid twenty years from now while the date could never pass for a real one."
   }
 ]

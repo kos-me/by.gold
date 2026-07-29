@@ -1,16 +1,16 @@
 ---
 /**
- * GA4 с уведомлением о согласии.
+ * GA4 behind a consent notice.
  *
- * Ничего не грузится и не рисуется, пока не задан `PUBLIC_GA4_ID`. Нет
- * идентификатора — нет ни счётчика, ни плашки: пустая плашка «мы используем
- * cookie» без единого cookie была бы просто шумом.
+ * Nothing loads and nothing renders until `PUBLIC_GA4_ID` is set. No id means
+ * no tag and no banner: an empty "we use cookies" bar without a single cookie
+ * would be pure noise.
  *
- * Согласие хранится в собственной cookie, а не в localStorage: хранилища
- * на этом сайте не используются. Cookie техническая, живёт 180 дней,
- * `SameSite=Lax`, без обращения к третьим сторонам.
+ * Consent lives in a first-party cookie rather than localStorage — this site
+ * uses no web storage. The cookie is functional, lasts 180 days, is
+ * `SameSite=Lax`, and involves no third party.
  *
- * Из счётчиков — только GA4. Ни Метрики, ни VK, ни Mail.ru.
+ * The only analytics here is GA4. No Metrica, no VK, no Mail.ru.
  */
 const measurementId = import.meta.env['PUBLIC_GA4_ID'] ?? null;
 ---

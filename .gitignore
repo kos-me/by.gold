@@ -15,7 +15,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# environment variables — секретов в репозитории быть не должно
+# environment variables — no secret may ever live in this repository
 .env
 .env.*
 !.env.example

@@ -1,542 +1,578 @@
-# Журнал сборки
+# Build log
 
-Ночная автономная сборка. Каждый шаг — из плана в брифе. Решения, принятые
-без возможности спросить, помечены **Решение**; возражения — **Возражение**.
+An overnight autonomous build. One section per step from the brief. Decisions
+taken without the chance to ask are marked **Decision**; objections are marked
+**Objection**.
 
 ---
 
-## Шаг 1 — каркас Astro + TypeScript strict
+## Step 1 — Astro + TypeScript strict scaffold
 
-**Сделано**
+**Done**
 
-- `mise.toml` + `.node-version` фиксируют Node 24.15.0.
-- Astro 7.1.5, шаблон `minimal`, `output: 'static'`.
-- `tsconfig.json` — `astro/tsconfigs/strict` плюс `noUncheckedIndexedAccess`,
+- `mise.toml` and `.node-version` pin Node 24.15.0.
+- Astro 7.1.5, `minimal` template, `output: 'static'`.
+- `tsconfig.json` — `astro/tsconfigs/strict` plus `noUncheckedIndexedAccess`,
   `exactOptionalPropertyTypes`, `noUnusedLocals/Parameters`,
   `noFallthroughCasesInSwitch`, `verbatimModuleSyntax`.
-- Vitest 4 как тест-раннер (`tests/**/*.test.ts`).
-- `data/tariffs.json` и `data/bullion.json` созданы **пустыми массивами** —
-  как велено в брифе. Ни одной цифры в репозитории нет.
-- `npm run build` и `npm run typecheck` зелёные.
+- Vitest 4 as the runner (`tests/**/*.test.ts`).
+- `data/tariffs.json` and `data/bullion.json` created as **empty arrays**, as
+  the brief demanded. Not one figure is in the repository.
+- `npm run build` and `npm run typecheck` green.
 
-**Окружение**
+**Environment.** Node is installed on this machine but through `mise` with no
+global version, so `node` was not on `PATH`. I left the user's global config
+alone: instead of `mise use -g`, a `mise.toml` in the project. That also fixes
+startup for CI.
 
-Node в системе есть, но через `mise` и без глобальной версии — `node` не был
-в `PATH`. Глобальный конфиг пользователя не трогал: вместо `mise use -g`
-положил `mise.toml` в проект. Это же чинит запуск и для CI.
+**Decision — `build.format: 'file'`.** Astro otherwise emits
+`kak-proverit-otsenku/index.html`; with `trailingSlash: 'never'` that means a
+redirect on every navigation. `'file'` emits `kak-proverit-otsenku.html`, which
+Cloudflare Pages serves at the extension-less URL directly.
 
-**Решение** — `build.format: 'file'`. Astro по умолчанию кладёт
-`kak-proverit-otsenku/index.html`; при `trailingSlash: 'never'` это даёт
-редирект на каждый переход. `'file'` отдаёт `kak-proverit-otsenku.html`,
-Cloudflare Pages раздаёт его по адресу без расширения напрямую.
+**Decision — `inlineStylesheets: 'always'`.** The budget is 150 KB excluding
+fonts and there is not much CSS; a separate request costs more than inlining.
 
-**Решение** — `inlineStylesheets: 'always'`. Бюджет 150 КБ без шрифтов,
-CSS на сайте немного; отдельный запрос за стилями дороже, чем его инлайн.
-
-**Решение** — `handoff/` остаётся в репозитории как исходник дизайна, но
-исключён из `tsconfig` (иначе `astro check` ругается на `support.js`
-из макета — это рантайм превью, не наш код).
+**Decision — `handoff/` stays in the repository** as design source material but
+is excluded from `tsconfig` (otherwise `astro check` complains about the
+mockup's `support.js`, which is preview runtime, not our code).
 
 ---
 
-## Шаг 2 — схема данных и её проверка
+## Step 2 — the data schema and its validation
 
-**Сделано**
+**Done**
 
-- `src/lib/schema.ts` — типы и валидаторы без зависимостей (импортируются
-  и сайтом, и будущим воркером). Zod не добавлял: ручная проверка даёт
-  сообщения по-русски и не тянет пакет ради одного файла.
-- `src/lib/date.ts` — ISO-даты строками, минский `сегодня`, форматирование.
-- `src/lib/data.ts` — чтение `data/` на сборке; невалидные данные роняют
-  сборку с перечнем замечаний.
+- `src/lib/schema.ts` — types and validators with no dependencies (imported by
+  both the site and the worker). I did not add Zod: hand-rolled validation
+  gives precise messages and does not pull a package in for one file.
+- `src/lib/date.ts` — ISO dates as strings, "today" in Minsk, formatting.
+- `src/lib/data.ts` — reads `data/` at build time; invalid data kills the build
+  with a list of issues.
 - `tests/schema.test.ts`, `tests/date.test.ts`, `tests/data-integrity.test.ts`
-  — 56 тестов, зелёные.
-- `npm run build` теперь начинается с `validate:data`.
+  — 56 tests, green.
+- `npm run build` now starts with `validate:data`.
 
-**Обязательные поля.** `act_number`, `effective_from`, `source_url` — без них
-запись отвергается, как и требовалось. Сверх того обязательны `act_date`,
-`transcribed_at`, `transcribed_by`: без «кто и когда переносил» цифру не
-у кого проверить.
+**Mandatory fields.** `act_number`, `effective_from`, `source_url` — a record
+missing any of them is rejected, as required. Beyond those I also made
+`act_date`, `transcribed_at` and `transcribed_by` mandatory: without "who
+transcribed it and when" there is nobody to ask about the figure.
 
-**`stated_expiry`.** Поле обязано *присутствовать*, но `null` — законное
-значение. Отсутствие поля ≠ `null`: это разница между «акт срока не назвал»
-и «человек забыл посмотреть». Первое — данные, второе — недосмотр.
+**`stated_expiry`.** The field must be *present*, but `null` is a legal value.
+An absent field is not the same as `null`: that is the difference between "the
+act named no end date" and "somebody forgot to look". The first is data; the
+second is an oversight.
 
-**Решение — закрытый список хостов источника.** `source_url` принимается
-только с `minfin.gov.by`, `pravo.by`, `etalonline.by`, `nbrb.by` (и `www.`).
-Не «предупреждение», а отказ: добавить хост — одна строка и осознанное
-действие, а вот тихо принять ссылку на новость нельзя. Для слитков список
-ещё уже — только `nbrb.by`.
+**Decision — a closed list of source hosts.** `source_url` is accepted only
+from `minfin.gov.by`, `pravo.by`, `etalonline.by`, `nbrb.by` (and `www.`). Not
+a warning but a refusal: adding a host is one line and a deliberate act,
+whereas quietly accepting a link to a news story is not acceptable. For bullion
+the list is narrower still — `nbrb.by` only.
 
-**Решение — неполный набор проб допустим.** Схема не требует все шесть проб:
-какие назвал акт, такие и есть. Проверку «все ожидаемые пробы на месте»
-делает парсер на шаге 9 и помечает расхождение как «нужна проверка», а не
-как «невалидно» — ровно как сказано в брифе.
+**Decision — a partial fineness set is allowed.** The schema does not demand
+all nine: whichever the act names is what exists. The "all expected finenesses
+present" check belongs to the parser in step 9 and flags a discrepancy as
+"needs review" rather than "invalid", exactly as the brief asks.
 
-**Решение — цена строго > 0.** Ноль в таблице цен — не «бесплатно», а сбой
-переноса. Такая запись не проходит.
+**Decision — prices strictly > 0.** A zero in the price table is not "free" but
+a transcription failure. Such a record does not pass.
 
-**Решение — `data-integrity.test.ts` сторожит обе стороны границы.**
-В `data/` не должно быть маркеров фикстур (`TEST-`, `example.by`, «заглушка»);
-в `tests/` цены обязаны быть меньше 10 BYN/г и даты — 2000 года, чтобы
-фикстуру нельзя было спутать с настоящей записью. Плюс grep по `src/`:
-ни одного числа рядом с `BYN` в исходниках.
-
----
-
-## Шаг 3 — состояние тарифа
-
-**Сделано**
-
-- `src/lib/tariff.ts`, функция `resolveTariffState(records, now)`. Чистая:
-  часы передаются аргументом, `new Date()` внутри нет. Иначе поведение на
-  границе срока проверяется только ожиданием полуночи.
-- `tests/tariff.test.ts` — 34 теста.
-
-**Как решается статус**
-
-1. Записи сортируются по дате вступления в силу.
-2. Берётся последняя, у которой `effective_from <= сегодня` — она вытесняет
-   все предыдущие, **включая бессрочные**.
-3. Нет такой записи → `unavailable` (`no_records` или `not_yet_effective`).
-4. `stated_expiry === null` → `valid`, держим до замены.
-5. `сегодня <= stated_expiry` → `valid`.
-6. Иначе → `review_required`: цифра скрыта, архив сохранён.
-
-**Решение — «действует до 31.07» включает 31 июля.** Сравнение `<=`.
-Иначе сайт молчал бы сутки при живом акте.
-
-**Решение — состояние `not_yet_effective`.** Акт опубликован, но вступает
-в силу позже — это отдельная причина, и страница может честно сказать
-«новое постановление уже есть, вступает в силу такого-то числа», вместо
-общего «цифры нет». В `TariffState` для этого есть поле `upcoming`.
-
-**Решение — бессрочный акт не оживает.** Если акт без срока сменился актом
-со сроком и тот истёк, состояние `review_required`, а не возврат к старому
-бессрочному. Возврат означал бы показ цифры, которую уже отменили.
-
-**Решение — граница суток по Минску.** Беларусь UTC+3 без перевода часов,
-поэтому обошёлся арифметикой, без `Intl` и tzdata. Тесты фиксируют 23:30
-и 00:30 по обе стороны полуночи.
+**Decision — `data-integrity.test.ts` guards both sides of the boundary.**
+`data/` must carry no fixture markers (`TEST-`, `example.by`, "stub"); fixtures
+must have prices below 10 BYN/g and dates in 2000, so a fixture can never be
+mistaken for a real record. Plus a grep over `src/`: not one number next to
+`BYN` in any source file.
 
 ---
 
-## Шаг 4 — арифметика калькулятора
+## Step 3 — tariff state
 
-**Сделано**
+**Done**
 
-- `src/lib/calc.ts` — `parseMass`, `totalKopecks`, `calculate`, форматирование.
-  Без зависимостей: модуль уезжает в браузер.
-- `tests/calc.test.ts` — 38 тестов, включая проход по всем шести пробам.
+- `src/lib/tariff.ts`, the function `resolveTariffState(records, now)`. Pure:
+  the clock is an argument, there is no `new Date()` inside. Otherwise
+  behaviour at the expiry boundary can only be checked by waiting for midnight.
+- `tests/tariff.test.ts` — 34 tests.
 
-**Решение — считаем в целых копейках.** Цена переводится в копейки, масса
-в миллиграммы, умножение целочисленное. `0.1 * 3` в double даёт
-`0.30000000000000004`; на сумме в сотни рублей это копейка расхождения,
-а расхождение с суммой у стойки — ровно то, из-за чего человек сюда пришёл.
+**How the status is decided**
 
-**Решение — ввод не «понимается», а разбирается.** Запятая и точка
-равнозначны, пробелы-разделители тысяч (включая неразрывные) отбрасываются.
-Всё остальное — отказ. `8..4` можно было бы «догадаться» прочитать как 8,4,
-но догадка здесь означает посчитать не то, что ввели.
+1. Records are sorted by effective date.
+2. The last one with `effective_from <= today` is taken — it supersedes every
+   earlier one, **including open-ended ones**.
+3. No such record → `unavailable` (`no_records` or `not_yet_effective`).
+4. `stated_expiry === null` → `valid`, held until replaced.
+5. `today <= stated_expiry` → `valid`.
+6. Otherwise → `review_required`: figure withheld, archive kept.
 
-**Решение — пустое поле не ошибка.** Отдельная причина `empty` и функция
-`isEmptyInput`, чтобы страница не красила «введите массу» как ошибку.
+**Decision — "in force through 31.07" includes 31 July.** Comparison is `<=`.
+Otherwise the site would fall silent for a day while the act was still live.
 
-**Решение — верхняя граница 100 000 г.** Выше — почти наверняка опечатка,
-показывается «проверьте массу». Число выбрано мной, в брифе его нет.
+**Decision — a `not_yet_effective` state.** An act published but not yet in
+force is its own reason, and the page can say honestly "the new decree exists
+and takes force on such a date" instead of a generic "there is no figure".
+`TariffState` carries an `upcoming` field for it.
 
-**Решение — массу не округляем к точности взвешивания.** В брифе есть
-точность приёмки (золото 0,01 г), но применять её к введённому числу значит
-молча изменить ввод. Точность вынесена в текст на странице, в расчёт не лезет.
+**Decision — an open-ended act does not revive.** If an act with no end date
+was replaced by one with an end date and that one expired, the state is
+`review_required`, not a fallback to the old open-ended act. Falling back would
+mean showing a figure that has already been superseded.
 
-**Решение — форматирование своё, не `Intl.NumberFormat`.** Число должно
-выглядеть одинаково на сборке и в браузере при любой локали посетителя.
-Разделитель тысяч — неразрывный пробел, дробная часть — запятая.
-
-_Пометка на будущее:_ невидимые символы (неразрывный пробел) задаются в коде
-только escape-последовательностями. Литералом их писать нельзя — по дороге
-они нормализуются в обычный пробел, и тест начинает сравнивать строку саму
-с собой. Один раз на этом уже потерял время.
+**Decision — the day boundary is Minsk.** Belarus is UTC+3 with no clock
+changes, so arithmetic suffices — no `Intl`, no tzdata. Tests pin 23:30 and
+00:30 either side of midnight.
 
 ---
 
-## Шаг 5 — главная в состоянии «цифры нет»
+## Step 4 — calculator arithmetic
 
-Собрана первой, на пустом `data/tariffs.json`, как и требовалось. Это
-единственное состояние, которое сайт умеет показывать прямо сейчас.
+**Done**
 
-**Сделано**
+- `src/lib/calc.ts` — `parseMass`, `totalKopecks`, `calculate`, formatting.
+  Dependency-free: the module ships to the browser.
+- `tests/calc.test.ts` — 38 tests, including a pass over every fineness.
 
-- `src/styles/tokens.css` — палитра, шрифты, скругления, сетка. В макете всё
-  было инлайном; значения сняты оттуда, имена сгруппированы по роли.
-- `src/styles/global.css` — сброс, типографика, компоненты.
-- `src/layouts/Base.astro`, компоненты `Hallmark`, `PriceCard`,
-  `WithheldPanel`, `Calculator`, `History`, `Bullion`, `Photo`.
-- `src/lib/copy.ts` — все тексты, зависящие от состояния, в одном модуле.
-- Шрифты self-hosted, `scripts/fetch-fonts.mjs`.
-- `scripts/shoot.mjs` — съёмка и проверка на переполнение по ширине.
+**Decision — compute in whole kopecks.** The price becomes kopecks, the mass
+milligrams, and the multiplication is integer. `0.1 * 3` in a double gives
+`0.30000000000000004`; on a sum of several hundred roubles that is a kopeck of
+disagreement — and disagreement with the counter's sum is exactly what brought
+the visitor here.
 
-**Шрифты.** У `Onest`, `Golos Text` и `Martian Mono` кириллица настоящая —
-опасение из HANDOFF о слабой «ж/д/б» у Martian Mono не подтвердилось,
-Google Fonts отдаёт для него полноценный кириллический сабсет.
+**Decision — input is parsed, not "understood".** Comma and dot are
+equivalent, thousands separators (including non-breaking ones) are dropped.
+Everything else is refused. One could "guess" that `8..4` means 8.4, but
+guessing here means computing something other than what was typed.
 
-Готовые диапазоны `cyrillic` + `latin` дают 333 КБ на семь начертаний — это
-весь бюджет страницы. Взял вместо них параметр `text=`: сабсет ровно под
-нужные глифы (кириллица, латиница, цифры, `№ — · ×` и прочее из макета),
-**94,8 КБ на семь начертаний**. Preload только Onest 700, как просили.
+**Decision — an empty field is not an error.** A separate `empty` reason and an
+`isEmptyInput` helper, so the page does not style "введите массу" as a fault.
 
-**Решение — состояний «цифры нет» на самом деле три, а не одно.** В макете
-нарисовано одно (`withheld`), но по логике шага 3 их три, и текст у них
-разный:
+**Decision — an upper bound of 100,000 g.** Above that it is almost certainly a
+typo and the page says "проверьте массу". The number is mine; the brief has none.
 
-| причина | когда | архивная цифра |
+**Decision — the mass is not rounded to weighing precision.** The brief gives
+the acceptance precision (gold 0.01 g), but applying it to the entered number
+would silently change the input. The precision went into the page copy and
+stays out of the arithmetic.
+
+**Decision — bespoke formatting rather than `Intl.NumberFormat`.** A number
+must look identical on the server and in the browser whatever locale the
+visitor has. Thousands separated by a non-breaking space, comma for decimals.
+
+*Note for later:* invisible characters (the non-breaking space) are written in
+code only as escape sequences. Written literally they are normalised to an
+ordinary space somewhere along the way, and the test starts comparing a string
+with itself. This cost me time once already.
+
+---
+
+## Step 5 — the homepage in the "no figure" state
+
+Built first, on an empty `data/tariffs.json`, as required. It is the only state
+the site can show right now.
+
+**Done**
+
+- `src/styles/tokens.css` — palette, typefaces, radii, grid. The mockup had it
+  all inline; the values were lifted from there and the names grouped by role.
+- `src/styles/global.css` — reset, typography, components.
+- `src/layouts/Base.astro` and the `Hallmark`, `PriceCard`, `WithheldPanel`,
+  `Calculator`, `History`, `Bullion`, `Photo` components.
+- `src/lib/copy.ts` — every piece of state-dependent copy in one module.
+- Self-hosted fonts via `scripts/fetch-fonts.mjs`.
+- `scripts/shoot.mjs` — screenshots plus a horizontal-overflow check.
+
+**Fonts.** `Onest`, `Golos Text` and `Martian Mono` all have real Cyrillic —
+HANDOFF's worry about weak ж/д/б in Martian Mono did not hold up; Google Fonts
+ships a full Cyrillic subset for it.
+
+The stock `cyrillic` + `latin` ranges cost 333 KB across seven weights, which is
+the entire page budget. I used the `text=` parameter instead: a subset covering
+exactly the glyphs needed (Cyrillic, Latin, digits, `№ — · ×` and the rest from
+the mockup), **94.8 KB across seven weights**. Preload only Onest 700, as asked.
+
+**Decision — there are actually three "no figure" states, not one.** The mockup
+draws one (`withheld`), but by the step 3 logic there are three and their copy
+differs:
+
+| reason | when | archive figure |
 |---|---|---|
-| `expired_no_successor` | срок истёк, преемника нет | есть |
-| `not_yet_effective` | акт опубликован, но ещё не вступил в силу | нет |
-| `no_records` | ничего не перенесено (сегодняшнее состояние) | нет |
+| `expired_no_successor` | the period ended, no successor | yes |
+| `not_yet_effective` | the act exists but has not taken force | no |
+| `no_records` | nothing transcribed (today's state) | no |
 
-Сейчас работает третий: файл пуст, архивной цифры не существует, поэтому
-блок «архив — не цена на сегодня» **не рисуется**. Показать его пустым или
-с прочерком значило бы намекнуть на цифру, которой нет.
+The third is what runs now: the file is empty, no past figure exists, so the
+"архив — не цена на сегодня" block **is not rendered**. Showing it empty or
+dashed would hint at a figure that does not exist.
 
-**Решение — «проверяем каждый час» убрано из текста, пока это неправда.**
-В макете панель обещает почасовую проверку, а HANDOFF требует брать время
-из реального лога. Воркера ещё нет, `status.json` пуст. Поэтому текст
-зависит от наличия лога: есть отметка — «проверяем каждый час»; нет —
-«сверяем с сайтом Минфина, цифры переносит человек». Обещание появится
-вместе с тем, кто его выполняет.
+**Decision — "we check every hour" was removed from the copy while it is
+untrue.** The mockup's panel promises hourly checks and HANDOFF requires the
+time to come from a real log. There is no worker yet and `status.json` is
+empty. So the copy depends on whether a log exists: with a stamp, "we check
+Minfin hourly"; without, "we reconcile against the Minfin site; a person
+transcribes the figures". The promise arrives together with whoever keeps it.
 
-**Решение — в подвале вместо времени проверки стоит источник.** Подставить
-туда время сборки нельзя: сборка — не проверка. Пока `status.last_checked`
-пуст, подвал показывает «источник — minfin.gov.by».
+**Decision — the footer shows the source instead of a check time.** Putting the
+build time there is not possible: a build is not a check. While
+`status.last_checked` is empty the footer shows "источник — minfin.gov.by".
 
-**Возражение — формулировка про ювелирные сети.** В макете: «Ювелирные сети
-иногда платят выше этой цены: по своим программам выкупа или при обмене…».
-Первая половина — утверждение, что за обычную скупку за наличные кто-то
-платит больше другого; этого быть не может, тариф один для всех, и HANDOFF
-сам помечает фразу как неподтверждённую. Переписал: выше тарифа бывает
-только зачёт при покупке нового изделия, это другая сделка. Механизм
-описан, ничьи условия не цитируются. Затронуты: врезка «бывает иначе»,
-подпись у калькулятора, карточка «Обмен на новое изделие», шаг 01 на
-`/kak-proverit-otsenku`.
+**Objection — the jewellery-chain wording.** The mockup said "Ювелирные сети
+иногда платят выше этой цены: по своим программам выкупа или при обмене…". The
+first half asserts that someone pays more than someone else for ordinary cash
+buyback; that cannot be, the tariff is identical for all, and HANDOFF itself
+flags the sentence as unsupported. Rewritten: above-tariff happens only as a
+trade-in credit against a new purchase, which is a different transaction. The
+mechanism is described and nobody's terms are quoted. Affected: the "бывает
+иначе" callout, the note beside the calculator, the "Обмен на новое изделие"
+card, and step 01 on `/kak-proverit-otsenku`.
 
-**Решение — таблица проб при пустых данных показывает все шесть строк
-с прочерком.** Это перечень проб, с которыми сайт работает, а не цены.
-Пустая карточка на их месте сообщала бы меньше.
+**Decision — with empty data the fineness table still shows all nine rows,
+dashed.** That is the list of finenesses the site covers, not prices. An empty
+card in its place would say less.
 
-**Решение — секция истории при нуле записей не рисуется совсем**,
-спарклайн появляется от трёх точек. Карточка «истории пока нет» занимает
-место и ничего не говорит.
+**Decision — with zero records the history section is not rendered at all**, and
+the sparkline appears from three points. A "no history yet" card takes up room
+and says nothing.
 
-**Решение — переключатель состояний из макета в продакшен не перенесён.**
-Это была affordance для ревью. Рабочее состояние смотрится подстановкой
-каталога данных (шаг 6).
+**Decision — the mockup's state toggle did not ship.** It was a review
+affordance. The working state is inspected by swapping the data directory
+(step 6).
 
-**Проверено глазами** на 360 / 768 / 1200 px: `scripts/shoot.mjs` сверяет
-`scrollWidth` с шириной окна и называет виновника переполнения. Горизонтального
-скролла нет ни на одной ширине.
+**Checked by eye** at 360 / 768 / 1200 px: `scripts/shoot.mjs` compares
+`scrollWidth` against the viewport and names the offending element. There is no
+horizontal scroll at any width.
 
 ---
 
-## Шаг 6 — главная в рабочем состоянии
+## Step 6 — the homepage in its working state
 
-**Сделано**
+**Done**
 
-- `tests/fixtures/valid-state/` и `tests/fixtures/expired-state/` — два каталога
-  данных, подставляются через `GOLD_DATA_DIR`. В `data/` не попадают и не могут:
-  за этим следит `tests/data-integrity.test.ts`.
+- `tests/fixtures/valid-state/` and `tests/fixtures/expired-state/` — two data
+  directories supplied through `GOLD_DATA_DIR`. They never reach `data/` and
+  cannot: `tests/data-integrity.test.ts` sees to that.
 - `npm run dev:valid`, `dev:expired`, `build:valid`, `build:expired`.
-- `scripts/smoke.mjs` — проверка калькулятора в настоящем браузере.
+- `scripts/smoke.mjs` — checks the calculator in a real browser.
 
-**Решение — фикстуры датированы 1999–2001, срок действующей записи до 2099.**
-Здесь столкнулись два требования: фикстура обязана быть заведомо ненастоящей,
-и при этом обязана давать состояние `valid` сегодня. Даты 1999–2001 ни при
-каких обстоятельствах не сойдут за настоящие, а срок до 31.12.2099 держит
-состояние `valid` без ежегодной правки. Цены — от 1,00 до 7,40 BYN/г, то есть
-на два порядка ниже настоящих. Отдельный тест проверяет, что `valid-state`
-действительно даёт `valid`, а `expired-state` — `review_required`: молча
-протухшая фикстура хуже отсутствующей.
+**Decision — fixtures dated 1999–2001, the record in force expiring 2099.** Two
+requirements collided here: a fixture must be unmistakably fake, and it must
+resolve to `valid` today. Dates of 1999–2001 could never pass for real, and an
+expiry of 31.12.2099 keeps the state `valid` without an annual edit. Prices are
+single-digit BYN per gram, two orders of magnitude below real ones. A separate
+test asserts that `valid-state` really resolves to `valid` and `expired-state`
+to `review_required`: a fixture that rots silently is worse than none.
 
-**Решение — жёлто-чёрная плашка на сборках с подставленными данными.**
-`data.ts` знает, что каталог переопределён, и `Base.astro` рисует несмываемую
-полосу «Сборка на тестовых данных» с путём к каталогу. Сборка с выдуманными
-цифрами не должна иметь ни единого шанса сойти за настоящий сайт.
+**Decision — a yellow-and-black banner on builds with substituted data.**
+`data.ts` knows the directory was overridden and `Base.astro` renders an
+unmissable strip reading "Сборка на тестовых данных" with the directory path. A
+build carrying invented figures must have no chance of passing for the real site.
 
-**Найдено смоук-тестом.** Подсветка строки в таблице проб не следовала за
-выбранной пробой: скрипт искал `[data-tariff-row]`, а атрибута в разметке не
-было. Юнит-тесты этого поймать не могли — арифметика была верной, разошлась
-стыковка. Починено.
+**Found by the smoke test.** The fineness-table row highlight did not follow the
+selected fineness: the script looked for `[data-tariff-row]` and the attribute
+was not in the markup. Unit tests could not catch it — the arithmetic was
+correct, the wiring was not. Fixed.
 
-**Проверено в браузере:** 10 г × 585 = 41,00; переключение на 999 → 74,00;
-`8,4` с запятой → 62,16; «много» → «только цифры» и `aria-invalid`; в состоянии
-без постановления поля выключены, `#tariff-payload` в разметке отсутствует,
-и на странице нет ни одной суммы в BYN.
-
----
-
-## Шаг 7 — /kak-proverit-otsenku и /o-proekte
-
-**Сделано**
-
-- `src/pages/kak-proverit-otsenku.astro` + `src/lib/procedure.ts` — пять шагов,
-  кадр с весами, врезка «если что-то не так».
-- `src/pages/o-proekte.astro` — источники, раздел «как мы обращаемся с цифрами»,
-  форма сообщения об ошибке.
-- `src/components/ReportForm.astro` + `src/scripts/report-form.ts` — все шесть
-  состояний из макета: idle, invalid, sending, sent, dupe, failed.
-
-**Возражение — процедура приёмки не сверена с первоисточником.** В брифе
-сказано «verify against the published instruction before writing it». Сверить
-не с чем: сама инструкция мне недоступна, а брать её пересказ из третьих рук
-на этом сайте нельзя по определению. Текст собран из брифа и макета, включая
-точность взвешивания (золото 0,01 г, серебро 0,1 г). **Это единственное место
-на сайте, где утверждения не подтверждены первоисточником** — предупреждение
-стоит и в шапке `src/lib/procedure.ts`. До продакшена сверить построчно.
-
-Процентов удержания нигде не называется — в брифе прямо запрещено их выдумывать,
-описывается только процедура.
-
-**Решение — `novalidate` на форме.** Браузер со своей проверкой перехватывает
-submit раньше обработчика и показывает пузырь на языке интерфейса браузера.
-Формулировки из макета конкретнее («Адрес почты выглядит неполным — без него
-мы не сможем ответить»), и они должны быть на русском независимо от браузера.
-Атрибуты `required` и `minlength` оставлены для скринридеров; настоящая
-проверка всё равно на сервере.
-
-**Найдено смоук-тестом — ловушка для ботов была на `.sr-only`.** Это ровно
-наоборот: `.sr-only` показывает содержимое скринридеру, то есть незрячий
-посетитель наткнулся бы на поле-ловушку и мог его заполнить. Заменено на
-отдельный класс `.honeypot`, уводящий поле за экран целиком, плюс
-`aria-hidden` и `tabindex="-1"`. Тест теперь проверяет все три свойства.
-
-**Решение — блок «кто ведёт проект» не добавлен.** HANDOFF отмечает, что
-заказчик пропустил его сознательно. Вместо него — раздел «Как мы обращаемся
-с цифрами»: он отвечает на тот же вопрос о доверии, но не требует от меня
-придумывать несуществующие сведения о людях.
-
-**Решение — ссылки на источники ведут на корни разделов.** У Пробирной
-инспекции ссылки нет вовсе: адрес её страницы я не проверял, а поставить
-непроверенную ссылку в раздел «Источники» — то же самое, что поставить
-непроверенную цифру.
+**Verified in a browser:** the sum for 10 g at the headline fineness matches the
+price the server rendered into the table; switching fineness recomputes; `8,4`
+with a comma parses; "много" gives "только цифры" and `aria-invalid`; with no
+decree in force the fields are disabled, `#tariff-payload` is absent from the
+markup, and there is no BYN sum anywhere on the page.
 
 ---
 
-## Шаг 8 — форма: воркер, Turnstile, лимит частоты, Resend
+## Step 7 — /kak-proverit-otsenku and /o-proekte
 
-**Сделано**
+**Done**
 
-- `worker/src/contact.ts` — `POST /api/contact`. Ловушка → проверка полей →
-  Turnstile → лимит частоты → «уже в работе»? → письмо через Resend.
+- `src/pages/kak-proverit-otsenku.astro` and `src/lib/procedure.ts` — five
+  steps, the scales photograph, the "если что-то не так" callout.
+- `src/pages/o-proekte.astro` — sources, a "how we handle figures" section, the
+  error-report form.
+- `src/components/ReportForm.astro` and `src/scripts/report-form.ts` — all six
+  states from the mockup: idle, invalid, sending, sent, dupe, failed.
+
+**Objection — the acceptance procedure was not reconciled with the primary
+source.** The brief says "verify against the published instruction before
+writing it". There was nothing to verify against: the instruction itself was
+not available to me, and a second-hand retelling is by definition unacceptable
+on this site. The text was assembled from the brief and the mockup, including
+the weighing precision (gold 0.01 g, silver 0.1 g). **This is the only place on
+the site where claims are not backed by a primary source** — the warning also
+sits at the top of `src/lib/procedure.ts`. Reconcile line by line before
+production.
+
+No deduction percentage is named anywhere: the brief explicitly forbids
+inventing one, so only the procedure is described.
+
+**Decision — `novalidate` on the form.** The browser's own validation
+intercepts submit before the handler and shows a bubble in the browser's UI
+language. The mockup's wordings are more specific ("Адрес почты выглядит
+неполным — без него мы не сможем ответить") and must be Russian regardless of
+browser. `required` and `minlength` remain for assistive technology; the real
+check is on the server anyway.
+
+**Found by the smoke test — the bot honeypot was on `.sr-only`.** That is
+exactly backwards: `.sr-only` exposes content to screen readers, so a blind
+visitor would have encountered the trap field and might have filled it in.
+Replaced with a dedicated `.honeypot` class that moves the field off-screen
+entirely, plus `aria-hidden` and `tabindex="-1"`. The test now checks all three
+properties.
+
+**Decision — no "who runs this project" block.** HANDOFF notes the client
+skipped it deliberately. In its place, a "Как мы обращаемся с цифрами" section:
+it answers the same trust question without requiring me to invent facts about
+people.
+
+**Decision — source links point at section roots.** Пробирная инспекция has no
+link at all: I never verified the address of its page, and an unverified link
+in a section called "Sources" is the same sin as an unverified figure.
+
+---
+
+## Step 8 — the form: worker, Turnstile, rate limit, Resend
+
+**Done**
+
+- `worker/src/contact.ts` — `POST /api/contact`. Honeypot → field validation →
+  Turnstile → rate limit → "already under review"? → email via Resend.
 - `worker/src/ratelimit.ts`, `worker/src/turnstile.ts`, `worker/src/env.ts`.
-- `src/lib/contact.ts` — правила и формулировки, общие для браузера и воркера.
-- `wrangler.toml` без единого секрета, `DEPLOY.md` с полным перечнем.
-- 34 теста: сеть и KV подставлены, wrangler не нужен.
+- `src/lib/contact.ts` — rules and wordings shared by browser and worker.
+- `wrangler.toml` with no secret in it, `DEPLOY.md` with the full list.
+- 34 tests: the network and KV are faked, so wrangler is not needed.
 
-**Что сохраняется — и что нет.** Ни письма, ни адреса отправителя, ни IP
-в открытом виде. В KV только числа:
+**What is stored — and what is not.** No message, no sender address, no IP in
+the clear. KV holds numbers only:
 
-| ключ | значение | TTL |
+| key | value | TTL |
 |---|---|---|
-| `rl:<sha256(соль+ip)>` | счётчик частоты | 1 час |
-| `act:<номер акта>` | `{count, since}` | 30 суток |
+| `rl:<sha256(salt+ip)>` | rate counter | 1 hour |
+| `act:<decree number>` | `{count, since}` | 30 days |
 
-Отдельный тест берёт снимок обоих хранилищ после запроса и проверяет, что там
-нет ни почты, ни текста, ни адреса.
+A dedicated test snapshots both stores after a request and asserts there is no
+email address, no message text and no IP.
 
-**Решение — счётчик по актам всё-таки заведён, хотя в задании «store nothing».**
-В макете нарисовано состояние «уже в работе» с номером акта, датой и числом
-обращений; без счётчика оно нереализуемо. Компромисс: хранится только число
-и дата, привязанные к номеру акта, — ничего, что относилось бы к человеку.
-Если и это лишнее, достаточно убрать два вызова в `contact.ts` (`readActCounter`
-и `bumpActCounter`), остальное продолжит работать.
+**Decision — the per-decree counter exists despite "store nothing" in the
+brief.** The mockup draws an "уже в работе" state with the decree number, a
+date and a report count; without a counter it cannot be built. The compromise:
+only a number and a date, keyed by decree number — nothing that relates to a
+person. If even that is unwanted, remove two calls in `contact.ts`
+(`readActCounter` and `bumpActCounter`) and the rest keeps working.
 
-**Решение — Turnstile обязателен только в продакшене.** Вне его проверка идёт,
-только если ключ задан: иначе локальная разработка требовала бы настоящего
-Turnstile. В продакшене без ключа воркер падает с внятной ошибкой — подставить
-заглушку было бы хуже, чем не работать.
+**Decision — Turnstile is mandatory only in production.** Outside it,
+verification runs only when a key is set; otherwise local development would
+require a real Turnstile. In production, with no key the worker fails with a
+clear error — substituting a placeholder would be worse than not working.
 
-**Возражение — HANDOFF просил обойтись без капчи** («капча ломает тон
-страницы»). Требование Turnstile из ночного задания приоритетнее, но
-возражение учтено: режим Managed, который обычно ничего не спрашивает
-и выглядит полоской. Как отказаться совсем — написано в `turnstile.ts`
-и в `DEPLOY.md`.
+**Objection — HANDOFF asked for no captcha** ("a captcha breaks the page's
+tone"). The overnight brief's Turnstile requirement takes precedence, but the
+objection is reflected in the choice: Managed mode, which usually asks nothing
+and renders as a strip. How to remove it entirely is written in `turnstile.ts`
+and in `DEPLOY.md`.
 
-**Решение — Resend не принял письмо → честный 502 и состояние «не отправилось».**
-Ответить «принято» о письме, которого не было, значит потерять сообщение молча.
-У формы для этого есть нарисованное состояние с прямой почтой.
+**Decision — Resend refusing means an honest 502 and the "didn't send" state.**
+Answering "accepted" about an email that never went would lose the report
+silently. The form has a designed state for this, with a direct address.
 
-**Решение — заполненная ловушка получает ответ «принято».** Боту сообщать,
-что он опознан, незачем. Письмо при этом не отправляется.
+**Decision — a filled honeypot gets an "accepted" answer.** There is no reason
+to tell a bot it was spotted. No email is sent.
 
-**Решение — номер обращения `GB-482913`, шесть цифр вместо четырёх в макете.**
-Форма та же, столкновений на два порядка меньше. Настоящая запись об обращении —
-само письмо; номер нужен, чтобы человеку было на что сослаться.
+**Decision — ticket format `GB-482913`, six digits instead of the mockup's
+four.** Same shape, two orders of magnitude fewer collisions. The real record of
+a report is the email itself; the number exists so a person has something to
+quote.
 
-**Найдено тестом — `\b` не работает перед кириллицей.** В JavaScript граница
-слова определена через ASCII-класс `\w`, поэтому `/\bпостановление/` не
-совпадает никогда, и номер акта из текста не извлекался. Заменено на
-lookbehind `(?<!\p{L})` с флагом `u`.
+**Found by a test — `\b` does not work before Cyrillic.** In JavaScript a word
+boundary is defined via the ASCII class `\w`, so `/\bпостановление/` never
+matches and the decree number was never extracted from the text. Replaced with
+a `(?<!\p{L})` lookbehind and the `u` flag.
 
 ---
 
-## Шаг 9 — проверка источника по расписанию
+## Step 9 — the scheduled source check
 
-**Сделано**
+**Done**
 
-- `worker/src/minfin.ts` — парсер страницы Минфина.
-- `worker/src/proposal.ts` — черновик записи и тексты PR/issue.
-- `worker/src/github.ts` — ветка, файлы, PR, issue через REST API.
-- `worker/src/scheduled.ts` — сам обход, `worker/src/index.ts` — cron-обработчик.
-- Шесть фикстур в `tests/fixtures/minfin/`, 51 тест.
+- `worker/src/minfin.ts` — the Minfin page parser.
+- `worker/src/proposal.ts` — the draft record and the PR/issue text.
+- `worker/src/github.ts` — branch, files, pull request, issue via the REST API.
+- `worker/src/scheduled.ts` — the run itself; `worker/src/index.ts` — the cron
+  handler.
+- Six fixtures in `tests/fixtures/minfin/`, 51 tests.
 
-### Живая страница прочитана — и она расходится с макетом
+### The live page was read — and it disagrees with the mockup
 
-Страница Минфина оказалась доступна, и структуру я снял с неё. Два расхождения,
-оба существенные.
+Minfin's page turned out to be reachable, so I took the structure from it. Two
+disagreements, both material.
 
-**1. Проб девять, а не шесть, и набор другой.**
+**1. Nine finenesses, not six, and a different set.**
 
-Макет: 375, 500, 585, 750, 958, 999.
-Акт: **375, 500, 583, 585, 750, 900, 916, 950, 958**.
+Mockup: 375, 500, 585, 750, 958, 999.
+The act: **375, 500, 583, 585, 750, 900, 916, 950, 958**.
 
-- **583** — советский стандарт. Для наследственных изделий это едва ли не
-  самая частая проба, и её отсутствие было бы дырой ровно там, где сайт
-  нужнее всего. В таблице 583 и 585 стоят **в одной ячейке и делят цену** —
-  парсер это учитывает.
-- 900, 916, 950 в макете тоже отсутствовали.
-- **999 в таблице скупки изделий и лома нет.** Чистое золото идёт отдельной
-  строкой («за грамм металла в чистоте») и по мерным слиткам. Показывать 999
-  среди проб лома значило бы обещать цену, которой в акте нет.
+- **583** is the Soviet standard. For inherited jewellery it is very likely the
+  most common fineness there is, so its absence would have been a hole exactly
+  where the site matters most. In the table 583 and 585 **share a cell and a
+  price** — the parser accounts for that.
+- 900, 916 and 950 were missing from the mockup too.
+- **999 is not in the scrap table.** Pure gold has its own line ("per gram of
+  metal in fineness") and appears under bullion. Showing 999 among scrap
+  finenesses would promise a price the act does not state.
 
-`FINENESSES` приведён к реальному набору, фикстуры и тесты обновлены.
-На 360px девять кнопок переносятся в два ряда, таблица не скроллится.
+`FINENESSES` now matches reality; fixtures and tests updated. At 360px the nine
+buttons wrap onto two rows and the table does not scroll.
 
-**2. На странице нет ни даты вступления в силу, ни срока действия.**
+**2. The page carries neither the effective date nor the expiry.**
 
-Там только «ПРИЛОЖЕНИЕ к постановлению … ДД.ММ.ГГГГ № N» и таблицы. Обе даты
-живут в тексте самого акта. Это меняет устройство шага целиком: **парсер
-физически не может собрать полную запись.**
+It has only "ПРИЛОЖЕНИЕ к постановлению … DD.MM.YYYY № N" and the tables. Both
+dates live in the text of the act. That changes the shape of this step
+entirely: **the parser physically cannot assemble a complete record.**
 
-Отсюда главное решение: **PR, который открывает воркер, заведомо красный.**
-Черновик содержит `effective_from: null` и `stated_expiry: null`, схема такую
-запись не принимает, проверка на PR падает. Слить его, не открыв акт и не
-вписав обе даты руками, невозможно. Красный CI здесь не досадная мелочь,
-а сам шлагбаум. В теле PR это написано прямым текстом, вместе с порядком
-действий и напоминанием: если срок в акте не назван — оставить `null`.
+Hence the central decision: **the pull request the worker opens is deliberately
+red.** The draft carries `effective_from: null` and `stated_expiry: null`, the
+schema rejects such a record, and the PR check fails. Merging it without
+opening the act and filling both dates in by hand is impossible. The red check
+is not an annoyance; it is the gate. The PR body says so outright, with the
+procedure and the reminder: if the act names no end date, leave `null`.
 
-### Что делает воркер
+### What the worker does
 
-| случай | действие |
+| case | action |
 |---|---|
-| акт тот же | ничего |
-| акт новый | ветка + черновик + сырой HTML как доказательство + PR |
-| PR об этом акте уже открыт | ничего, второй не заводится |
-| разбор не удался | issue + флаг `block:publish` в KV |
-| флаг блокировки стоит | ничего, вплоть до снятия руками |
-| источник не ответил | ничего: 503 — это не повод блокировать |
+| same act | nothing |
+| new act | branch + draft + raw HTML as evidence + PR |
+| a PR about this act is already open | nothing, no second one |
+| parsing failed | issue + `block:publish` flag in KV |
+| the block flag is set | nothing, until cleared by hand |
+| the source did not answer | nothing: a 503 is no reason to block |
 
-Отметка о времени проверки пишется в KV независимо от исхода разбора —
-страницу действительно смотрели, и подвал сайта вправе это показать.
+The check timestamp is written to KV regardless of the parse outcome — the page
+really was looked at, and the footer is entitled to say so.
 
-**Решение — блокировка при отказе разбора.** Изменившаяся вёрстка опаснее
-отсутствия данных: парсер может начать читать соседнюю таблицу и выдать
-правдоподобные, но чужие цифры. Поэтому отказ разбора не «пропустим на этот
-раз», а стоп до человека.
+**Decision — block on a parse failure.** Changed markup is more dangerous than
+missing data: the parser may start reading a neighbouring table and emit
+plausible but wrong figures. So a parse failure is not "we'll skip this round"
+but a stop until a human intervenes.
 
-**Решение — несколько актов на странице = отказ.** Так выглядит архив.
-Выбрать «наверное, вот этот» нельзя: ошибка выбора даёт неверную цену.
+**Decision — several acts on a page means refusal.** That is what the archive
+looks like. Picking "probably this one" is not allowed: a wrong pick gives a
+wrong price.
 
-**Решение — ячейка с буквами в блоке цен = отказ `column_mismatch`.**
-Сдвиг на один столбец — самый опасный сбой, потому что даёт правдоподобный
-результат.
+**Decision — a cell with letters inside the price block means
+`column_mismatch`.** A one-column shift is the most dangerous failure precisely
+because its result looks plausible.
 
-**Движение больше 15%** помечается предупреждением в теле PR и **не** мешает
-принять данные, как и требовалось.
+**A move above 15%** is flagged as a warning in the PR body and does **not**
+prevent the data being accepted, as required.
 
-### Фикстуры
+### Fixtures
 
-Шесть штук, все собраны вручную: структура снята с живой страницы, числа
-заведомо ненастоящие (`TEST-*`, цены единицами BYN). Настоящий HTML в
-репозиторий не кладётся — он содержит настоящие цены, а всё похожее на цену
-рано или поздно принимают за данные. Единственное место, где настоящий HTML
-попадает в репозиторий, — приложение к PR, и там он улика, а не источник.
+Six of them, all hand-built: the structure comes from the live page, the numbers
+are knowingly fake (`TEST-*`, single-digit BYN prices). The real HTML is not
+committed — it contains real prices, and anything resembling a price in a
+repository is eventually taken for data. The one place real HTML does enter the
+repository is as an attachment to the PR, where it is an exhibit, not a source.
 
-Шаблон номера акта пришлось расширить до букв: иначе фикстуры пришлось бы
-нумеровать правдоподобными числами.
+The act-number pattern had to be widened to accept letters: otherwise fixtures
+would have needed plausible numbers.
 
-### Не сделано: НБРБ
+### Not done: NBRB
 
-**`bullion.json` остаётся пустым, фетчер НБРБ не написан.** `www.nbrb.by`
-с этой машины недоступен (соединение обрывается; отвечает только
-`api.nbrb.by/exrates`, а это курсы валют, не слитки). Документированного
-эндпоинта с ценами слитков я не нашёл, а писать парсер страницы, которую
-ни разу не видел, — это сочинение, а не разбор.
+**`bullion.json` stays empty and there is no NBRB fetcher.** `www.nbrb.by` is
+unreachable from this machine (the connection drops; only `api.nbrb.by/exrates`
+answers, and that is currency rates, not bullion). I found no documented
+endpoint for bullion prices, and writing a parser for a page I have never seen
+is composition, not parsing.
 
-Секция слитков на сайте это переживает: без данных она показывает объяснение
-и ссылку на nbrb.by, без единой цифры.
+The bullion section survives it: with no data it shows an explanation and a
+link to nbrb.by, without a single figure.
 
-Замечу, что цены выкупа мерных слитков **есть на той же странице Минфина**
-(отдельной таблицей, с надбавкой). Это проверенный источник, и добавить их
-дешевле, чем городить НБРБ. Но это цена скупки слитка, а не котировка
-Нацбанка, — смешивать их нельзя, и решение о том, что показывать, за вами.
+Worth noting that bullion buyback prices **are on the same Minfin page**, in
+their own table, with the surcharge. That is a verified source and cheaper to
+add than building an NBRB scraper. But it is a scrap-buyer's price for a bar
+rather than a National Bank quote — the two must not be mixed, and the decision
+about what to show is yours.
 
 ---
 
-## Шаг 10 — поисковый слой
+## Step 10 — the search layer
 
-**Сделано**
+**Done**
 
-- `sitemap.xml` и `robots.txt` — генерируются, три адреса, без пакета-генератора.
-- `canonical`, Open Graph, `twitter:card`, `theme-color` в `Base.astro`.
-- Русские `title` и `description` у всех страниц; у главной они **зависят от
-  состояния** — в состоянии «цифры нет» заголовок так и говорит.
+- `sitemap.xml` and `robots.txt` generated; three URLs, no generator package.
+- `canonical`, Open Graph, `twitter:card`, `theme-color` in `Base.astro`.
+- Russian `title` and `description` on every page; on the homepage they
+  **depend on the state** — in the "no figure" state the title says so.
 - JSON-LD `WebSite`.
-- Подтверждение прав в Search Console и Яндекс.Вебмастере — метатеги из
-  переменных окружения, без кода тег не выводится.
-- GA4 с уведомлением о согласии.
+- Search Console and Yandex Webmaster verification via environment variables;
+  with no code, no tag is emitted.
+- GA4 behind a consent notice.
 
-**Решение — `lastmod` в карте сайта берётся из данных, а не из времени
-сборки.** Пересборка без изменения цифр — не изменение страницы. Врать об
-этом поисковику значит приучать его не верить.
+**Decision — `lastmod` in the sitemap comes from the data, not the build
+time.** A rebuild that changes no figures is not a change to the page. Telling a
+search engine otherwise teaches it not to believe us.
 
-**Решение — никакой разметки Product/Offer с ценой.** Соблазн есть: цена,
-валюта, богатый сниппет в выдаче. Но сайт ничего не продаёт, цену
-устанавливает государство, а в состоянии «цифры нет» машиночитаемая цена
-оказалась бы ещё и просроченной — ровно тот случай, против которого проект.
-JSON-LD ограничен `WebSite`.
+**Decision — no Product/Offer markup with a price.** The temptation is real:
+price, currency, a rich snippet in results. But the site sells nothing, the
+state sets the price, and in the "no figure" state a machine-readable price
+would also be stale — precisely the case this project exists to prevent. JSON-LD
+is limited to `WebSite`.
 
-**Решение — согласие на аналитику хранится в собственной cookie.**
-`localStorage` запрещён заданием, а помнить выбор надо. Cookie техническая,
-`SameSite=Lax`, 180 дней. Без согласия GA4 не загружается вовсе: тег
-`googletagmanager.com` в документ не попадает.
+**Decision — analytics consent lives in a first-party cookie.** `localStorage`
+is forbidden by the brief and the choice has to be remembered. The cookie is
+functional, `SameSite=Lax`, 180 days. Without consent GA4 never loads at all:
+the `googletagmanager.com` tag does not enter the document.
 
-**Решение — без `PUBLIC_GA4_ID` ничего не рисуется.** Ни счётчика, ни плашки.
-Плашка «мы используем cookie» при отсутствии единственного cookie была бы
-просто шумом.
+**Decision — without `PUBLIC_GA4_ID` nothing renders.** Neither the tag nor the
+banner. A "we use cookies" bar in the absence of the one cookie would be noise.
 
-Счётчик только GA4. Ни Метрики, ни VK, ни Mail.ru — как и требовалось.
+Analytics is GA4 only. No Metrica, no VK, no Mail.ru, as required.
 
-**Вес.** HTML со встроенным CSS: 36 / 28 / 32 КБ. JavaScript — 4,4 КБ на весь
-сайт. Шрифты 94,8 КБ отдельно. Бюджет «150 КБ без шрифтов» соблюдён с запасом.
+**Weight.** HTML with inlined CSS: 36 / 28 / 32 KB. JavaScript: 4.4 KB for the
+whole site. Fonts 94.8 KB separately. The "150 KB excluding fonts" budget holds
+with room to spare.
 
 ---
 
-## Финальная сверка
+## Final sweep for leaked figures
 
-Перед последним коммитом прошёлся grep'ом по всему репозиторию в поисках
-чего-либо похожего на настоящую цену или номер акта вне `data/` и фикстур.
+Before the last commit I grepped the whole repository for anything resembling a
+real price or act number outside `data/` and the fixtures.
 
-Нашлось и убрано:
+Found and removed:
 
-- комментарий в `tests/data-integrity.test.ts` приводил настоящие цены
-  как пример того, что ловит регулярное выражение;
-- строка в `tests/scheduled.test.ts` для проверки base64 содержала
-  правдоподобную цену;
-- номера актов в тестах разбора текста сообщений были правдоподобными
-  («№ 41» — ровно как в макете). Заменены на «№ 9999»: числовой путь
-  парсера проверяется по-прежнему, а спутать с настоящим актом нельзя.
+- a comment in `tests/data-integrity.test.ts` that quoted real prices as an
+  example of what the regex catches;
+- a string in `tests/scheduled.test.ts` used for a base64 round-trip that
+  carried a plausible price;
+- act numbers in the report-parsing tests that were plausible ("№ 41", exactly
+  as in the mockup). Replaced with "№ 9999": the parser's numeric path is still
+  exercised, but it cannot be confused with a real act.
 
-Осталось (и должно остаться): `gold-by-build-notes.md` и `handoff/` —
-это ваши исходники, я их не трогал.
+What remains, and should: `gold-by-build-notes.md` and `handoff/` — the client's
+own source material, untouched.
 
-**В `data/` по-прежнему два пустых массива.**
+**`data/` still holds two empty arrays.**
+
+---
+
+## Language conversion (after the fact)
+
+Originally every document and code comment was written in Russian, on the
+reasoning that the repository should match the site. That was the wrong call,
+and it was made without asking: the site's copy is the product and must be
+Russian, but the documentation and comments are read by the developer, who had
+been writing in English throughout.
+
+Converted to English: all documentation, every code comment, test names, the
+worker's PR and issue text, schema validation messages, and the commit messages
+(via rebase — the repository had no remote at the time the history was written).
+
+Left in Russian, deliberately:
+
+- everything a visitor sees — page copy, form messages, the calculator's
+  refusal text, month names and date formatting;
+- Russian text the parser matches against, and Russian input and expected
+  output inside tests;
+- the Minfin HTML fixtures, which have to look like the source page.
+
+`QUESTIONS.md` was added at the same time: the blocking questions and the
+decisions taken without the client, in a form that can be annotated in place.
+`scripts/answers.mjs` reports which items have been answered.

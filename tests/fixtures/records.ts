@@ -1,16 +1,16 @@
 /**
- * Заведомо ненастоящие записи для тестов.
+ * Unmistakably fake records for tests.
  *
- * Номера актов — `TEST-…`, цены — единицы BYN за грамм. Настоящая цена
- * золота на порядок выше, так что перепутать фикстуру с данными нельзя,
- * даже если она окажется не в том файле. Это проверяется отдельным тестом.
+ * Act numbers are `TEST-…`, prices are single-digit BYN per gram. A real gold
+ * price is orders of magnitude higher, so a fixture cannot be mistaken for
+ * data even if it ends up in the wrong file. A dedicated test enforces this.
  */
 
 import type { BullionRecord, TariffRecord } from '../../src/lib/schema.ts';
 
 export const SOURCE_URL = 'https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/';
 
-/** Базовая корректная запись. Все прочие — её изменения. */
+/** The baseline valid record. Everything else is a variation on it. */
 export function tariff(overrides: Partial<TariffRecord> = {}): TariffRecord {
   return {
     act_number: 'TEST-1',
@@ -19,9 +19,9 @@ export function tariff(overrides: Partial<TariffRecord> = {}): TariffRecord {
     stated_expiry: '2000-01-31',
     source_url: SOURCE_URL,
     transcribed_at: '2000-01-10T09:00:00Z',
-    transcribed_by: 'тест',
-    // Все девять проб, которые встречаются в акте. Значения различны,
-    // чтобы тест «разные пробы дают разные суммы» что-то проверял.
+    transcribed_by: 'test',
+    // All nine finenesses that occur in the act. The values differ so the
+    // "different finenesses give different sums" test asserts something.
     prices_byn_per_gram: {
       '375': 1.0,
       '500': 2.0,

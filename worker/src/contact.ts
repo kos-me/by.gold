@@ -1,17 +1,18 @@
 /**
- * POST /api/contact — сообщение об ошибке в цифре.
+ * POST /api/contact — a report of an error in a figure.
  *
- * ЧТО СОХРАНЯЕТСЯ. Ни письмо, ни адрес отправителя нигде не сохраняются:
- * сообщение уходит письмом и живёт только в почте. В KV попадают ровно две
- * вещи, обе — числа:
+ * WHAT IS STORED. Neither the message nor the sender's address is stored
+ * anywhere: the report leaves as an email and lives only in the mailbox. KV
+ * receives exactly two things, both numbers:
  *
- *   rl:<хеш адреса>   счётчик частоты, TTL 1 час
- *   act:<номер акта>  счётчик обращений по акту и дата первого, TTL 30 суток
+ *   rl:<address hash>  rate counter, TTL 1 hour
+ *   act:<decree no.>   report count for that decree and the date of the
+ *                      first one, TTL 30 days
  *
- * Второе нужно для состояния «уже в работе» из макета. Ни текста, ни почты,
- * ни адреса в открытом виде там нет. Если такой счётчик всё равно нежелателен,
- * достаточно убрать вызовы `readActCounter` / `bumpActCounter` — остальное
- * продолжит работать, форма просто всегда будет отвечать «принято».
+ * The second exists for the mockup's "already under review" state. It holds
+ * no text, no email address and no IP in the clear. If the counter is
+ * unwanted anyway, drop the `readActCounter` / `bumpActCounter` calls — the
+ * rest keeps working and the form simply always answers "accepted".
  */
 
 import {
@@ -24,15 +25,15 @@ import { isProduction, requireSecret, type Env, type KVLike } from './env.ts';
 import { consume, hashClient } from './ratelimit.ts';
 import { verifyTurnstile } from './turnstile.ts';
 
-/** Сколько суток помним, что по акту уже писали. */
+/** How many days we remember that someone already wrote about this decree. */
 const ACT_COUNTER_TTL_SECONDS = 30 * 24 * 3600;
 
 export interface ContactDeps {
-  /** Подменяется в тестах. */
+  /** Swapped out in tests. */
   readonly fetchImpl?: typeof fetch;
-  /** Момент запроса — чтобы дата в ответе была проверяемой. */
+  /** The request instant, so the date in the response is testable. */
   readonly now?: Date;
-  /** Источник случайности для номера обращения. */
+  /** Randomness source for the ticket number. */
   readonly random?: () => number;
 }
 
@@ -136,7 +137,7 @@ export async function handleContact(
     if (contentType.includes('application/json')) {
       payload = (await request.json()) as Partial<ReportInput>;
     } else {
-      // Отправка без JavaScript: обычная форма.
+      // Submission without JavaScript: an ordinary form post.
       const form = await request.formData();
       payload = {
         email: String(form.get('email') ?? ''),
@@ -149,11 +150,11 @@ export async function handleContact(
     return json({ status: 'invalid', message: 'Тело запроса не разобрано.' }, 400);
   }
 
-  // --- 1. Ловушка и проверка полей -----------------------------------------
+  // --- 1. Honeypot and field validation ------------------------------------
   const validation = validateReport(payload);
   if (!validation.ok) {
     if (validation.rejection.kind === 'honeypot') {
-      // Боту отвечаем как будто всё хорошо: пусть считает, что дошло.
+      // Answer a bot as if all is well: let it believe the message landed.
       return json({ status: 'accepted', ticket: formatTicket(random()) }, 200);
     }
     return json({ status: 'invalid', message: validation.rejection.message }, 400);
@@ -171,25 +172,25 @@ export async function handleContact(
       fetchImpl,
     );
     if (!result.ok) {
-      console.warn('turnstile отклонил', result.errorCodes.join(','));
+      console.warn('turnstile rejected', result.errorCodes.join(','));
       return json(
         { status: 'invalid', message: 'Проверка не пройдена. Обновите страницу и попробуйте снова.' },
         400,
       );
     }
   } else if (env.TURNSTILE_SECRET_KEY !== undefined) {
-    // Вне продакшена проверяем, только если ключ задан: иначе локальная
-    // разработка требовала бы настоящего Turnstile.
+    // Outside production we verify only when a key is set: otherwise local
+    // development would require a real Turnstile.
     const result = await verifyTurnstile(
       payload.turnstile ?? '',
       env.TURNSTILE_SECRET_KEY,
       clientIp,
       fetchImpl,
     );
-    if (!result.ok) console.warn('turnstile (не продакшен) отклонил', result.errorCodes.join(','));
+    if (!result.ok) console.warn('turnstile (non-production) rejected', result.errorCodes.join(','));
   }
 
-  // --- 3. Частота -----------------------------------------------------------
+  // --- 3. Rate ---------------------------------------------------------------
   if (env.RATE_LIMIT !== undefined && clientIp !== null) {
     const salt = requireSecret(env, 'RATE_LIMIT_SALT');
     const verdict = await consume(env.RATE_LIMIT, await hashClient(clientIp, salt));
@@ -198,7 +199,7 @@ export async function handleContact(
     }
   }
 
-  // --- 4. Уже в работе? -----------------------------------------------------
+  // --- 4. Already under review? ----------------------------------------------
   const act = extractActNumber(validation.note);
   const today = now.toISOString().slice(0, 10);
 
@@ -207,14 +208,14 @@ export async function handleContact(
     const updated = await bumpActCounter(env.REPORTS, act, existing, today);
 
     if (existing !== null) {
-      // Письмо всё равно отправляем: обращение не должно потеряться.
+      // Send the email regardless: a report must never be lost.
       await sendViaResend(env, fetchImpl, {
         ticket: formatTicket(random()),
         email: validation.email,
         note: validation.note,
         act,
       }).catch((error: unknown) => {
-        console.error('resend не принял письмо', error);
+        console.error('resend refused the email', error);
       });
 
       return json(
@@ -224,7 +225,7 @@ export async function handleContact(
     }
   }
 
-  // --- 5. Письмо ------------------------------------------------------------
+  // --- 5. Email --------------------------------------------------------------
   const ticket = formatTicket(random());
   let delivered = false;
   try {
@@ -235,14 +236,14 @@ export async function handleContact(
       act,
     });
   } catch (error) {
-    console.error('resend не настроен или недоступен', error);
+    console.error('resend is unconfigured or unreachable', error);
     delivered = false;
   }
 
   if (!delivered) {
-    // Честный отказ: у формы есть нарисованное состояние «не отправилось»
-    // с почтой для прямого письма, и лучше показать его, чем сказать
-    // «принято» о письме, которого не было.
+    // An honest refusal: the form has a designed "didn't send" state with a
+    // direct email address, and showing that beats claiming "accepted" about
+    // an email that never existed.
     return json({ status: 'failed' }, 502);
   }
 

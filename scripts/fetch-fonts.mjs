@@ -1,18 +1,18 @@
 /**
- * Скачивает шрифты с Google Fonts в `public/fonts/` и генерирует
- * `src/styles/fonts.css` со ссылками на локальные файлы.
+ * Downloads fonts from Google Fonts into `public/fonts/` and generates
+ * `src/styles/fonts.css` pointing at the local files.
  *
- * Зачем: макет ссылался на CDN Google Fonts. Для продакшена шрифты нужны
- * свои — и ради скорости, и ради того, чтобы страница не звала третью
- * сторону на каждом заходе.
+ * Why: the mockup linked the Google Fonts CDN. Production needs self-hosted
+ * fonts, both for speed and so the page does not call a third party on every
+ * visit.
  *
- * Сабсет задаётся параметром `text=`: Google Fonts возвращает файл ровно
- * с перечисленными глифами. Готовые диапазоны `cyrillic` + `latin` дают
- * 333 КБ на три семейства — это весь бюджет страницы и ещё сверху.
- * Свой набор укладывается примерно в пятую часть.
+ * The subset is driven by the `text=` parameter: Google Fonts returns a file
+ * containing exactly the listed glyphs. The stock `cyrillic` + `latin` ranges
+ * cost 333 KB across three families — the whole page budget and then some.
+ * A bespoke set fits in roughly a fifth of that.
  *
- * Запуск: `node scripts/fetch-fonts.mjs`. Не часть сборки — результат
- * коммитится, чтобы `npm run build` не ходил в сеть.
+ * Run: `node scripts/fetch-fonts.mjs`. Not part of the build — the output is
+ * committed so `npm run build` never touches the network.
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -23,28 +23,28 @@ const FONT_DIR = resolve(ROOT, 'public/fonts');
 const CSS_OUT = resolve(ROOT, 'src/styles/fonts.css');
 
 const RUSSIAN = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
-const BELARUSIAN_EXTRA = 'іўґ'; // встречаются в названиях и цитатах
+const BELARUSIAN_EXTRA = 'іўґ'; // occur in names and quotations
 const LATIN = 'abcdefghijklmnopqrstuvwxyz';
 const DIGITS = '0123456789';
 
 /**
- * Знаки препинания и символы. `№` и `×` названы в задании явно; тире, кавычки
- * и стрелка — из макета. Неразрывный пробел и мягкий перенос нужны, иначе
- * в них проваливается вёрстка чисел.
+ * Punctuation and symbols. `№` and `×` are named in the brief explicitly;
+ * dashes, quotation marks and the arrow come from the mockup. The
+ * non-breaking space and soft hyphen are needed or number layout falls apart.
  */
 const PUNCTUATION = [
   ' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
-  ' ', // неразрывный пробел — разделитель тысяч
-  '­', // мягкий перенос
-  '  ', // тонкий и узкий неразрывный пробел
-  '«»„“”‘’', // кавычки
-  '—–‑', // тире и неразрывный дефис
-  '…·•', // многоточие и точки
-  '№§°%‰', // символы
-  '×÷±≈≤≥', // математика
-  '→←↑↓', // стрелки из макета
-  '✓✔', // галочки
-  '₽€$', // валюта: BYN пишется буквами, но символы дешевле, чем засечка
+  '\u00A0', // non-breaking space — the thousands separator
+  '\u00AD', // soft hyphen
+  '\u2009\u202F', // thin and narrow no-break spaces
+  '«»„“”‘’', // quotation marks
+  '—–‑', // dashes and the non-breaking hyphen
+  '…·•', // ellipsis and dots
+  '№§°%‰', // symbols
+  '×÷±≈≤≥', // maths
+  '→←↑↓', // arrows from the mockup
+  '✓✔', // ticks
+  '₽€$', // currency: BYN is spelled out, but the glyphs are cheap
 ].join('');
 
 const SUBSET_TEXT = [
@@ -92,28 +92,28 @@ async function main() {
       if (!cssResponse.ok) throw new Error(`${name} ${weight}: CSS → ${cssResponse.status}`);
       const css = await cssResponse.text();
 
-      // При `text=` Google отдаёт файл не по «красивому» пути, а через
-      // /l/font?kit=…, так что опираемся на format('woff2'), а не на суффикс.
+      // With `text=` Google serves the file from /l/font?kit=… rather than a
+      // tidy path, so match on format('woff2') instead of the suffix.
       const url = /url\((https:\/\/[^)]+)\)\s*format\('woff2'\)/.exec(css)?.[1];
-      if (!url) throw new Error(`${name} ${weight}: в ответе нет woff2\n${css}`);
+      if (!url) throw new Error(`${name} ${weight}: no woff2 in the response\n${css}`);
 
       const range = /unicode-range:\s*([^;]+);/.exec(css)?.[1]?.trim();
 
-      // Сколько @font-face вернулось: при `text=` должен быть ровно один.
-      // Несколько означало бы, что сабсет не применился и приехали диапазоны.
+      // How many @font-face rules came back: with `text=` there must be exactly
+      // one. Several would mean the subset was ignored and ranges arrived.
       const faceCount = (css.match(/@font-face/g) ?? []).length;
       if (faceCount !== 1) {
-        throw new Error(`${name} ${weight}: ожидался один @font-face, пришло ${faceCount}`);
+        throw new Error(`${name} ${weight}: expected one @font-face, got ${faceCount}`);
       }
 
       const fileResponse = await fetch(url, { headers: { 'User-Agent': UA } });
-      if (!fileResponse.ok) throw new Error(`${name} ${weight}: файл → ${fileResponse.status}`);
+      if (!fileResponse.ok) throw new Error(`${name} ${weight}: file → ${fileResponse.status}`);
       const bytes = new Uint8Array(await fileResponse.arrayBuffer());
 
       const fileName = fileNameFor(name, weight);
       await writeFile(resolve(FONT_DIR, fileName), bytes);
       totalBytes += bytes.byteLength;
-      console.log(`  ${fileName.padEnd(28)} ${(bytes.byteLength / 1024).toFixed(1)} КБ`);
+      console.log(`  ${fileName.padEnd(28)} ${(bytes.byteLength / 1024).toFixed(1)} KB`);
 
       rules.push(
         [
@@ -133,20 +133,20 @@ async function main() {
 
   const header = [
     '/*',
-    ' * Сгенерировано `node scripts/fetch-fonts.mjs`. Руками не править.',
+    ' * Generated by `node scripts/fetch-fonts.mjs`. Do not edit by hand.',
     ' *',
-    ' * Сабсет: кириллица (русская + і/ў), латиница, цифры, пунктуация,',
-    ` * № — · × и прочее из макета. Всего ${(totalBytes / 1024).toFixed(1)} КБ на семь начертаний.`,
-    ' * Шрифты под SIL Open Font License; файлы в public/fonts/.',
+    ' * Subset: Cyrillic (Russian + і/ў), Latin, digits, punctuation,',
+    ` * № — · × and the rest from the mockup. ${(totalBytes / 1024).toFixed(1)} KB across seven weights.`,
+    ' * Fonts under the SIL Open Font License; files in public/fonts/.',
     ' *',
-    ' * Символ вне сабсета отрисуется системным шрифтом — заметно, но не сломано.',
-    ' * Если такой понадобится, добавить его в SUBSET_TEXT и перегенерировать.',
+    ' * A glyph outside the subset falls back to a system font — visible, not broken.',
+    ' * If one is needed, add it to SUBSET_TEXT and regenerate.',
     ' */',
     '',
   ].join('\n');
 
   await writeFile(CSS_OUT, `${header}\n${rules.join('\n\n')}\n`, 'utf8');
-  console.log(`\nВсего ${(totalBytes / 1024).toFixed(1)} КБ → src/styles/fonts.css`);
+  console.log(`\nTotal ${(totalBytes / 1024).toFixed(1)} KB → src/styles/fonts.css`);
 }
 
 await main();

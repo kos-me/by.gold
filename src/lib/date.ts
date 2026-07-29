@@ -1,18 +1,18 @@
 /**
- * Даты. Всё хранится строками в формате ISO `YYYY-MM-DD` — их можно сравнивать
- * лексикографически, и никакие часовые пояса при этом не участвуют.
+ * Dates. Everything is stored as ISO `YYYY-MM-DD` strings — those compare
+ * lexicographically, and no time zone is involved in the comparison.
  *
- * Беларусь — UTC+3 круглый год, перевода часов нет с 2011 года. Поэтому
- * «сегодня» считается смещением на +3 часа от UTC, без Intl и без tzdata.
+ * Belarus is UTC+3 all year; the clock has not changed since 2011. So "today"
+ * is computed by shifting UTC by +3 hours, with no Intl and no tzdata.
  */
 
-/** Смещение Минска от UTC в минутах. Постоянное, DST в Беларуси отменён. */
+/** Minsk's offset from UTC in minutes. Constant — Belarus abolished DST. */
 export const MINSK_UTC_OFFSET_MINUTES = 180;
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
 
-/** `true`, если строка — существующая календарная дата в формате `YYYY-MM-DD`. */
+/** True when the string is a real calendar date in `YYYY-MM-DD` form. */
 export function isIsoDate(value: unknown): value is string {
   if (typeof value !== 'string' || !ISO_DATE.test(value)) return false;
   const [y, m, d] = value.split('-').map(Number) as [number, number, number];
@@ -20,7 +20,7 @@ export function isIsoDate(value: unknown): value is string {
   return d <= daysInMonth(y, m);
 }
 
-/** `true`, если строка — момент времени в ISO с обязательным часовым поясом. */
+/** True when the string is an ISO instant with a mandatory time zone. */
 export function isIsoDateTime(value: unknown): value is string {
   if (typeof value !== 'string' || !ISO_DATETIME.test(value)) return false;
   return !Number.isNaN(Date.parse(value));
@@ -35,35 +35,37 @@ function daysInMonth(year: number, month: number): number {
 }
 
 /**
- * Календарная дата в Минске на момент `now`, строкой `YYYY-MM-DD`.
- * Часы принимаются снаружи — чтобы логику состояния можно было тестировать
- * с подставленным временем, а не ждать полуночи.
+ * The calendar date in Minsk at instant `now`, as `YYYY-MM-DD`.
+ *
+ * The clock is passed in from outside so that behaviour at the expiry
+ * boundary can be tested rather than waited for.
  */
 export function minskDate(now: Date): string {
   const shifted = new Date(now.getTime() + MINSK_UTC_OFFSET_MINUTES * 60_000);
   return shifted.toISOString().slice(0, 10);
 }
 
-/** Момент времени в Минске, строкой `YYYY-MM-DD HH:MM`. Для «проверено в …». */
+/** The instant in Minsk as `{ date, time }`. Used for "checked at …". */
 export function minskDateTime(now: Date): { date: string; time: string } {
   const shifted = new Date(now.getTime() + MINSK_UTC_OFFSET_MINUTES * 60_000);
   const iso = shifted.toISOString();
   return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
 }
 
+/** Russian month names in the genitive case — the form used inside a sentence. */
 const MONTHS_GENITIVE = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ] as const;
 
-/** `2026-07-08` → `8 июля 2026`. Для текста внутри предложения. */
+/** `2026-07-08` → `8 июля 2026`. For prose. */
 export function formatRuDate(iso: string): string {
   if (!isIsoDate(iso)) return iso;
   const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
   return `${d} ${MONTHS_GENITIVE[m - 1]} ${y}`;
 }
 
-/** `2026-07-08` → `08.07.2026`. Для клейма и таблиц, где важна колонка. */
+/** `2026-07-08` → `08.07.2026`. For the hallmark and tables, where the column matters. */
 export function formatRuDateShort(iso: string): string {
   if (!isIsoDate(iso)) return iso;
   const [y, m, d] = iso.split('-') as [string, string, string];
@@ -71,8 +73,8 @@ export function formatRuDateShort(iso: string): string {
 }
 
 /**
- * Период двумя датами: `3 — 31 июля 2026`, `12 июня — 2 июля 2026`.
- * Повторяющиеся месяц и год не дублируются — так в макете.
+ * A period as two dates: `3 — 31 июля 2026`, `12 июня — 2 июля 2026`.
+ * A repeated month or year is not printed twice — as in the mockup.
  */
 export function formatRuPeriod(fromIso: string, toIso: string | null): string {
   if (!isIsoDate(fromIso)) return fromIso;

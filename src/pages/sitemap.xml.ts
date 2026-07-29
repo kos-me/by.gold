@@ -1,9 +1,9 @@
 /**
- * Карта сайта. Три страницы — генератор ради трёх адресов не нужен.
+ * The sitemap. Three pages — no generator package is warranted for three URLs.
  *
- * `lastmod` берётся из данных, а не из времени сборки: пересборка без
- * изменения цифр — не изменение страницы, и говорить поисковику обратное
- * значит приучать его не верить.
+ * `lastmod` comes from the data, not the build time: a rebuild that changes no
+ * figures is not a change to the page, and telling a search engine otherwise
+ * teaches it not to believe us.
  */
 
 import type { APIRoute } from 'astro';
@@ -11,7 +11,7 @@ import type { APIRoute } from 'astro';
 import { tariffs } from '../lib/data.ts';
 import { NAV } from '../lib/site.ts';
 
-/** Самый свежий перенос данных — он и есть дата последнего изменения. */
+/** The most recent transcription — that is the real last-modified date. */
 function lastModified(): string | null {
   const stamps = tariffs
     .map((record) => record.transcribed_at)
@@ -25,13 +25,13 @@ export const GET: APIRoute = ({ site }) => {
   const lastmod = lastModified();
 
   const urls = NAV.map((item) => {
-    // Главная — с косой чертой (`https://gold.by/`), она же в canonical.
-    // Остальные — без, как отдаёт Cloudflare при `trailingSlash: 'never'`.
+    // The homepage with a trailing slash (`https://gold.by/`), matching canonical.
+    // The rest without, as Cloudflare serves them under `trailingSlash: 'never'`.
     const loc = item.href === '/' ? `${origin}/` : `${origin}${item.href}`;
     return [
       '  <url>',
       `    <loc>${loc}</loc>`,
-      // Главная меняется вместе с постановлением, остальные — почти никогда.
+      // The homepage changes with each decree; the others almost never do.
       item.href === '/' && lastmod !== null ? `    <lastmod>${lastmod}</lastmod>` : null,
       `    <changefreq>${item.href === '/' ? 'weekly' : 'yearly'}</changefreq>`,
       `    <priority>${item.href === '/' ? '1.0' : '0.6'}</priority>`,

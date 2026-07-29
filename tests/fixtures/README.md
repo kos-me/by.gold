@@ -1,21 +1,22 @@
 # tests/fixtures/
 
-Тестовые данные. **Все цифры здесь заведомо ненастоящие** и такими должны
-остаться: номер акта `TEST-1`, цена `1.00`, `2.00` и так далее.
+Test data. **Every figure here is knowingly fake** and must stay that way: act
+numbers like `TEST-1`, prices of `1.00`, `2.00` and so on.
 
-Смысл в том, чтобы фикстуру нельзя было спутать с настоящей записью, если
-она случайно окажется не там. Правдоподобное число в тестах — это заготовка
-для того, чтобы однажды уехать в `data/` и стать «ценой».
+The point is that a fixture must be impossible to mistake for a real record if
+it ever ends up somewhere it shouldn't. A plausible number in a test is a
+number waiting to migrate into `data/` and become "a price".
 
-Тест `tests/data-integrity.test.ts` следит за обеими границами:
+`tests/data-integrity.test.ts` guards both sides of that boundary:
 
-- в `data/` не должно быть ничего с признаками фикстуры;
-- фикстуры не должны выглядеть правдоподобно (цены > 10 BYN за грамм здесь
-  запрещены — настоящие цены на золото на порядок выше).
+- nothing in `data/` may carry the marks of a fixture;
+- fixtures may not look plausible (prices above 10 BYN per gram are banned
+  here — real gold prices are orders of magnitude higher).
 
-## Что где
+## What lives where
 
-| путь | зачем |
+| path | purpose |
 |---|---|
-| `valid-state/` | каталог данных для превью главной в рабочем состоянии (шаг 6). Подкладывается через `GOLD_DATA_DIR`. |
-| `minfin/` | HTML-страницы Минфина для парсера (шаг 9). |
+| `valid-state/` | a data directory for previewing the homepage in its working state. Supplied through `GOLD_DATA_DIR`. |
+| `expired-state/` | the same, for the "expired, no successor" state. |
+| `minfin/` | Minfin HTML pages for the parser. |

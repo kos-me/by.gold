@@ -1,13 +1,13 @@
 /*
- * Токены оформления.
+ * Design tokens.
  *
- * В макете всё задано инлайном, отдельного файла токенов не было — значения
- * сняты оттуда как есть. Имена мои: сгруппировано по роли, а не по цвету,
- * иначе при первой же правке палитры имена начнут врать.
+ * The mockup set everything inline; there was no token file, so the values
+ * were lifted from it verbatim. The names are mine: grouped by role rather
+ * than by colour, because colour names start lying at the first palette edit.
  */
 
 :root {
-  /* --- бумага и чернила ------------------------------------------------ */
+  /* --- paper and ink ---------------------------------------------------- */
   --paper: #f5f4f1;
   --card: #ffffff;
   --ink: #15181b;
@@ -15,45 +15,45 @@
   --ink-body: #3a3f36;
   --ink-soft: #4a4f45;
   --ink-muted: #6c6c62;
-  /* Тёплый серый микротекста: лейблы, подписи, единицы. */
+  /* The warm grey of microtext: labels, captions, units. */
   --ink-label: #8b8478;
   --ink-faint: #a6a196;
   --ink-disabled: #b3aea3;
 
-  /* --- линии, от тёмной к светлой -------------------------------------- */
-  --line: #dcd9d3; /* граница карточки */
-  --line-inner: #edeae5; /* разделитель внутри карточки */
+  /* --- rules, darkest to lightest --------------------------------------- */
+  --line: #dcd9d3; /* card border */
+  --line-inner: #edeae5; /* divider inside a card */
   --line-soft: #d8d5cc;
-  --line-field: #cfccc3; /* граница поля ввода */
+  --line-field: #cfccc3; /* input border */
   --line-quiet: #e3e0d9;
-  --line-strike: #c4c0b6; /* перечёркивание архивной цифры */
+  --line-strike: #c4c0b6; /* strike-through on the archived figure */
 
-  /* --- заливки --------------------------------------------------------- */
-  --wash: #f0efe9; /* зеленоватая подложка блоков и результата */
-  --wash-stamp: #f2f3ee; /* фон клейма */
-  --wash-off: #f3f2ee; /* выключенное поле, приглушённый результат */
-  --wash-row: #f6f5f0; /* выбранная строка таблицы проб */
-  --hatch-a: #f7f6f2; /* штриховка «цифры пока нет» */
+  /* --- fills ------------------------------------------------------------ */
+  --wash: #f0efe9; /* greenish backing for blocks and the result */
+  --wash-stamp: #f2f3ee; /* hallmark background */
+  --wash-off: #f3f2ee; /* disabled field, muted result */
+  --wash-row: #f6f5f0; /* selected row of the fineness table */
+  --hatch-a: #f7f6f2; /* hatching for "no figure yet" */
   --hatch-b: #f2f1ec;
 
-  /* --- тёмная шапка ---------------------------------------------------- */
+  /* --- dark masthead ----------------------------------------------------- */
   --header-bg: #1b1e21;
   --header-ink: #f5f4f1;
   --header-nav: #b9bfc4;
   --wordmark-dim: #8b9299;
 
-  /* --- действие --------------------------------------------------------- */
+  /* --- action ------------------------------------------------------------ */
   --link: #23566f;
   --link-hover: #143a4d;
   --focus: #7ea8bd;
 
-  /* --- клеймо: знак проверенных данных ---------------------------------- */
+  /* --- the hallmark: mark of verified data ------------------------------- */
   --stamp: #6b7560;
   --stamp-ink: #5f6a54;
   --stamp-line: #e0e2d8;
   --stamp-dashed: var(--ink-disabled);
 
-  /* --- предупреждение формы (тёплое, не красное) ------------------------ */
+  /* --- form warning (warm, not red) -------------------------------------- */
   --warn-label: #9c5f45;
   --warn-ink: #6b4635;
   --warn-bg: #f7f1ee;
@@ -63,12 +63,12 @@
   --warn-field: #c58e74;
   --warn-card-line: #d8c3b8;
 
-  /* --- шрифты ----------------------------------------------------------- */
+  /* --- typefaces ---------------------------------------------------------- */
   --font-display: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* --- скругления ------------------------------------------------------- */
+  /* --- radii --------------------------------------------------------------- */
   --r-card: 14px;
   --r-block: 12px;
   --r-panel: 11px;
@@ -78,7 +78,7 @@
   --r-stamp: 4px;
   --r-bar: 2px;
 
-  /* --- сетка ------------------------------------------------------------ */
+  /* --- grid ---------------------------------------------------------------- */
   --wrap: 720px;
   --wrap-narrow: 620px;
   --gutter: 20px;

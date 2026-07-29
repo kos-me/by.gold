@@ -9,9 +9,9 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description: string;
-  /** Путь текущей страницы, чтобы подсветить пункт навигации. */
+  /** Path of the current page, so the nav item can be highlighted. */
   path: string;
-  /** Узкая колонка для текстовых страниц. */
+  /** Narrow column for text-led pages. */
   narrow?: boolean;
 }
 
@@ -20,12 +20,13 @@ const { title, description, path, narrow = false } = Astro.props;
 const canonical = new URL(path, Astro.site ?? 'https://gold.by').href;
 
 /*
- * Отметка о проверке.
+ * The "checked at" stamp.
  *
- * В макете в подвале стоит «данные проверены 28 июля 2026, 09:40». Брать эту
- * дату из времени сборки нельзя: сборка — не проверка источника, и подпись
- * стала бы неправдой ровно того сорта, против которого весь сайт. Пока
- * воркер не записал реальную отметку, показываем источник вместо времени.
+ * The mockup's footer reads "данные проверены 28 июля 2026, 09:40". That date
+ * cannot come from the build time: a build is not a check of the source, and
+ * the line would become a falsehood of exactly the kind this whole site exists
+ * to prevent. Until the worker records a real stamp, show the source instead
+ * of a time.
  */
 const checked =
   status.last_checked === null ? null : minskDateTime(new Date(status.last_checked));
@@ -79,9 +80,9 @@ const structuredData = {
 
     {
       /*
-       * Подтверждение прав в Search Console и Яндекс.Вебмастере. Кода нет —
-       * тега нет: выдуманный код всё равно не подтвердит ничего, а выглядеть
-       * будет как настроенное.
+       * Ownership verification for Search Console and Yandex Webmaster. No
+       * code means no tag: a made-up code would verify nothing while looking
+       * like something configured.
        */
       googleVerification !== null && (
         <meta name="google-site-verification" content={googleVerification} />
@@ -94,10 +95,10 @@ const structuredData = {
     }
 
     {/*
-      Структурированные данные намеренно скупые: только «что это за сайт».
-      Схемы Product/Offer с ценой здесь были бы враньём — цену устанавливает
-      государство, сайт ничего не продаёт, а в состоянии «цифры нет»
-      машиночитаемая цена оказалась бы ещё и просроченной.
+      Structured data is deliberately thin: only "what this site is". A
+      Product/Offer schema with a price would be a lie here — the state sets
+      the price, the site sells nothing, and in the "no figure" state a
+      machine-readable price would also be stale.
     */}
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
   </head>
@@ -105,9 +106,9 @@ const structuredData = {
   <body>
     {
       /*
-       * Сборка на подставленных данных обязана быть видна с первого взгляда.
-       * Такой сборке нельзя дать доехать до продакшена молча: цифры в
-       * фикстурах выдуманные, и ровно этого сайт существует не допускать.
+       * A build on substituted data must be obvious at a glance. Such a build
+       * must never reach production quietly: the figures in fixtures are made
+       * up, and preventing exactly that is what this site is for.
        */
       USING_OVERRIDDEN_DATA && (
         <div class="fixture-banner" role="alert">

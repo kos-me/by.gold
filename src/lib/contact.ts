@@ -1,35 +1,37 @@
 /**
- * Правила приёма сообщения об ошибке в цифре.
+ * Rules for accepting a report of an error in a figure.
  *
- * Один модуль на браузер и на воркер: проверка на клиенте — вежливость,
- * проверка на сервере — настоящая, и расходиться они не должны. Формулировки
- * отказов тоже здесь, чтобы человек видел одно и то же независимо от того,
- * дошёл ли запрос до сервера.
+ * One module for both the browser and the worker: the client-side check is a
+ * courtesy, the server-side one is real, and the two must not drift apart.
+ * The refusal wordings live here too, so a person sees the same thing whether
+ * or not the request reached the server.
+ *
+ * Refusal messages are visitor-facing and therefore Russian.
  */
 
-/** Достаточно, чтобы отсеять «а@б» и опечатки, и не спорить с RFC 5322. */
+/** Enough to catch "a@b" and typos without arguing with RFC 5322. */
 export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 
-/** Короче — это не описание расхождения, а «ошибка». Отвечать не на что. */
+/** Shorter than this is not a description of a discrepancy. Nothing to reply to. */
 export const MIN_NOTE_LENGTH = 12;
 
-/** Верхняя граница, чтобы форму нельзя было использовать как трубу. */
+/** Upper bound, so the form cannot be used as a pipe. */
 export const MAX_NOTE_LENGTH = 4000;
 export const MAX_EMAIL_LENGTH = 254;
 
 export interface ReportInput {
   readonly email: string;
   readonly note: string;
-  /** Поле-ловушка. У человека пустое. */
+  /** Honeypot field. Empty for a human. */
   readonly city?: string;
-  /** Токен Turnstile. Проверяется отдельно. */
+  /** Turnstile token. Verified separately. */
   readonly turnstile?: string;
 }
 
 export type ReportRejection =
   | { readonly kind: 'email'; readonly message: string }
   | { readonly kind: 'note'; readonly message: string }
-  /** Ловушка сработала. Человеку об этом знать не нужно. */
+  /** The honeypot fired. The person need not be told. */
   | { readonly kind: 'honeypot'; readonly message: string };
 
 export type ReportValidation =
@@ -41,10 +43,9 @@ function asString(value: unknown): string {
 }
 
 /**
- * Проверяет сообщение. Одни и те же правила на клиенте и на сервере.
+ * Validates a report. The same rules on the client and on the server.
  *
- * Ловушка проверяется первой: если она заполнена, разбирать остальное
- * бессмысленно.
+ * The honeypot is checked first: if it is filled, parsing the rest is moot.
  */
 export function validateReport(input: Partial<ReportInput> | Record<string, unknown>): ReportValidation {
   const city = asString((input as Record<string, unknown>)['city']);
@@ -90,17 +91,18 @@ export function validateReport(input: Partial<ReportInput> | Record<string, unkn
 }
 
 /**
- * Достаёт номер постановления из текста сообщения.
+ * Extracts a decree number from the text of a report.
  *
- * Нужно, чтобы понять, о каком акте речь, и не заводить пятое обращение
- * по уже проверяемому расхождению. Ищутся формы «№ N», «No N»,
- * «постановление N», «пост. N-M». Ничего не нашлось — `null`, и тогда
- * сообщение считается обычным, а не дубликатом: угадывать номер нельзя.
+ * Needed to tell which act is meant, so a fifth report about a discrepancy
+ * already under review does not open a fifth thread. Recognised forms:
+ * «№ N», «No N», «постановление N», «пост. N-M». Nothing found means `null`,
+ * and the report is treated as ordinary rather than duplicate — guessing the
+ * number is not allowed.
  */
 export function extractActNumber(note: string): string | null {
-  // `\b` здесь не годится: в JavaScript граница слова определена через
-  // ASCII-класс `\w`, и перед кириллической буквой её попросту не бывает.
-  // Поэтому вместо неё — «слева не буква» через lookbehind с флагом `u`.
+  // `\b` is no use here: in JavaScript a word boundary is defined via the
+  // ASCII class `\w`, so one never occurs before a Cyrillic letter. Hence a
+  // "no letter to the left" lookbehind with the `u` flag instead.
   const NUMBER = '([0-9]{1,4}(?:-[0-9]{1,3})?)';
   const patterns = [
     new RegExp(`№\\s*${NUMBER}`, 'iu'),
@@ -115,7 +117,7 @@ export function extractActNumber(note: string): string | null {
   return null;
 }
 
-/** `GB-482913`. Короткий, чтобы человек мог назвать его в письме. */
+/** `GB-482913`. Short enough for a person to quote in an email. */
 export function formatTicket(random: number): string {
   const digits = Math.abs(Math.trunc(random)) % 1_000_000;
   return `GB-${String(digits).padStart(6, '0')}`;

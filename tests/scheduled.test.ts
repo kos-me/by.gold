@@ -1,12 +1,11 @@
 /**
- * Проверка источника по расписанию.
+ * The scheduled source check.
  *
- * GitHub и сеть подставлены целиком: тест проверяет последовательность
- * действий, ничего никуда не отправляя.
+ * GitHub and the network are faked wholesale: the test asserts on the
+ * sequence of actions without sending anything anywhere.
  *
- * Главное, что здесь проверяется: воркер не может опубликовать цифру.
- * Он может только предложить её так, чтобы предложение не сливалось,
- * пока человек не откроет акт.
+ * The main thing under test: the worker cannot publish a figure. It can only
+ * propose one, in a shape that refuses to merge until a person opens the act.
  */
 
 import { readFileSync } from 'node:fs';
@@ -32,8 +31,8 @@ interface Call {
 }
 
 /**
- * Поддельный GitHub: помнит созданные ветки и записанные файлы, отвечает
- * как настоящий на те эндпоинты, которые использует воркер.
+ * A fake GitHub: remembers created branches and written files, and answers
+ * like the real one on the endpoints the worker uses.
  */
 function fakeGitHub(options: { page: string; branches?: string[]; tariffs?: string } = { page: '' }) {
   const calls: Call[] = [];
@@ -51,12 +50,12 @@ function fakeGitHub(options: { page: string; branches?: string[]; tariffs?: stri
     const json = (value: unknown, status = 200) =>
       new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
 
-    // Страница Минфина
+    // The Minfin page
     if (url.includes('minfin.gov.by')) {
       return new Response(options.page, { status: options.page === '' ? 503 : 200 });
     }
 
-    // Ветки
+    // Branches
     const refMatch = /\/git\/ref\/heads\/(.+)$/.exec(url);
     if (refMatch !== null && method === 'GET') {
       const name = decodeURIComponent(refMatch[1] as string);
@@ -69,7 +68,7 @@ function fakeGitHub(options: { page: string; branches?: string[]; tariffs?: stri
       return json({ ref });
     }
 
-    // Файлы
+    // Files
     const contentsMatch = /\/contents\/([^?]+)(?:\?ref=(.+))?$/.exec(url);
     if (contentsMatch !== null) {
       const path = decodeURIComponent(contentsMatch[1] as string);
@@ -93,7 +92,7 @@ function fakeGitHub(options: { page: string; branches?: string[]; tariffs?: stri
       return json({ number: issues.length, html_url: 'https://github.test/issue/1' });
     }
 
-    // PR
+    // Pull requests
     if (url.endsWith('/pulls') && method === 'POST') {
       return json({ number: 7, html_url: 'https://github.test/pr/7' });
     }
@@ -107,7 +106,7 @@ function fakeGitHub(options: { page: string; branches?: string[]; tariffs?: stri
 function env(reports: FakeKV): Env {
   return {
     REPORTS: reports,
-    GITHUB_TOKEN: 'ghp_не_настоящий',
+    GITHUB_TOKEN: 'ghp_not_a_real_token',
     GITHUB_REPO: 'owner/gold-by',
   };
 }
@@ -116,8 +115,8 @@ const NOW = new Date('2000-01-11T06:00:00Z');
 
 // ---------------------------------------------------------------------------
 
-describe('проверка источника', () => {
-  it('первый запуск на новом акте открывает PR', async () => {
+describe('the source check', () => {
+  it('a first run on a new act opens a PR', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('current.html'), tariffs: '[]' });
 
@@ -131,7 +130,7 @@ describe('проверка источника', () => {
     expect(gh.branches.has('minfin/act-TEST-1-2000-01-10')).toBe(true);
   });
 
-  it('к PR приложен сырой HTML как доказательство', async () => {
+  it('the raw HTML is attached to the PR as evidence', async () => {
     const reports = new FakeKV();
     const page = fixture('current.html');
     const gh = fakeGitHub({ page, tariffs: '[]' });
@@ -143,13 +142,13 @@ describe('проверка источника', () => {
     expect(evidence?.[1]).toBe(page);
   });
 
-  it('предложенная запись НЕ проходит схему: дат нет, и это шлагбаум', async () => {
+  it('the proposed record does NOT pass the schema: no dates, and that is the gate', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('current.html'), tariffs: '[]' });
 
     await checkMinfin(env(reports), { fetchImpl: gh.fetchImpl, now: NOW });
 
-    // Именно то, что легло в ветку, а не то, что лежало в main до неё.
+    // What actually landed on the branch, not what sat on main before it.
     const written = [...gh.files.entries()].find(
       ([key]) => key.startsWith('minfin/') && key.endsWith('data/tariffs.json'),
     );
@@ -159,11 +158,11 @@ describe('проверка источника', () => {
     const validation = validateTariffFile(parsed);
     expect(validation.ok).toBe(false);
     if (validation.ok) return;
-    // Ровно то поле, которого нет на странице источника.
+    // Exactly the field the source page does not carry.
     expect(validation.issues.some((issue) => issue.path.endsWith('effective_from'))).toBe(true);
   });
 
-  it('в предложенной записи срок не выдуман', async () => {
+  it('the proposed record invents no expiry', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('current.html'), tariffs: '[]' });
     await checkMinfin(env(reports), { fetchImpl: gh.fetchImpl, now: NOW });
@@ -175,7 +174,7 @@ describe('проверка источника', () => {
     expect(records[0]?.stated_expiry).toBeNull();
   });
 
-  it('тот же акт второй раз — ничего не делает', async () => {
+  it('the same act a second time does nothing', async () => {
     const reports = new FakeKV();
     await reports.put(
       'minfin:last_act',
@@ -189,7 +188,7 @@ describe('проверка источника', () => {
     expect(gh.calls.some((call) => call.url.endsWith('/pulls'))).toBe(false);
   });
 
-  it('PR об этом акте уже открыт — второй не заводится', async () => {
+  it('a PR about this act is open — no second one is created', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({
       page: fixture('current.html'),
@@ -203,7 +202,7 @@ describe('проверка источника', () => {
     expect(gh.calls.some((call) => call.url.endsWith('/pulls'))).toBe(false);
   });
 
-  it('отметка о проверке пишется в KV', async () => {
+  it('the check stamp is written to KV', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('current.html'), tariffs: '[]' });
 
@@ -216,8 +215,8 @@ describe('проверка источника', () => {
   });
 });
 
-describe('разбор не удался', () => {
-  it('страница техобслуживания: issue и флаг блокировки', async () => {
+describe('parsing failed', () => {
+  it('maintenance page: an issue and the block flag', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('maintenance.html') });
 
@@ -229,7 +228,7 @@ describe('разбор не удался', () => {
     expect(gh.issues[0]?.title).toContain('no_act_line');
   });
 
-  it('архив вместо текущей страницы: тоже блокировка, а не «цена не изменилась»', async () => {
+  it("archive instead of the current page: also a block, not \'price unchanged\'", async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('archive.html') });
 
@@ -239,9 +238,9 @@ describe('разбор не удался', () => {
     expect(await reports.get(BLOCK_KEY)).not.toBeNull();
   });
 
-  it('пока стоит флаг блокировки, ничего не предлагается', async () => {
+  it('while the block flag is set nothing is proposed', async () => {
     const reports = new FakeKV();
-    await reports.put(BLOCK_KEY, 'парсер сломался');
+    await reports.put(BLOCK_KEY, 'parser broke');
     const gh = fakeGitHub({ page: fixture('changed.html'), tariffs: '[]' });
 
     const outcome = await checkMinfin(env(reports), { fetchImpl: gh.fetchImpl, now: NOW });
@@ -250,7 +249,7 @@ describe('разбор не удался', () => {
     expect(gh.calls).toHaveLength(0);
   });
 
-  it('одно и то же issue не заводится дважды', async () => {
+  it('the same issue is not filed twice', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('maintenance.html') });
 
@@ -261,9 +260,9 @@ describe('разбор не удался', () => {
     expect(gh.issues).toHaveLength(1);
   });
 
-  it('источник не ответил — ни issue, ни блокировки', async () => {
+  it('the source did not answer — no issue and no block', async () => {
     const reports = new FakeKV();
-    const gh = fakeGitHub({ page: '' }); // отдаёт 503
+    const gh = fakeGitHub({ page: '' }); // answers 503
 
     const outcome = await checkMinfin(env(reports), { fetchImpl: gh.fetchImpl, now: NOW });
 
@@ -272,7 +271,7 @@ describe('разбор не удался', () => {
     expect(gh.issues).toHaveLength(0);
   });
 
-  it('нет токена GitHub — воркер честно говорит, что не настроен', async () => {
+  it('no GitHub token — the worker says plainly it is unconfigured', async () => {
     const reports = new FakeKV();
     const gh = fakeGitHub({ page: fixture('current.html') });
 
@@ -282,76 +281,76 @@ describe('разбор не удался', () => {
   });
 });
 
-describe('тексты предложения', () => {
+describe('proposal text', () => {
   const parsed = parseMinfinPage(fixture('current.html'), 'test');
 
-  it('в теле PR сказано, что его нельзя слить как есть', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('the PR body says it must not be merged as it stands', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     const texts = proposalTexts(parsed.act, [], 'https://minfin.gov.by/', '2000-01-11T06:00:00Z');
-    expect(texts.body).toContain('нельзя слить как есть');
+    expect(texts.body).toContain('must not be merged as it stands');
     expect(texts.body).toContain('effective_from');
-    expect(texts.body).toContain('оставить `null`');
+    expect(texts.body).toContain('leave `null`');
   });
 
-  it('в теле PR перечислены разобранные цены', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('the PR body lists the parsed prices', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     const texts = proposalTexts(parsed.act, [], 'https://minfin.gov.by/', '2000-01-11T06:00:00Z');
     expect(texts.body).toContain('| 585 | 2,50 |');
   });
 
-  it('предупреждения парсера попадают в тело PR', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('parser warnings reach the PR body', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     const texts = proposalTexts(
       parsed.act,
-      [{ kind: 'large_move', message: 'проба 585: изменение +28,0%' }],
+      [{ kind: 'large_move', message: 'fineness 585: moved +28.0%' }],
       'https://minfin.gov.by/',
       '2000-01-11T06:00:00Z',
     );
     expect(texts.body).toContain('large_move');
-    expect(texts.body).toContain('+28,0%');
+    expect(texts.body).toContain('+28.0%');
   });
 
-  it('имя ветки одно и то же для одного акта', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('the branch name is stable for a given act', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     expect(branchNameFor(parsed.act)).toBe('minfin/act-TEST-1-2000-01-10');
     expect(branchNameFor(parsed.act)).toBe(branchNameFor(parsed.act));
   });
 });
 
-describe('черновик записи', () => {
+describe('the draft record', () => {
   const parsed = parseMinfinPage(fixture('current.html'), 'test');
 
-  it('обе даты пустые, заполнять их человеку', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('both dates are empty, for a person to fill in', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     const draft = buildDraft(parsed.act, 'https://minfin.gov.by/', '2000-01-11T06:00:00Z');
     expect(draft.effective_from).toBeNull();
     expect(draft.stated_expiry).toBeNull();
-    expect(draft.transcribed_by).toContain('ЗАПОЛНИТЕ');
+    expect(draft.transcribed_by).toContain('FILL IN');
   });
 
-  it('дописывается к существующим записям, не затирая их', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('appends to existing records without overwriting them', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     const draft = buildDraft(parsed.act, 'https://minfin.gov.by/', '2000-01-11T06:00:00Z');
     const existing = JSON.stringify([{ act_number: 'TEST-0' }]);
     const merged = JSON.parse(appendDraft(existing, draft)) as { act_number: string }[];
     expect(merged.map((r) => r.act_number)).toEqual(['TEST-0', 'TEST-1']);
   });
 
-  it('битый существующий файл не приводит к потере: начинаем с пустого массива', () => {
-    if (!parsed.ok) throw new Error('фикстура не разобралась');
+  it('a corrupt existing file loses nothing: we start from an empty array', () => {
+    if (!parsed.ok) throw new Error('fixture did not parse');
     const draft = buildDraft(parsed.act, 'https://minfin.gov.by/', '2000-01-11T06:00:00Z');
-    const merged = JSON.parse(appendDraft('не json', draft)) as unknown[];
+    const merged = JSON.parse(appendDraft('not json', draft)) as unknown[];
     expect(merged).toHaveLength(1);
   });
 });
 
-describe('base64 для GitHub', () => {
-  it('кириллица не ломается', () => {
-    const text = 'Постановление № TEST-1 — цена 1,00 BYN';
+describe('base64 for GitHub', () => {
+  it('Cyrillic survives', () => {
+    const text = 'Постановление № TEST-1 — цена 1,00 BYN'; // Cyrillic on purpose
     expect(fromBase64(toBase64(text))).toBe(text);
   });
 
-  it('большой HTML переживает круг', () => {
+  it('a large HTML round-trips intact', () => {
     const html = fixture('current.html');
     expect(fromBase64(toBase64(html))).toBe(html);
   });

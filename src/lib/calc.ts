@@ -1,34 +1,36 @@
 /**
- * Арифметика калькулятора.
+ * Calculator arithmetic.
  *
- * Чистые функции без зависимостей: этот модуль уезжает в браузер, и тянуть
- * за собой валидаторы схемы ему незачем.
+ * Pure functions with no dependencies: this module ships to the browser, and
+ * it has no business dragging the schema validators along with it.
  *
- * Считается ровно одно: масса × цена за грамм по постановлению. Результат
- * подписывается «стоимость по официальным ценам Минфина», а не «сколько вы
- * получите»: итоговая сумма зависит от опробования и зачётной массы, и этот
- * разрыв закрывать нельзя.
+ * It computes exactly one thing: mass × price per gram from the decree. The
+ * result is labelled "стоимость по официальным ценам Минфина", never "what
+ * you will get" — the final sum depends on the assay and the accepted metal
+ * mass, and that gap must not be papered over.
+ *
+ * User-facing strings stay Russian; comments are English.
  */
 
 import type { FinenessKey } from './schema.ts';
 
-/** Верхняя граница разумного ввода. Выше — почти наверняка опечатка. */
+/** Upper bound on sane input. Above this it is almost certainly a typo. */
 export const MAX_GRAMS = 100_000;
 
-/** Точность взвешивания золота при приёмке, граммы. Из правил приёмки. */
+/** Weighing precision for gold at the counter, in grams. From the acceptance rules. */
 export const GOLD_WEIGHING_PRECISION_G = 0.01;
 
-/** Точность взвешивания серебра, граммы. */
+/** Weighing precision for silver, in grams. */
 export const SILVER_WEIGHING_PRECISION_G = 0.1;
 
 export type MassParseFailure =
-  /** Поле пустое — не ошибка, просто ещё нечего считать. */
+  /** Field is empty — not an error, just nothing to compute yet. */
   | 'empty'
-  /** Не разбирается как число. */
+  /** Does not parse as a number. */
   | 'not_a_number'
-  /** Ноль или отрицательное. */
+  /** Zero or negative. */
   | 'not_positive'
-  /** Больше `MAX_GRAMS`. */
+  /** Greater than `MAX_GRAMS`. */
   | 'too_large';
 
 export type MassParseResult =
@@ -36,21 +38,23 @@ export type MassParseResult =
   | { readonly ok: false; readonly reason: MassParseFailure };
 
 /**
- * Разбирает массу, введённую человеком.
+ * Parses a mass as typed by a person.
  *
- * Принимает запятую и точку как разделитель дробной части, пробелы внутри
- * числа (в том числе неразрывные) как разделитель тысяч. Всё остальное —
- * отказ: молча «понять» `8..4` или `8,4,4` значит посчитать не то, что ввели.
+ * Accepts comma or dot as the decimal separator, and spaces inside the number
+ * (including non-breaking ones) as thousands separators. Everything else is
+ * refused: silently "understanding" `8..4` or `8,4,4` means computing
+ * something other than what was entered.
  */
 export function parseMass(raw: string): MassParseResult {
   const trimmed = raw.trim();
   if (trimmed === '') return { ok: false, reason: 'empty' };
 
-  // \s покрывает и обычный пробел, и неразрывный, и узкий неразрывный —
+  // \s covers the ordinary space, the non-breaking one and the narrow
+  // non-breaking one — people paste a mass from anywhere, separators included.
   const withoutSpaces = trimmed.replace(/\s/g, '');
   const normalized = withoutSpaces.replace(',', '.');
 
-  // Ровно одно необязательное «точка + цифры», без знака и без экспоненты.
+  // Exactly one optional "dot + digits", no sign and no exponent.
   if (!/^\d+(\.\d+)?$/.test(normalized)) return { ok: false, reason: 'not_a_number' };
 
   const grams = Number(normalized);
@@ -62,11 +66,12 @@ export function parseMass(raw: string): MassParseResult {
 }
 
 /**
- * Масса × цена за грамм, в копейках, с обычным математическим округлением.
+ * Mass × price per gram, in kopecks, with ordinary half-up rounding.
  *
- * Считается в целых: цена переводится в копейки, масса — в миллиграммы.
- * Иначе `0.1 * 3` и подобное дают хвосты, которые видно в третьем знаке
- * и которые на сумме в сотни рублей превращаются в копейку расхождения.
+ * Computed in integers: the price becomes kopecks, the mass becomes
+ * milligrams. Otherwise `0.1 * 3` and friends leave tails visible in the
+ * third decimal, which on a sum of several hundred roubles turns into a
+ * kopeck of disagreement with the counter.
  */
 export function totalKopecks(grams: number, pricePerGram: number): number {
   const kopecksPerGram = Math.round(pricePerGram * 100);
@@ -75,11 +80,11 @@ export function totalKopecks(grams: number, pricePerGram: number): number {
 }
 
 export type CalcFailure =
-  /** Масса не разобралась. */
+  /** The mass did not parse. */
   | { readonly kind: 'mass'; readonly reason: MassParseFailure }
-  /** Постановление эту пробу не называет. */
+  /** The decree does not name this fineness. */
   | { readonly kind: 'no_price' }
-  /** Нет действующего постановления — считать не по чему. */
+  /** There is no decree in force — nothing to compute against. */
   | { readonly kind: 'no_tariff' };
 
 export type CalcResult =
@@ -88,20 +93,20 @@ export type CalcResult =
       readonly grams: number;
       readonly fineness: FinenessKey;
       readonly pricePerGram: number;
-      /** Сумма в копейках — целое, без плавающей точки. */
+      /** The sum in kopecks — an integer, no floating point. */
       readonly totalKopecks: number;
-      /** Та же сумма в рублях, для вывода. */
+      /** The same sum in roubles, for display. */
       readonly totalByn: number;
     }
   | { readonly ok: false; readonly failure: CalcFailure };
 
 /**
- * Стоимость по официальным ценам Минфина для введённой массы и пробы.
+ * The value at Minfin's official prices for the entered mass and fineness.
  *
- * @param rawMass  что ввёл человек, как есть
- * @param fineness выбранная проба
- * @param prices   таблица цен действующего постановления, либо `null`,
- *                 если действующего постановления нет
+ * @param rawMass  what the person typed, verbatim
+ * @param fineness the selected fineness
+ * @param prices   the price table of the decree in force, or `null` when
+ *                 there is no decree in force
  */
 export function calculate(
   rawMass: string,
@@ -127,16 +132,17 @@ export function calculate(
 }
 
 // ---------------------------------------------------------------------------
-// Вывод чисел
+// Number formatting
 // ---------------------------------------------------------------------------
 
-/** Неразрывный пробел: сумма не должна переноситься посреди числа. */
+/** Non-breaking space: a sum must never wrap in the middle of a number. */
 const NBSP = '\u00A0';
 
 /**
- * `1234.5` → `1 234,50`. Запятая как разделитель дробной части, неразрывный
- * пробел как разделитель тысяч — русская типографика, а не локаль браузера:
- * на сервере и в браузере число должно выглядеть одинаково.
+ * `1234.5` → `1 234,50`. Comma as the decimal separator, non-breaking space
+ * for thousands — Russian typography written out by hand rather than taken
+ * from the browser locale, so the number looks identical on the server and
+ * in the browser whatever locale the visitor has.
  */
 export function formatByn(value: number): string {
   const kopecks = Math.round(value * 100);
@@ -147,14 +153,14 @@ export function formatByn(value: number): string {
   return `${sign}${groupThousands(rubles)},${String(remainder).padStart(2, '0')}`;
 }
 
-/** Сумма из копеек, минуя обратный перевод в рубли с плавающей точкой. */
+/** A sum straight from kopecks, skipping the round trip through a float. */
 export function formatKopecks(kopecks: number): string {
   return formatByn(kopecks / 100);
 }
 
 /**
- * Масса для вывода: до трёх знаков, без хвостовых нулей. `8.4` → `8,4`,
- * `10` → `10`, `10.100` → `10,1`.
+ * A mass for display: up to three decimals, no trailing zeros.
+ * `8.4` → `8,4`, `10` → `10`, `10.100` → `10,1`.
  */
 export function formatGrams(grams: number): string {
   const rounded = Math.round(grams * 1000) / 1000;
@@ -169,12 +175,12 @@ function groupThousands(value: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Тексты отказов
+// Refusal text
 // ---------------------------------------------------------------------------
 
 /**
- * Что показать вместо суммы. Пустое поле — не ошибка и не окрашивается
- * как ошибка: человек просто ещё не ввёл массу.
+ * What to show instead of a sum. An empty field is not an error and is not
+ * styled as one: the person simply has not typed a mass yet.
  */
 export function failureText(failure: CalcFailure): string {
   if (failure.kind === 'no_price') return 'этой пробы нет в постановлении';
@@ -192,7 +198,7 @@ export function failureText(failure: CalcFailure): string {
   }
 }
 
-/** Отличает «ещё не ввёл» от «ввёл неверно» — по этому решается подсветка. */
+/** Distinguishes "hasn't typed yet" from "typed something wrong" — drives the styling. */
 export function isEmptyInput(failure: CalcFailure): boolean {
   return failure.kind === 'mass' && failure.reason === 'empty';
 }

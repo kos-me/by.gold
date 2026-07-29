@@ -1,9 +1,10 @@
 ---
 /**
- * Блок цены: крупная цифра (или её честное отсутствие), клеймо и таблица проб.
+ * The price block: the large figure (or its honest absence), the hallmark and
+ * the fineness table.
  *
- * В состоянии без действующего постановления место цифры занимает штриховка,
- * а не ноль и не прочерк на всю карточку: место занято, но занято не числом.
+ * With no decree in force, hatching occupies the figure's place — not a zero
+ * and not a dash across the whole card. The space is filled, but not by a number.
  */
 import Hallmark from './Hallmark.astro';
 import { absenceNote } from '../lib/copy.ts';
@@ -21,9 +22,9 @@ const record = state.current;
 const headline = record === null ? null : headlinePrice(record);
 
 /*
- * Какие пробы показать в таблице. Есть действующий акт — ровно те, что он
- * назвал. Нет — канонический список проб, по которым сайт вообще работает,
- * все с прочерком. Это не выдуманные данные: это перечень строк, а не цен.
+ * Which finenesses the table shows. With an act in force, exactly the ones it
+ * names. Without one, the canonical list of finenesses the site covers, all
+ * dashed. That is not invented data: it is a list of rows, not of prices.
  */
 const rows: readonly FinenessKey[] =
   record === null

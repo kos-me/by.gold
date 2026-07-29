@@ -1,18 +1,18 @@
 /**
- * Состояния формы сообщения об ошибке.
+ * States of the error-report form.
  *
- * Контракт с воркером (`POST /api/contact`):
+ * Contract with the worker (`POST /api/contact`):
  *
  *   200 { status: "accepted",  ticket: "GB-…" }
  *   200 { status: "duplicate", act: "…", since: "YYYY-MM-DD", count: n }
  *   400 { status: "invalid",   message: "…" }
  *   429 { status: "rate_limited" }
- *   иное / сеть недоступна → состояние «не отправилось»
+ *   anything else / network down → the "didn't send" state
  *
- * Текст пользователя при неудаче остаётся в полях: он его уже написал,
- * терять его из-за нашей поломки нельзя.
+ * On failure the person's text stays in the fields: they already wrote it,
+ * and losing it because of our breakage is not acceptable.
  *
- * Хранилищ не трогаем — ни localStorage, ни sessionStorage.
+ * No storage is touched — neither localStorage nor sessionStorage.
  */
 
 import { validateReport } from '../lib/contact.ts';
@@ -71,13 +71,13 @@ function init(): void {
   }
 
   /**
-   * Проверка на клиенте — вежливость, настоящая всё равно на сервере.
-   * Правила и формулировки общие с воркером: расходиться им нельзя.
+   * The client-side check is a courtesy; the real one is on the server.
+   * Rules and wordings are shared with the worker — they must not drift.
    */
   function localComplaint(): { message: string; field: 'email' | 'note' } | null {
     const result = validateReport({ email: email!.value, note: note!.value });
     if (result.ok) return null;
-    if (result.rejection.kind === 'honeypot') return null; // человек её не видит
+    if (result.rejection.kind === 'honeypot') return null; // a human never sees it
     return { message: result.rejection.message, field: result.rejection.kind };
   }
 
@@ -122,7 +122,7 @@ function init(): void {
         body: JSON.stringify({
           email: email!.value.trim(),
           note: note!.value.trim(),
-          // Ловушка: у человека это поле пустое, бот его заполняет.
+          // Honeypot: empty for a human, filled in by a bot.
           city: root!.querySelector<HTMLInputElement>('#report-city')?.value ?? '',
           turnstile:
             root!.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]')?.value ?? '',
@@ -163,7 +163,7 @@ function init(): void {
 
       show('failed');
     } catch {
-      // Сеть недоступна или воркер не отвечает. Текст остаётся в полях.
+      // Network is down or the worker is silent. The text stays in the fields.
       show('failed');
     } finally {
       setSending(false);

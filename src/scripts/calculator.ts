@@ -1,11 +1,12 @@
 /**
- * Поведение калькулятора в браузере.
+ * Calculator behaviour in the browser.
  *
- * Вся арифметика — в `src/lib/calc.ts`, здесь только связь с разметкой.
- * Скрипт не запускается вовсе, если действующего постановления нет: в этом
- * состоянии поля выключены на сервере, и включать их нечем.
+ * All the arithmetic lives in `src/lib/calc.ts`; this file only wires it to
+ * the markup. The script never runs at all when no decree is in force: in
+ * that state the fields are disabled server-side and there is nothing to
+ * enable them with.
  *
- * Хранилищ не трогаем — ни localStorage, ни sessionStorage.
+ * No storage is touched — neither localStorage nor sessionStorage.
  */
 
 import { calculate, failureText, formatKopecks, isEmptyInput } from '../lib/calc.ts';
@@ -22,7 +23,7 @@ function readPayload(): TariffPayload | null {
   try {
     return JSON.parse(node.textContent) as TariffPayload;
   } catch {
-    // Испорченный payload — не повод показать неверную сумму.
+    // A corrupt payload is no reason to show a wrong sum.
     return null;
   }
 }
@@ -54,7 +55,7 @@ function init(): void {
     }
 
     output.textContent = failureText(result.failure);
-    // Пустое поле — не ошибка: человек просто ещё не ввёл массу.
+    // An empty field is not an error: the person simply hasn't typed a mass.
     output.dataset['kind'] = isEmptyInput(result.failure) ? 'hint' : 'error';
     if (isEmptyInput(result.failure)) input.removeAttribute('aria-invalid');
     else input.setAttribute('aria-invalid', 'true');
@@ -65,7 +66,7 @@ function init(): void {
     for (const chip of chips) {
       chip.setAttribute('aria-pressed', String(chip.dataset['calcFineness'] === next));
     }
-    // Подсветка строки в таблице проб — та же связь, что в макете.
+    // Highlighting the row in the fineness table — the same link as in the mockup.
     for (const chip of chips) {
       const key = chip.dataset['calcFineness'];
       if (key === undefined) continue;
