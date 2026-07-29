@@ -119,6 +119,38 @@ a `routes` section in `wrangler.toml`.
 
 ---
 
+## The site must rebuild on a schedule, not only on a push
+
+This matters and is easy to miss. The site is static, so its state is decided
+at build time — but the state depends on **today's date**, not only on the
+contents of `data/`. Two boundaries move it with nothing being pushed:
+
+- an act's `stated_expiry` passing, which withholds the figure;
+- a future-dated act's `effective_from` arriving, which is what should happen
+  on **1 August 2026** for act № 34.
+
+Rebuild-on-push alone will not cross either. A build made before the boundary
+keeps serving its old state until someone commits something.
+
+The failure is not silent, and it fails in the safe direction: the browser
+re-checks the expiry on every visit and takes the figure away client-side
+(`src/scripts/staleness.ts`). So a stale build goes quiet rather than quoting
+a lapsed price. But quiet is not correct when a valid successor is already
+sitting in `data/tariffs.json` — it just cannot reach the page without a
+rebuild.
+
+So: create a **Pages deploy hook** and call it daily. The scheduled worker in
+`worker/` already runs on cron and is the natural place to POST to it; that is
+not wired up yet, deliberately, because it could not be tested here. Until it
+is, a daily cron from anywhere — or a scheduled GitHub Action doing an empty
+commit — is enough. A daily rebuild is also cheap: the build is a few seconds
+and Pages does not charge for it.
+
+Note the deploy hook only rebuilds. It cannot add a figure: that still takes a
+person merging the cron worker's pull request.
+
+---
+
 ## Post-deploy checklist
 
 - [ ] `/` loads and its state matches `data/tariffs.json`

@@ -53,42 +53,46 @@ Everything you answered has been acted on. Nothing is waiting on me.
 
 ### What is still open
 
-1. **The act expires on 31 July 2026 — that is in two days.** Not a question,
-   a calendar fact. From 1 August the site correctly withholds the figure until
-   a successor act is transcribed. See "The 31 July handover" below.
-2. **B3, bullion.** Three options below; I recommend (b).
-3. **`transcribed_by`.** Every field is now traced to a Ministry source
-   (see B1), but the field still reads "NOT yet verified by a human", because
-   that is true. Read the act and put your name there when you are ready to
-   vouch for it. Nothing on the site depends on this.
+1. **B3, bullion.** Three options below; I recommend (b).
+2. **`transcribed_by`.** Every field of both records is traced to a Ministry
+   source (see B1), but the field still reads "NOT yet verified by a human",
+   because that is true. Read the acts and put your name there when you are
+   ready to vouch for them. Nothing on the site depends on this.
+3. **A daily rebuild, at deploy time.** Not a question either, but it has to
+   be set up or the 1 August handover below will not happen on its own. See
+   DEPLOY.md, "The site must rebuild on a schedule".
 
 None of these block anything else. The site builds, deploys and works as is.
 
-### The 31 July handover
+### The 1 August handover is already in the data
 
-Point 3 of the act ends its life on 31 July 2026. What happens then, in order:
+Act № 31 dies by its own terms on 31 July 2026. Its successor is transcribed:
 
-- **1 August, with no successor transcribed:** the state machine returns
-  `expired_no_successor`, the figure is withheld, the calculator switches off
-  and the expired figure is shown as an archive. That is the designed
-  behaviour, not a fault.
-- **A build served past 31 July without a rebuild** is covered too: the
-  browser re-checks the expiry on every visit and takes the figure away
-  client-side (`src/scripts/staleness.ts`). It can only remove a figure,
-  never restore one.
-- **Getting the successor in** means adding a record to `data/tariffs.json`.
-  The cron worker would open a PR for it, but it only runs once deployed, and
-  it deliberately cannot fill in the dates itself.
+| act | in force | expires |
+|---|---|---|
+| № 31 of 08.07.2026 | 18 July 2026 | 31 July 2026 |
+| № 34 of 28.07.2026 | 1 August 2026 | names no end date → `null` |
 
-The predecessor act was № 27 of 18 June 2026, this one is № 31 of 8 July —
-so the Ministry is reissuing these roughly monthly and the next one should
-appear around the end of July.
+No gap, no overlap. Today the site shows № 31; from 1 August it shows № 34 and
+keeps showing it until an act replaces it, because № 34 contains no "действует
+по" clause at all. `stated_expiry: null` is a real property of that act, not a
+missing transcription — do not fill it in.
 
-**One caveat on my side:** as of 29 July I cannot reach `minfin.gov.by` from
-this machine — every request to any `.by` host is reset during the TLS
-handshake, the same symptom as when the VPN was up. So I could not check
-whether a successor has already been published. Everything above about
-act № 31 was read directly from the source while it was reachable.
+Two things worth knowing about № 34:
+
+- It names its own effective date, in point 2: "Настоящее постановление
+  вступает в силу 1 августа 2026 г." No inference needed this time.
+- Point 1 lowers the Белскупдрагмет bullion surcharges to 4.5 % for gold and
+  2.5 % for silver, from 5.5 and 4.5 in № 31. That matters only for B3.
+
+**The one thing that must happen for the handover to take effect** is a
+rebuild on or after 1 August. Until then a build made in July keeps serving
+№ 31, and past 31 July the client-side guard blanks the figure — which is safe
+but wrong, because a valid successor is sitting in `data/tariffs.json` unable
+to reach the page. Hence item 3 above.
+
+The Ministry is reissuing these roughly monthly: № 27 on 18 June, № 31 on
+8 July, № 34 on 28 July.
 
 ---
 

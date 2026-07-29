@@ -19,5 +19,26 @@
       "958": 331.08
     },
     "notes": "Provenance, field by field. PRICES and stated_expiry come from the act itself, read as a PDF at minfin.gov.by/upload/dragmet/gosfond/actual_fizlitca.pdf (appendix Table 1; point 3 reads 'Настоящее постановление вступает в силу после его официального опубликования и действует по 31 июля 2026 г.'). Note that URL is a rolling one - 'actual' - and will point at the successor act once one is published, so it is not a stable citation for this act. ACT_NUMBER and ACT_DATE come only from the appendix heading on the prices page, '08.07.2026 № 31'; the PDF is the unsigned publication form, with both the number and the date fields left blank. EFFECTIVE_FROM is stated twice by the Ministry itself: on the prices page directly above Table 1 ('Вступает в силу с 18 июля 2026 года') and in the news headline 'Цены ... с 18 июля 2026 г.'. It is deliberately not the act date. 08.07.2026 is when the Minister signed it; the act defers its own commencement to official publication, which is a separate and later event (inclusion in the National Legal Register). Point 2 of the act corroborates the gap: it repeals resolution № 27 of 18.06.2026, and that repeal only takes effect when this act does, so № 27 governed 8-17 July and the two do not overlap. The prices were confirmed twice, from the PDF and from the HTML table, independently. transcribed_by is still not a person: someone should read the act and put their own name there before this record counts as vouched for."
+  },
+  {
+    "act_number": "34",
+    "act_date": "2026-07-28",
+    "effective_from": "2026-08-01",
+    "stated_expiry": null,
+    "source_url": "https://minfin.gov.by/ru/activities_jewels/fund/pokupka/fizlic/",
+    "transcribed_at": "2026-07-29T20:44:18Z",
+    "transcribed_by": "Claude Opus 5 — NOT yet verified by a human",
+    "prices_byn_per_gram": {
+      "375": 129.81,
+      "500": 173.08,
+      "583": 202.5,
+      "585": 202.5,
+      "750": 259.61,
+      "900": 311.54,
+      "916": 317.07,
+      "950": 328.84,
+      "958": 331.61
+    },
+    "notes": "The successor to № 31, read on 29 July 2026 while it was still future-dated. Two things differ structurally from № 31 and both are deliberate here. (1) EFFECTIVE_FROM comes from the act itself this time: point 2 reads 'Настоящее постановление вступает в силу 1 августа 2026 г.' - a named date, not a reference to publication. The prices page agrees: 'Вступает в силу с 1 августа 2026 года'. (2) STATED_EXPIRY is null because the act contains no 'действует по' clause at all. № 31 had one; this one simply does not, so it stays in force until an act replaces it. That is a real property of the act, not a gap in transcription - do not fill it in with a guess. There is also no repeal clause, because № 31 ends by its own terms on 31 July. PRICES are from the appendix, Table 1, confirmed twice: from the PDF (layout extraction) and from the HTML table on the prices page, independently, digit for digit. Note 583 and 585 share a single merged cell reading 202,50 - one value covering two finenesses, exactly as in № 31 - so eight numbers cover nine finenesses. ACT_NUMBER and ACT_DATE come from the appendix heading '28.07.2026 № 34'; the PDF leaves its own number and date fields blank. Unrelated to the scrap table but worth recording: point 1 lowers the Белскупдрагмет bullion surcharges to 4.5 per cent for gold and 2.5 for silver, from 5.5 and 4.5 in № 31. transcribed_by is still not a person."
   }
 ]
