@@ -13,14 +13,6 @@ main = "worker/src/index.ts"
 compatibility_date = "2025-11-01"
 compatibility_flags = ["nodejs_compat"]
 
-# The built site. `npm run build` puts it in dist/.
-[assets]
-directory = "./dist"
-binding = "ASSETS"
-# Extension-less paths (/o-proekte) are served from /o-proekte.html
-html_handling = "auto-trailing-slash"
-not_found_handling = "404-page"
-
 # No workers.dev URL. Three reasons, in order of weight.
 #
 # 1. The subdomain is an ACCOUNT-level name, shared with every other project in
@@ -31,7 +23,7 @@ not_found_handling = "404-page"
 #    same pages. For a site whose entire purpose is to be the authoritative
 #    place to read an official figure, a duplicate is worth avoiding.
 # 3. The real Worker can be exercised without it: `wrangler dev --remote` runs
-#    it on Cloudflare, against these real KV namespaces, reachable only locally.
+#    it on Cloudflare, against the real KV namespaces, reachable only locally.
 #
 # Set here rather than only in the dashboard on purpose. Cloudflare's docs: "If
 # you disable your workers.dev route in the Cloudflare dashboard but do not
@@ -41,7 +33,20 @@ not_found_handling = "404-page"
 # The site becomes reachable when gold.by is attached as a Custom Domain, which
 # writes a record in that zone and nowhere else. Never a wildcard route: a
 # pattern like */* would capture traffic for the other domains here.
+#
+# MUST STAY ABOVE THE FIRST [table] HEADER. In TOML every key after a header
+# belongs to that table, so placing this after [assets] silently made it
+# assets.workers_dev — "Unexpected fields found in assets field" — and the
+# subdomain prompt came back.
 workers_dev = false
+
+# The built site. `npm run build` puts it in dist/.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Extension-less paths (/o-proekte) are served from /o-proekte.html
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
 
 [vars]
 ENVIRONMENT = "production"
