@@ -1,77 +1,77 @@
-# Вопросы и решения
+# Questions and decisions
 
-Рабочий документ между нами. Здесь всё, что требует вашего слова, и всё,
-что я решил сам и что вы можете отменить.
+A working document between us. Everything that needs your call, and everything
+I decided alone that you can overturn.
 
-## Как отвечать
+## How to answer
 
-У каждого пункта есть строка:
+Each item has this line:
 
 ```
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 ```
 
-Замените `_(не отвечено)_` на свой текст — на любом языке, хоть одним словом.
-Всё, где эта пометка осталась, я считаю неотвеченным и не трогаю.
+Replace `_(unanswered)_` with your text — any language, a single word is fine.
+Anything still carrying that marker I treat as unanswered and leave alone.
 
-Проверить, что где:
+To see what's where:
 
 ```sh
 node scripts/answers.mjs
 ```
 
-Скрипт печатает, на что вы ответили, а на что нет, и ничего не меняет.
+It prints what you've answered and what you haven't. It changes nothing.
 
 ---
 
-## Что это за коммиты
+## About those commits
 
-Репозитория вы мне не давали — папка не была git-репозиторием. `git init`
-сделал я, потому что в задании было «коммить после каждого шага, дерево
-чистым». **Ремоутов нет, никуда ничего не отправлялось**, все 11 коммитов
-лежат у вас на диске. Не нужен — `rm -rf .git`, на остальное это не влияет.
+You didn't give me a repo — the folder wasn't one. I ran `git init` myself
+because the brief asked for a commit per step and a clean tree. **There is no
+remote and nothing was pushed anywhere**; all 12 commits sit on your disk.
+If you don't want it: `rm -rf .git`, nothing else changes.
 
 ---
 
-## Сводка
+## Summary
 
-| № | вопрос | без ответа |
+| # | question | if you say nothing |
 |---|---|---|
-| **B1** | Перенести действующее постановление в `data/tariffs.json` | сайт стоит в состоянии «цифры нет» |
-| **B2** | Сверить текст про приёмку с инструкцией | единственное непроверенное место остаётся |
-| **B3** | Что делать со слитками (НБРБ) | секция без цифр, только ссылка |
-| **B4** | Аккаунты и ключи | ничего не развёрнуто |
-| **B5** | Права на три фотографии | нельзя в продакшен |
-| **B6** | Ящик `pravka@gold.by` | «не отправилось» ведёт в никуда |
-| **B7** | Ссылка на Пробирную инспекцию | пункт без ссылки |
-| **B8** | Домен `gold.by` — ваш? в Cloudflare? | некуда развёртывать |
-| **D1–D16** | решения, принятые за вас | остаются как есть |
+| **B1** | Transcribe the current decree into `data/tariffs.json` | site stays in the "no figure" state |
+| **B2** | Check the counter-procedure text against the instruction | the one unverified passage stays unverified |
+| **B3** | What to do about bullion (NBRB) | section shows no figures, just a link |
+| **B4** | Accounts and secrets | nothing is deployed |
+| **B5** | Rights to the three photographs | can't ship to production |
+| **B6** | The `pravka@gold.by` mailbox | the "didn't send" state points nowhere |
+| **B7** | Link to Пробирная инспекция | the entry stays link-less |
+| **B8** | Is `gold.by` yours, and on Cloudflare? | nowhere to deploy |
+| **D1–D16** | decisions made on your behalf | they stand as built |
 
 ---
 
-# Часть 1. Блокирует
+# Part 1. Blocking
 
-## B1. Перенести действующее постановление
+## B1. Transcribe the current decree
 
-**Статус:** 🔴 блокирует главное
+**Status:** 🔴 blocks the main thing
 
-`data/tariffs.json` — пустой массив. Это не недоделка: сайт умеет так
-работать и показывает состояние «проверенной цифры пока нет». Но ради
-цифры он и существует.
+`data/tariffs.json` is an empty array. That isn't an omission — the site knows
+how to run that way and shows the "no verified figure yet" state. But the
+figure is what it exists for.
 
-Перенести нужно **из самого акта**, не с обзорной страницы Минфина и не из
-новостей. Из акта берутся две вещи, которых на странице нет вовсе: дата
-вступления в силу и срок действия.
+It has to be transcribed **from the act itself**, not from the Minfin summary
+page and not from news coverage. Two things come only from the act and appear
+nowhere on the page: the date it takes force and the date it expires.
 
 ```jsonc
 {
-  "act_number": "…",               // как в акте, без «№»
-  "act_date": "ГГГГ-ММ-ДД",
-  "effective_from": "ГГГГ-ММ-ДД",  // из текста акта
-  "stated_expiry": "ГГГГ-ММ-ДД",   // ИЛИ null, если срок не назван
+  "act_number": "…",               // as printed in the act, without «№»
+  "act_date": "YYYY-MM-DD",
+  "effective_from": "YYYY-MM-DD",  // from the text of the act
+  "stated_expiry": "YYYY-MM-DD",   // OR null if the act names no end date
   "source_url": "https://minfin.gov.by/…",
-  "transcribed_at": "ГГГГ-ММ-ДДTЧЧ:ММ:ССZ",
-  "transcribed_by": "ваше имя",
+  "transcribed_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "transcribed_by": "your name",
   "prices_byn_per_gram": {
     "375": 0, "500": 0, "583": 0, "585": 0, "750": 0,
     "900": 0, "916": 0, "950": 0, "958": 0
@@ -79,437 +79,443 @@ node scripts/answers.mjs
 }
 ```
 
-`npm run build` не даст ошибиться в структуре: невалидная запись роняет
-сборку с перечнем замечаний по-русски.
+`npm run build` won't let you get the structure wrong: an invalid record fails
+the build with a list of specific complaints.
 
-Если хотите, могу перенести я — но тогда мне нужно от вас явное «да»,
-и я всё равно приложу к записи ссылку и оставлю `transcribed_by` на вас:
-цифру должен подтвердить человек.
+I can transcribe it if you want — but I'd need an explicit yes, and I'd still
+attach the source link and leave `transcribed_by` as you. A person should be
+the one vouching for the figure.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## B2. Сверить текст про приёмку
-
-**Статус:** 🔴 блокирует продакшен
-
-`/kak-proverit-otsenku` описывает процедуру: опробование при вас, поверенные
-весы, возврат съёмных частей и повторное взвешивание, согласование поправки,
-точность 0,01 г для золота и 0,1 г для серебра, документ на руки.
-
-В брифе стояло «verify against the published instruction before writing it».
-Сверить было не с чем: самой инструкции у меня не было, а пересказ из третьих
-рук на этом сайте не источник. Текст собран из вашего брифа и макета.
-
-**Это единственное место на сайте, где утверждения не подтверждены
-первоисточником.** Предупреждение стоит в шапке `src/lib/procedure.ts`.
-
-Нужно: пройти пять шагов построчно по инструкции. Если дадите ссылку на акт
-или его текст — сверю сам и приведу формулировки к нему.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## B3. Слитки: что показывать
+## B2. Check the counter-procedure text
 
-**Статус:** 🔴 блокирует секцию
+**Status:** 🔴 blocks production
 
-`bullion.json` пуст, фетчера нет. `www.nbrb.by` с моей машины недоступен
-(соединение обрывается; отвечает только `api.nbrb.by/exrates` — это курсы
-валют, не слитки). Документированного эндпоинта с ценами слитков не нашёл.
-Писать парсер страницы, которую ни разу не видел, я не стал.
+`/kak-proverit-otsenku` describes the procedure: assay in your presence,
+certified scales, removable non-precious parts returned and the item reweighed,
+correction agreed with you, precision of 0.01 g for gold and 0.1 g for silver,
+documentation in hand.
 
-Сейчас секция показывает объяснение и ссылку на nbrb.by, без цифр.
+Your brief said "verify against the published instruction before writing it."
+There was nothing to verify against — I didn't have the instruction, and a
+second-hand summary is not a source on this site of all sites. The text is
+assembled from your brief and the mockup.
 
-Варианты:
+**This is the only place on the site where claims aren't backed by a primary
+source.** The warning sits at the top of `src/lib/procedure.ts`.
 
-- **(а)** Оставить как есть. Секция уводит человека со слитком по адресу,
-  цифр не обещает. Работы ноль.
-- **(б)** Взять цены выкупа слитков **с той же страницы Минфина** — они там
-  есть отдельной таблицей, с надбавкой. Источник проверенный, парсер уже
-  рядом, работы немного. **Но это цена скупки слитка, а не котировка
-  Нацбанка** — вещи разные, и подписать их надо честно.
-- **(в)** Вы даёте мне адрес страницы НБРБ с ценами (или её HTML), я пишу
-  парсер под неё.
+Needed: walk the five steps line by line against the instruction. Give me a
+link to the act or its text and I'll do the reconciliation myself.
 
-Я бы взял (б) — источник верифицируемый, и это ровно та цифра, которая
-человеку нужна: сколько дадут, если принести слиток в скупку. Но развилка
-ваша, потому что это вопрос о том, что сайт обещает.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## B4. Аккаунты и ключи
+## B3. Bullion: what to show
 
-**Статус:** 🔴 блокирует развёртывание
+**Status:** 🔴 blocks the section
 
-Ничего не развёрнуто: ни Cloudflare, ни Resend, ни токена GitHub. Всё
-читается из окружения, **ни одного ключа в репозитории нет и ни один не
-подставлен «чтобы заработало»**.
+`bullion.json` is empty, there's no fetcher. `www.nbrb.by` is unreachable from
+my machine (the connection drops; only `api.nbrb.by/exrates` answers, and that's
+currency rates, not bullion). I found no documented endpoint for bullion prices,
+and I wasn't going to write a parser for a page I've never seen.
 
-Полный перечень с порядком действий — `DEPLOY.md`. Коротко:
+Right now the section shows an explanation and a link to nbrb.by, no figures.
 
-| секрет | зачем |
+Options:
+
+- **(a)** Leave it. The section routes a person with a bar to the right place
+  and promises no numbers. Zero work.
+- **(b)** Take the bullion buyback prices **from the same Minfin page** — they're
+  there, in a separate table, with the surcharge. Verified source, the parser is
+  already next to it, modest work. **But that's a scrap-buyer's price for a bar,
+  not a National Bank quote** — different things, and the labelling has to be honest.
+- **(c)** You give me the URL of the NBRB page with the prices (or its HTML) and
+  I write a parser for it.
+
+I'd take (b) — verifiable source, and it's the figure a person actually wants:
+what they'll be given if they carry a bar in. But the call is yours, because
+it's a question about what the site promises.
+
+**Answer:** _(unanswered)_
+
+---
+
+## B4. Accounts and secrets
+
+**Status:** 🔴 blocks deployment
+
+Nothing is deployed: no Cloudflare, no Resend, no GitHub token. Everything reads
+from the environment, and **there is no key in the repository, nor any dummy
+key substituted to make something "work".**
+
+Full list and procedure in `DEPLOY.md`. In short:
+
+| secret | what for |
 |---|---|
-| `TURNSTILE_SECRET_KEY` | проверка формы |
-| `RESEND_API_KEY` | отправка писем |
-| `REPORT_TO_EMAIL` | куда приходят сообщения |
-| `REPORT_FROM_EMAIL` | от кого, на подтверждённом домене |
-| `RATE_LIMIT_SALT` | `openssl rand -hex 32`, один раз |
-| `GITHUB_TOKEN` | открыть PR с новым постановлением |
-| `GITHUB_REPO` | `владелец/репозиторий` |
+| `TURNSTILE_SECRET_KEY` | form verification |
+| `RESEND_API_KEY` | sending mail |
+| `REPORT_TO_EMAIL` | where reports arrive |
+| `REPORT_FROM_EMAIL` | sender, on a verified domain |
+| `RATE_LIMIT_SALT` | `openssl rand -hex 32`, once |
+| `GITHUB_TOKEN` | open the PR with a new decree |
+| `GITHUB_REPO` | `owner/repository` |
 
-Плюс публичные, на сборку: `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_GA4_ID`,
+Plus public build-time ones: `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_GA4_ID`,
 `PUBLIC_GOOGLE_SITE_VERIFICATION`, `PUBLIC_YANDEX_VERIFICATION`.
 
-Разворачивать сам я не буду и не должен. Скажите, когда заведёте, — проверю
-чек-листом из `DEPLOY.md`.
+I won't deploy this myself and shouldn't. Tell me when the accounts exist and
+I'll walk the `DEPLOY.md` checklist.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## B5. Права на фотографии
-
-**Статус:** 🔴 блокирует продакшен
-
-Ваш же HANDOFF отмечает: три кадра взяты из интернета, права не проверены,
-особенно у кадра весов (обрезка каталожного фото). Я их не трогал и проверять
-не могу.
-
-Либо подтвердить право на использование, либо переснять. В HANDOFF есть
-указания, как снимать, если понадобится.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## B6. Ящик `pravka@gold.by`
+## B5. Rights to the photographs
 
-**Статус:** 🟡 мелочь, но ломает состояние формы
+**Status:** 🔴 blocks production
 
-Адрес взят из макета. В состоянии «не отправилось» форма предлагает написать
-на него напрямую — то есть это последний рубеж, когда всё остальное сломалось.
-Если ящика нет, рубежа тоже нет.
+Your own HANDOFF flags it: three frames taken from the internet, rights
+unverified, the scales shot especially (a crop of a catalogue photo). I didn't
+touch them and can't verify them.
 
-Другой адрес — скажите какой, поменяю в `src/lib/site.ts`.
+Either confirm the right to use them or reshoot. HANDOFF already has notes on
+how to shoot them if it comes to that.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## B7. Ссылка на Пробирную инспекцию
-
-**Статус:** 🟡 пункт работает и без неё
-
-В разделе «Источники» на `/o-proekte` Пробирная инспекция названа, но
-**без ссылки**: адрес её страницы я не проверял, а непроверенная ссылка
-в разделе «Источники» — то же самое, что непроверенная цифра.
-
-Дайте адрес — поставлю. Заодно: `nbrb.by` сейчас ведёт на корень, глубокий
-адрес страницы с ценами я тоже не подтверждал.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## B8. Домен
+## B6. The `pravka@gold.by` mailbox
 
-**Статус:** 🔴 блокирует развёртывание
+**Status:** 🟡 small, but it breaks a form state
 
-`gold.by` в коде зашит как основной адрес (`astro.config.mjs`, переменная
-`SITE_URL`). Вопросы: домен ваш? он в Cloudflare (nameservers на CF)?
-если нет — какой адрес ставить в canonical и sitemap?
+The address comes from the mockup. In the "didn't send" state the form offers
+writing there directly — it's the last line of defence when everything else has
+failed. No mailbox, no last line.
 
-**Ответ:** _(не отвечено)_
+Different address? Tell me which and I'll change it in `src/lib/site.ts`.
 
----
-
-# Часть 2. Решения, принятые за вас
-
-Все они уже в коде. **Если промолчите — останутся как есть.** Отменять
-любое из них дёшево, кроме отдельно отмеченных.
-
-## D1. Переписал утверждение про ювелирные сети
-
-**Было в макете:** «Ювелирные сети иногда платят выше этой цены: по своим
-программам выкупа или при обмене старого изделия на новое».
-
-**Почему переписал:** первая половина утверждает, что за обычную скупку за
-наличные кто-то платит больше другого. Этого быть не может — тариф один для
-всех, и ваш HANDOFF сам помечает фразу как неподтверждённую. В моём задании
-это отдельным пунктом в «нельзя».
-
-**Стало:** выше тарифа бывает только зачёт при покупке нового изделия у
-производителя; это другая сделка. Механизм описан, ничьи условия не цитируются.
-
-Затронуты: врезка «бывает иначе», подпись у калькулятора, карточка «Обмен на
-новое изделие», шаг 01 на `/kak-proverit-otsenku`. Тексты — `src/lib/copy.ts`.
-
-**Если промолчите:** остаётся мой вариант.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D2. Убрал обещание «проверяем каждый час»
+## B7. Link to Пробирная инспекция
 
-Макет обещает почасовую проверку, HANDOFF требует брать время из реального
-лога. Воркера нет, `status.json` пуст — обещать некому.
+**Status:** 🟡 the entry works without it
 
-Сделал условным: есть реальная отметка о проверке — текст обещает час;
-нет — «сверяем с сайтом Минфина, цифры переносит человек». В подвале вместо
-времени проверки стоит ссылка на источник: подставлять туда время сборки
-нельзя, сборка — не проверка.
+In the Sources block on `/o-proekte` the assay inspectorate is named but
+carries **no link**: I never verified the URL of its page, and an unverified
+link in a section called "Sources" is the same sin as an unverified figure.
 
-Как только воркер заработает, обещание появится само.
+Give me the address and I'll add it. Related: `nbrb.by` currently points at the
+root — I didn't confirm a deep link to the prices page either.
 
-**Если промолчите:** остаётся условный вариант.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D3. Состояний «цифры нет» три, а не одно
+## B8. The domain
 
-Макет рисует одно. По логике их три, и текст у них разный:
+**Status:** 🔴 blocks deployment
 
-| состояние | когда | архивная цифра |
+`gold.by` is baked in as the canonical address (`astro.config.mjs`, via the
+`SITE_URL` variable). Questions: is the domain yours? Is it on Cloudflare
+(nameservers pointed at CF)? If not, what address goes in canonical and sitemap?
+
+**Answer:** _(unanswered)_
+
+---
+
+# Part 2. Decisions made on your behalf
+
+All of these are already in the code. **Say nothing and they stand.** Reversing
+any of them is cheap except where noted.
+
+## D1. I rewrote the claim about jewellery chains
+
+**The mockup said:** "Jewellery chains sometimes pay above this price: under
+their own buyback programmes or when trading an old item for a new one."
+
+**Why I changed it:** the first half asserts that someone pays more than someone
+else for ordinary cash buyback. That can't be true — the tariff is identical
+everywhere — and your HANDOFF itself flags the sentence as unsupported. My brief
+listed it under things not to do.
+
+**Now:** above-tariff only happens as a trade-in credit when buying a new item
+from a producer; that's a different transaction. The mechanism is described,
+nobody's terms are quoted.
+
+Affected: the "бывает иначе" callout, the note beside the calculator, the
+"Обмен на новое изделие" card, step 01 on `/kak-proverit-otsenku`. Copy lives in
+`src/lib/copy.ts`.
+
+**If you say nothing:** my version stands.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D2. I dropped the "we check every hour" promise
+
+The mockup promises hourly checking; HANDOFF requires the timestamp to come from
+a real log. There's no worker yet and `status.json` is empty — nobody is there
+to keep the promise.
+
+Made it conditional: with a real check timestamp the text promises hourly;
+without one it says "we reconcile against the Minfin site; a person transcribes
+the figures." The footer shows the source link instead of a check time —
+substituting the build time there would be false, because a build is not a check.
+
+Once the worker runs, the promise appears by itself.
+
+**If you say nothing:** the conditional version stands.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D3. There are three "no figure" states, not one
+
+The mockup draws one. Logically there are three, and their copy differs:
+
+| state | when | archive figure |
 |---|---|---|
-| срок истёк | преемника нет | показывается |
-| ещё не вступило в силу | акт есть, дата не наступила | нет |
-| ничего не перенесено | сегодняшнее | нет |
+| expired | no successor published | shown |
+| not yet in force | act exists, date hasn't arrived | none |
+| nothing transcribed | today's state | none |
 
-В третьем блок «архив — не цена на сегодня» **не рисуется вовсе**: прошлой
-цифры не существует, и намекать на неё нельзя.
+In the third, the "архив — не цена на сегодня" block **isn't rendered at all**:
+no past figure exists, and hinting at one is not allowed.
 
-**Если промолчите:** остаётся три состояния.
+**If you say nothing:** three states stand.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## D4. Turnstile, хотя HANDOFF просил без капчи
-
-HANDOFF: «Антиспам без капчи: honeypot + rate limit по IP. Капча ломает тон
-страницы». Ночное задание: «Turnstile verification, honeypot, server-side
-validation, rate limit in KV».
-
-Задание приоритетнее, но возражение справедливое, поэтому режим **Managed**:
-обычно ничего не спрашивает у человека и выглядит тонкой полоской.
-
-Убрать совсем — убрать вызов `verifyTurnstile` из `worker/src/contact.ts`
-и виджет из `src/components/ReportForm.astro`. Honeypot и лимит частоты
-останутся и продолжат работать. Это пять минут.
-
-**Если промолчите:** Turnstile остаётся.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D5. Счётчик обращений по акту, хотя в задании «store nothing»
+## D4. Turnstile, though HANDOFF asked for no captcha
 
-В макете нарисовано состояние «уже в работе» с номером акта, датой и числом
-обращений. Без счётчика оно нереализуемо.
+HANDOFF: "Anti-spam without a captcha: honeypot + rate limit by IP. A captcha
+breaks the page's tone." The overnight brief: "Turnstile verification, honeypot,
+server-side validation, rate limit in KV."
 
-Компромисс: в KV лежат **только числа**, привязанные к номеру акта:
+The brief wins, but the objection is sound, so I used **Managed** mode: it
+usually asks the visitor nothing and renders as a thin strip.
+
+To remove it entirely: drop the `verifyTurnstile` call in
+`worker/src/contact.ts` and the widget in `src/components/ReportForm.astro`.
+The honeypot and rate limit stay and keep working. Five minutes.
+
+**If you say nothing:** Turnstile stays.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D5. A per-decree counter, though the brief said "store nothing"
+
+The mockup draws an "уже в работе" state with the decree number, a date and a
+count of reports. Without a counter it can't exist.
+
+Compromise: KV holds **numbers only**, keyed by decree number:
 
 ```
-act:<номер>  {count, since}   30 суток
-rl:<sha256(соль+ip)>  число   1 час
+act:<number>          {count, since}   30 days
+rl:<sha256(salt+ip)>  a number         1 hour
 ```
 
-Ни писем, ни адресов, ни IP в открытом виде. Отдельный тест берёт снимок
-хранилища после запроса и это проверяет.
+No messages, no addresses, no IP in the clear. A dedicated test snapshots the
+store after a request and asserts exactly that.
 
-Если и это лишнее — убрать два вызова (`readActCounter`, `bumpActCounter`)
-в `worker/src/contact.ts`. Состояние «уже в работе» тогда просто никогда
-не показывается, форма всегда отвечает «принято».
+If even this is too much: remove two calls (`readActCounter`, `bumpActCounter`)
+in `worker/src/contact.ts`. The "уже в работе" state then simply never shows and
+the form always answers "accepted".
 
-**Если промолчите:** счётчик остаётся.
+**If you say nothing:** the counter stays.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## D6. Согласие на аналитику — в cookie
-
-`localStorage` запрещён заданием, а помнить выбор надо. Завёл техническую
-cookie `gold_consent`, `SameSite=Lax`, 180 дней. Без согласия GA4 не
-загружается вовсе — тег `googletagmanager.com` в документ не попадает.
-
-Без `PUBLIC_GA4_ID` не рисуется ни счётчик, ни плашка.
-
-**Если промолчите:** остаётся cookie.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D7. Никакой разметки Product/Offer с ценой
+## D6. Analytics consent lives in a cookie
 
-Соблазн был: цена и валюта в JSON-LD дают богатый сниппет в выдаче. Не стал:
-сайт ничего не продаёт, цену устанавливает государство, а в состоянии «цифры
-нет» машиночитаемая цена оказалась бы ещё и просроченной — ровно тот случай,
-против которого проект.
+`localStorage` is forbidden by the brief, and the choice has to be remembered.
+I used a functional cookie `gold_consent`, `SameSite=Lax`, 180 days. Without
+consent GA4 never loads at all — the `googletagmanager.com` tag doesn't enter
+the document.
 
-JSON-LD ограничен `WebSite`.
+Without `PUBLIC_GA4_ID` neither the tag nor the banner is rendered.
 
-**Если промолчите:** остаётся только `WebSite`.
+**If you say nothing:** the cookie stays.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## D8. Верхняя граница ввода 100 000 г
-
-Число выбрал я, в брифе его нет. Выше показывается «проверьте массу».
-Смысл — отсечь опечатку, а не ограничить кого-то.
-
-**Если промолчите:** остаётся 100 000.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D9. Массу не округляю к точности взвешивания
+## D7. No Product/Offer structured data with a price
 
-В брифе есть точность приёмки (золото 0,01 г, серебро 0,1 г). Применять её
-к введённому числу — значит молча изменить ввод. Точность вынесена в текст
-на странице, в расчёт не лезет.
+Tempting: a price and currency in JSON-LD buys a rich snippet in search
+results. I didn't: the site sells nothing, the state sets the price, and in the
+"no figure" state a machine-readable price would also be stale — precisely the
+failure this project exists to prevent.
 
-**Если промолчите:** остаётся как есть.
+JSON-LD is limited to `WebSite`.
 
-**Ответ:** _(не отвечено)_
+**If you say nothing:** only `WebSite` stays.
 
----
-
-## D10. Шрифты: свой сабсет вместо готовых диапазонов
-
-Готовые `cyrillic + latin` дают **333 КБ** на семь начертаний — весь бюджет
-страницы. Сабсет через параметр `text=` (кириллица, латиница, цифры,
-`№ — · ×` и прочее из макета) — **94,8 КБ**.
-
-Плата: символ вне набора отрисуется системным шрифтом. Заметно, но не сломано;
-добавить символ — одна строка в `scripts/fetch-fonts.mjs` и перегенерация.
-
-Заодно: опасение HANDOFF про слабую кириллицу у Martian Mono **не
-подтвердилось** — Google Fonts отдаёт для него полноценный кириллический набор.
-
-**Если промолчите:** остаётся сабсет.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D11. Переключатель состояний из макета в продакшен не перенесён
+## D8. Input capped at 100,000 g
 
-Это была affordance для ревью. Состояния смотрятся подстановкой каталога
-данных: `npm run dev:valid`, `npm run dev:expired`.
+My number, not in the brief. Above it the calculator says "проверьте массу".
+The point is catching a typo, not restricting anyone.
 
-**Если промолчите:** переключателя на сайте нет.
+**If you say nothing:** 100,000 stands.
 
-**Ответ:** _(не отвечено)_
-
----
-
-## D12. Блок «кто ведёт проект» не добавлен
-
-HANDOFF отмечает, что вы пропустили его сознательно. Вместо него на
-`/o-proekte` появился раздел **«Как мы обращаемся с цифрами»**: отвечает на
-тот же вопрос о доверии (почему этой цифре можно верить), но не требует от
-меня придумывать сведения о людях.
-
-Если решите добавить настоящий блок о себе — скажите текст, вставлю.
-
-**Если промолчите:** остаётся раздел про цифры.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D13. Набор проб исправлен по источнику: девять вместо шести
+## D9. Mass isn't rounded to weighing precision
 
-Не совсем «решение» — скорее находка, но подтвердить стоит, потому что
-это меняет и таблицу, и калькулятор.
+The brief gives the acceptance precision (gold 0.01 g, silver 0.1 g). Applying
+it to the entered number would silently change the input. The precision is
+stated in the page copy and kept out of the arithmetic.
 
-- **Макет:** 375, 500, 585, 750, 958, 999.
-- **Акт:** 375, 500, **583**, 585, 750, **900**, **916**, **950**, 958.
+**If you say nothing:** stands as built.
 
-- **583** в макете не было вовсе — советский стандарт, для унаследованного
-  кольца или цепочки едва ли не самая частая проба. В таблице 583 и 585
-  стоят в одной ячейке и делят цену.
-- **999 в таблице скупки изделий и лома нет** — это строка чистого металла
-  и мерных слитков. Показывать её среди проб лома значило бы обещать цену,
-  которой в акте нет.
-
-**Если промолчите:** остаётся девять проб по источнику.
-
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D14. PR от воркера заведомо красный — это шлагбаум
+## D10. Fonts: custom subset instead of the stock ranges
 
-На странице Минфина **нет ни даты вступления в силу, ни срока действия**,
-обе живут в тексте акта. Значит, парсер физически не может собрать полную
-запись.
+The stock `cyrillic + latin` ranges cost **333 KB** across seven weights — the
+entire page budget. A subset via the `text=` parameter (Cyrillic, Latin, digits,
+`№ — · ×` and the rest from the mockup) costs **94.8 KB**.
 
-Сделал из этого защиту: в черновике `effective_from: null` и
-`stated_expiry: null`, схема такую запись не принимает, проверка на PR
-падает. Слить, не открыв акт и не вписав обе даты руками, невозможно.
+The price: a character outside the set falls back to a system font. Visible but
+not broken; adding one is a single line in `scripts/fetch-fonts.mjs` plus a
+regeneration.
 
-Побочный эффект: в списке PR будет висеть красная галочка, и это нормально.
-Если такое раздражает, альтернатива — складывать черновик в отдельный файл
-(`data/incoming/…`), который в сборку не входит; тогда PR зелёный, но и
-шлагбаума нет. Я за красный.
+Related: HANDOFF's worry about weak Cyrillic in Martian Mono **didn't hold up** —
+Google Fonts ships a full Cyrillic set for it.
 
-**Если промолчите:** остаётся красный PR.
+**If you say nothing:** the subset stays.
 
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D15. Периодичность проверок
+## D11. The mockup's state toggle didn't ship
 
-Бриф говорит «раз в сутки», макет обещает «каждый час». Поставил: Минфин —
-раз в час, слитки — раз в сутки (когда появятся). Настройка —
-`wrangler.toml`, секция `[triggers]`.
+It was a review affordance. States are inspected by swapping the data
+directory instead: `npm run dev:valid`, `npm run dev:expired`.
 
-**Если промолчите:** час и сутки.
+**If you say nothing:** no toggle on the site.
 
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## D16. Мелочи, которые я решил молча
+## D12. No "who runs this project" block
 
-Перечисляю, чтобы не всплыло потом. Каждая — одна строка правки.
+HANDOFF notes you skipped it deliberately. In its place `/o-proekte` gained a
+section **"Как мы обращаемся с цифрами"**: it answers the same trust question
+(why this figure can be believed) without requiring me to invent facts about
+people.
 
-- **`/api/contact`, а не `/api/report`.** HANDOFF называет второй, ночное
-  задание — первый. Взял первый, контракт ответов — из HANDOFF.
-- **Номер обращения `GB-482913`, шесть цифр вместо четырёх в макете.**
-  Форма та же, столкновений на два порядка меньше.
-- **Завёл `data/status.json`** — в исходниках его не было. Без него подвал
-  не может честно сказать, когда источник смотрели.
-- **Фикстуры датированы 1999–2001, срок действующей до 2099.** Чтобы были
-  заведомо ненастоящими и при этом не протухали сами.
-- **Жёлто-чёрная плашка** на любой сборке с подставленными данными.
-- **Серебро и платина не показываются**, хотя есть на той же странице акта.
-  Сайт про золото. Добавить — работа на полчаса, скажите.
-- **`build.format: 'file'`** — адреса без `.html` и без редиректов на
+If you decide to add a real block about yourself, give me the text and I'll
+drop it in.
+
+**If you say nothing:** the numbers section stays.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D13. Purity set corrected against the source: nine, not six
+
+Not really a "decision" — more a finding — but worth confirming, because it
+changes both the table and the calculator.
+
+- **Mockup:** 375, 500, 585, 750, 958, 999.
+- **The act:** 375, 500, **583**, 585, 750, **900**, **916**, **950**, 958.
+
+- **583 was missing from the mockup entirely** — the Soviet standard, and for an
+  inherited ring or chain very likely the most common purity there is. In the
+  table 583 and 585 share a cell and a price.
+- **999 does not appear in the scrap table** — that's the pure-metal and bullion
+  line. Showing it among scrap purities would promise a price the act doesn't state.
+
+**If you say nothing:** nine purities, per the source.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D14. The worker's PR is deliberately red — that's the gate
+
+The Minfin page carries **neither the effective date nor the expiry**; both live
+in the text of the act. So the parser physically cannot assemble a complete record.
+
+I turned that into the safety mechanism: the draft carries
+`effective_from: null` and `stated_expiry: null`, the schema rejects it, and the
+PR check fails. Merging it without opening the act and filling both dates in by
+hand is impossible.
+
+Side effect: a red check sits on the PR list, and that's normal. If it grates,
+the alternative is writing the draft to a separate file (`data/incoming/…`) that
+the build ignores — then the PR is green, but so is the gate. I'm for red.
+
+**If you say nothing:** red PR stays.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D15. Check cadence
+
+The brief says daily; the mockup promises hourly. I set Minfin to hourly and
+bullion to daily (once it exists). Configured in `wrangler.toml`, the
+`[triggers]` section.
+
+**If you say nothing:** hourly and daily.
+
+**Answer:** _(unanswered)_
+
+---
+
+## D16. Small things I decided silently
+
+Listing them so none surfaces later as a surprise. Each is a one-line change.
+
+- **`/api/contact`, not `/api/report`.** HANDOFF names the second, the overnight
+  brief the first. I took the first; the response contract is HANDOFF's.
+- **Ticket format `GB-482913`, six digits instead of the mockup's four.** Same
+  shape, two orders of magnitude fewer collisions.
+- **I introduced `data/status.json`** — it wasn't in the source material. Without
+  it the footer can't honestly say when the source was last looked at.
+- **Fixtures dated 1999–2001, the live one expiring 2099.** So they're
+  unmistakably fake and still don't rot on their own.
+- **A yellow-and-black banner** on any build using substituted data.
+- **Silver and platinum aren't shown**, though they're on the same page of the
+  act. The site is about gold. Adding them is about half an hour — say the word.
+- **`build.format: 'file'`** — extension-less URLs with no redirects on
   Cloudflare Pages.
 
-**Ответ:** _(не отвечено)_
+**Answer:** _(unanswered)_
 
 ---
 
-## Что дальше
+## What happens next
 
-Ответьте на то, что считаете нужным, — остальное просто оставьте. Я прочитаю
-документ, сделаю то, на что есть ответы, и допишу сюда же, что сделано.
-Неотвеченное останется висеть здесь, а не потеряется.
+Answer what you care about and leave the rest. I'll read the document, do what
+has answers, and write back into this same file what got done. Anything
+unanswered stays visible here rather than getting lost.

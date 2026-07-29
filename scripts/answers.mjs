@@ -1,22 +1,25 @@
 /**
- * Что в QUESTIONS.md отвечено, а что нет.
+ * Which QUESTIONS.md items are answered and which aren't.
  *
- * Ничего не меняет — только читает и печатает. Нужен, чтобы «следить, на что
- * ответили» не превращалось в перечитывание документа целиком.
+ * Read-only: it prints and changes nothing. Exists so that "track what got
+ * answered" doesn't mean re-reading the whole document each time.
  *
- * Запуск: node scripts/answers.mjs
+ * Run: node scripts/answers.mjs
  */
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const DOC = resolve(import.meta.dirname, '..', 'QUESTIONS.md');
-const UNANSWERED = '_(не отвечено)_';
+
+/** Both spellings, so switching the document's language doesn't break this. */
+const UNANSWERED = ['_(unanswered)_', '_(не отвечено)_'];
+const ANSWER_LINE = /^\*\*(?:Answer|Ответ):\*\*\s*(.*)$/;
 
 const text = readFileSync(DOC, 'utf8');
 const lines = text.split('\n');
 
-/** Пункты вида «## B1. Заголовок» и «## D3. Заголовок». */
+/** Items of the form `## B1. Title` and `## D3. Title`. */
 const items = [];
 let current = null;
 
@@ -27,19 +30,19 @@ for (const line of lines) {
     items.push(current);
     continue;
   }
-  const answer = /^\*\*Ответ:\*\*\s*(.*)$/.exec(line);
+  const answer = ANSWER_LINE.exec(line);
   if (answer !== null && current !== null && current.answer === null) {
     current.answer = (answer[1] ?? '').trim();
   }
 }
 
 if (items.length === 0) {
-  console.error('В QUESTIONS.md не нашлось ни одного пункта. Формат заголовков сломан?');
+  console.error('No items found in QUESTIONS.md — has the heading format changed?');
   process.exit(2);
 }
 
 const answered = items.filter(
-  (item) => item.answer !== null && item.answer !== '' && item.answer !== UNANSWERED,
+  (item) => item.answer !== null && item.answer !== '' && !UNANSWERED.includes(item.answer),
 );
 const pending = items.filter((item) => !answered.includes(item));
 
@@ -47,30 +50,31 @@ const blockers = pending.filter((item) => item.id.startsWith('B'));
 
 function show(list, mark) {
   for (const item of list) {
-    const tail = item.answer && item.answer !== UNANSWERED ? `  → ${item.answer.slice(0, 70)}` : '';
+    const tail =
+      item.answer && !UNANSWERED.includes(item.answer) ? `  → ${item.answer.slice(0, 70)}` : '';
     console.log(`  ${mark} ${item.id.padEnd(4)} ${item.title}${tail}`);
   }
 }
 
-console.log(`\nQUESTIONS.md — пунктов ${items.length}\n`);
+console.log(`\nQUESTIONS.md — ${items.length} items\n`);
 
 if (answered.length > 0) {
-  console.log(`Отвечено (${answered.length}):`);
+  console.log(`Answered (${answered.length}):`);
   show(answered, '✓');
   console.log('');
 }
 
 if (pending.length > 0) {
-  console.log(`Ждёт ответа (${pending.length}):`);
+  console.log(`Waiting (${pending.length}):`);
   show(pending, '·');
   console.log('');
 }
 
 if (blockers.length > 0) {
-  console.log(`Из них блокирует: ${blockers.map((item) => item.id).join(', ')}`);
+  console.log(`Blocking among them: ${blockers.map((item) => item.id).join(', ')}`);
 } else if (pending.length > 0) {
-  console.log('Блокирующих среди неотвеченных нет.');
+  console.log('No blockers left unanswered.');
 } else {
-  console.log('Отвечено всё.');
+  console.log('Everything answered.');
 }
 console.log('');
