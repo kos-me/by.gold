@@ -54,10 +54,10 @@ Everything you answered has been acted on. Nothing is waiting on me.
 ### What is still open
 
 1. **B3, bullion.** Three options below; I recommend (b).
-2. **`transcribed_by`.** Every field of both records is traced to a Ministry
-   source (see B1), but the field still reads "NOT yet verified by a human",
-   because that is true. Read the acts and put your name there when you are
-   ready to vouch for them. Nothing on the site depends on this.
+2. **A one-day source conflict on act № 31.** The archive page dates it from
+   17 July, the page that carried it while it was in force from 18 July. Same
+   act, same prices. `effective_from` keeps 18 and the record's `notes` records
+   the disagreement. See "The 17-versus-18 July conflict" below.
 3. **A daily rebuild, at deploy time.** Not a question either, but it has to
    be set up or the 1 August handover below will not happen on its own. See
    DEPLOY.md, "The site must rebuild on a schedule".
@@ -93,6 +93,89 @@ to reach the page. Hence item 3 above.
 
 The Ministry is reissuing these roughly monthly: № 27 on 18 June, № 31 on
 8 July, № 34 on 28 July.
+
+### The 17-versus-18 July conflict
+
+Two Ministry pages disagree about when act № 31 took force, by one day:
+
+| page | says |
+|---|---|
+| the prices page, while № 31 was current (and the news announcement) | in force **from 18 July 2026** |
+| the 2026 year archive, now that it is superseded (`…/archive/2026/`) | in force **from 17 July 2026** |
+
+It is definitely the same act: same number, same signature date, and Table 1 in
+the archive matches this record digit for digit. The Belarusian-language version
+of the archive says 17 as well, so it is not a translation slip.
+
+`effective_from` stays at **2026-07-18** — the value published on the page cited
+in `source_url`, while the act was actually governing transactions, and repeated
+in the announcement. The disagreement is written into the record's `notes` rather
+than quietly resolved.
+
+The likely explanation is that one page gives the publication date and the other
+the day commencement follows it, but confirming that needs the act's National
+Register entry, which is behind the ЭТАЛОН subscription. If you have access, that
+settles it in a minute.
+
+Nothing on the site is materially wrong either way: the only visible effect is
+the period reading "18 — 31 июля" instead of "17 — 31 июля", and the record
+becomes historical on 1 August. **The lesson matters more than the day** — the
+archive is not always identical to what the live page said at the time, which
+constrains how far back history can honestly be built.
+
+### Price history: what is possible, and where it stops
+
+Two things you asked about.
+
+**Per-fineness history — already most of the way there.** The homepage has a
+"Как менялась цена" block with a sparkline and a table, and the function behind
+it, `priceSeries(state, fineness)`, is already parameterised by fineness. It is
+currently pinned to 585. Letting it follow the calculator's fineness selector is
+a small change. Two things to get right when doing it: 583 and 585 share one
+number in the source, so their series are identical and should not pretend to be
+two independent lines; and a fineness missing from an older act must render as a
+gap, not be silently closed up, or the chart implies a continuity that is not
+there.
+
+**Importing old acts — possible, but only back to 2024.** The Ministry keeps a
+year-by-year archive at `…/archive/<year>/`, with index pages from 2003 to 2026,
+each carrying the full four tables for every act of that year. Surveyed on
+29 July 2026:
+
+| year | acts listed | carry an effective date |
+|---|---|---|
+| 2026 | 5 (+ № 34) | all |
+| 2025 | 4 | all |
+| 2024 | 4 | 2 of 4 |
+| 2023 and earlier | 1–7 per year | **none** |
+
+That last column is the blocker. Before 2024 the archive publishes the act's
+number, its signature date and its prices — but **not the date it took force**,
+and `effective_from` is a required field precisely because a price without a
+period is not a fact you can publish. Deriving it from the signature date is the
+exact inference this project refuses to make.
+
+So:
+
+- **2024 onward** is importable within the current rules: roughly ten to twelve
+  acts, about two years of history. Worth doing.
+- **Earlier than that** needs a deliberate decision, not a script — either stop
+  at 2024, or extend the schema with an archive-only record that carries no
+  effective date, can never be the current act, and is labelled by act date
+  rather than by period. That is a design choice for you.
+
+Two more caveats for anything going further back:
+
+- **The currency changes.** Belarus redenominated on 1 July 2016 at 10 000:1.
+  The 2016 acts in the archive are already in new roubles, but anything before
+  that is in old ones, and a series crossing that boundary is meaningless
+  without conversion and a very clear label.
+- **The table structure changes.** Older pages do not use the merged 583/585
+  cell and do not lay the metals out the same way, so the existing parser cannot
+  be pointed at them unverified. Each era needs checking against the page it
+  came from.
+
+Neither of these is started. Nothing was invented to fill a gap.
 
 ---
 

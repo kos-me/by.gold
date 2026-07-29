@@ -31,8 +31,8 @@ npm ci
 npm run dev            # http://localhost:4321 — on the real data
 ```
 
-`data/tariffs.json` is currently empty, so the default view is the "no figure
-yet" state. To see the others:
+`data/tariffs.json` holds real acts, so the default view is the working state.
+To see the others:
 
 ```sh
 npm run dev:valid      # the working state, on a fixture from tests/
@@ -46,7 +46,7 @@ be mistaken for the real site, and that is deliberate.
 
 ```sh
 npm run check          # types + tests + build
-npm test               # 216 tests
+npm test               # 222 tests
 npm run typecheck
 ```
 
@@ -67,10 +67,14 @@ src/lib/         schema, tariff (state), calc (arithmetic), copy (page text)
 src/pages/       three pages, sitemap, robots
 src/components/  homepage blocks and the report form
 worker/          /api/contact and the scheduled source check
-tests/           216 tests; fixtures live here and only here
+tests/           222 tests; fixtures live here and only here
 handoff/         design source material
 scripts/         fonts, page screenshots, browser smoke test
 ```
+
+**When a new decree appears, read `UPDATING.md`.** It explains in plain words
+what happens when the data changes, how to add an act, and why the site must
+rebuild on a schedule and not only on a push.
 
 Open questions and decisions: `QUESTIONS.md` (answer in it directly, then run
 `node scripts/answers.mjs`).
