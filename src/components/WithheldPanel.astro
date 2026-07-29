@@ -1,0 +1,62 @@
+---
+/**
+ * Панель состояния «цифры нет».
+ *
+ * Ключевой экран сайта. Тон задан брифом: это не ошибка и не извинение.
+ * Что известно, что уточняем, ссылка на источник, последняя цифра — явно
+ * как архив, а не как ответ. Ни иконок предупреждения, ни «упс».
+ *
+ * Архивный блок появляется только если есть что архивировать: при пустом
+ * файле данных прошлой цифры не существует, и придумывать её нельзя.
+ */
+import { KNOWN_COPY, pendingCopy } from '../lib/copy.ts';
+import { formatByn } from '../lib/calc.ts';
+import { formatRuPeriod } from '../lib/date.ts';
+import { MINFIN_URL } from '../lib/site.ts';
+import { headlinePrice, type TariffState } from '../lib/tariff.ts';
+
+interface Props {
+  state: TariffState;
+  /** Есть ли реальный лог проверок — от этого зависит, что обещает текст. */
+  hasCheckLog: boolean;
+}
+
+const { state, hasCheckLog } = Astro.props;
+
+const archived = state.lastKnown === null ? null : headlinePrice(state.lastKnown);
+---
+
+<section class="section section--tight">
+  <div class="card">
+    <div class="withheld__grid">
+      <div class="withheld__cell">
+        <div class="label label--stamp">что известно</div>
+        <p>{KNOWN_COPY}</p>
+      </div>
+      <div class="withheld__cell">
+        <div class="label label--stamp">что уточняем</div>
+        <p>{pendingCopy(state, hasCheckLog)}</p>
+      </div>
+    </div>
+
+    <div class="withheld__source">
+      <span>Действующее постановление всегда есть на сайте министерства.</span>
+      <a href={MINFIN_URL} rel="noopener">Открыть minfin.gov.by →</a>
+    </div>
+
+    {
+      state.lastKnown !== null && archived !== null && (
+        <div class="withheld__archive">
+          <div class="label">архив — не цена на сегодня</div>
+          <p class="withheld__archive-figure">
+            <span class="withheld__archive-value">{formatByn(archived.price)} BYN</span>
+            <span class="withheld__archive-caption">
+              {archived.fineness} проба по постановлению № {state.lastKnown.act_number}, действовало{' '}
+              {formatRuPeriod(state.lastKnown.effective_from, state.lastKnown.stated_expiry)}
+            </span>
+          </p>
+        </div>
+      )
+    }
+  </div>
+</section>

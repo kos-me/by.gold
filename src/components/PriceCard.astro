@@ -1,0 +1,93 @@
+---
+/**
+ * Блок цены: крупная цифра (или её честное отсутствие), клеймо и таблица проб.
+ *
+ * В состоянии без действующего постановления место цифры занимает штриховка,
+ * а не ноль и не прочерк на всю карточку: место занято, но занято не числом.
+ */
+import Hallmark from './Hallmark.astro';
+import { absenceNote } from '../lib/copy.ts';
+import { TARIFF_TABLE_NOTE } from '../lib/copy.ts';
+import { formatByn } from '../lib/calc.ts';
+import { FINENESSES, HEADLINE_FINENESS, type FinenessKey } from '../lib/schema.ts';
+import { headlinePrice, type TariffState } from '../lib/tariff.ts';
+
+interface Props {
+  state: TariffState;
+}
+
+const { state } = Astro.props;
+const record = state.current;
+const headline = record === null ? null : headlinePrice(record);
+
+/*
+ * Какие пробы показать в таблице. Есть действующий акт — ровно те, что он
+ * назвал. Нет — канонический список проб, по которым сайт вообще работает,
+ * все с прочерком. Это не выдуманные данные: это перечень строк, а не цен.
+ */
+const rows: readonly FinenessKey[] =
+  record === null
+    ? FINENESSES
+    : FINENESSES.filter((key) => record.prices_byn_per_gram[key] !== undefined);
+
+const absent = absenceNote(state);
+---
+
+<section class="section section--first">
+  <div class="card card--shadow">
+    {
+      headline === null ? (
+        <div class="price price--withheld">
+          <div>
+            <div class="label label--lg">{HEADLINE_FINENESS} проба, за грамм</div>
+            <div class="price__absent">
+              <span class="price__absent-title">Цифры пока нет</span>
+              {absent !== '' && <span class="price__absent-note">{absent}</span>}
+            </div>
+          </div>
+          <Hallmark record={null} />
+        </div>
+      ) : (
+        <div class="price">
+          <div>
+            <div class="label label--lg">{headline.fineness} проба, за грамм</div>
+            <p class="price__figure">
+              <span class="price__value">{formatByn(headline.price)}</span>
+              <span class="price__unit">BYN</span>
+            </p>
+          </div>
+          <Hallmark record={record} />
+        </div>
+      )
+    }
+
+    <div class="tariffs__head">
+      <h2>Цена скупки по пробам</h2>
+      <span class="label">BYN за грамм лигатурной массы</span>
+    </div>
+
+    {
+      rows.map((fineness) => {
+        const price = record?.prices_byn_per_gram[fineness];
+        const isHeadline = fineness === headline?.fineness;
+        return (
+          <div
+            class:list={[
+              'tariff-row',
+              price === undefined && 'tariff-row--muted',
+              isHeadline && 'tariff-row--selected',
+            ]}
+          >
+            <span class="tariff-row__fineness">{fineness}</span>
+            <span class="tariff-row__note">
+              {fineness === HEADLINE_FINENESS ? 'чаще всего' : ''}
+            </span>
+            <span class="tariff-row__price">{price === undefined ? '—' : formatByn(price)}</span>
+          </div>
+        );
+      })
+    }
+
+    <div class="card__foot">{TARIFF_TABLE_NOTE}</div>
+  </div>
+</section>

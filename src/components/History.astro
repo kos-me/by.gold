@@ -1,0 +1,73 @@
+---
+/**
+ * История цены: спарклайн и компактная таблица.
+ *
+ * Целиком питается прошлыми записями. Нет записей — секции нет вовсе:
+ * пустая карточка «истории пока нет» ничего не сообщает, а место занимает.
+ * Спарклайн появляется от трёх точек — по двум рисовать нечего.
+ */
+import { formatByn } from '../lib/calc.ts';
+import { formatRuPeriod } from '../lib/date.ts';
+import { HEADLINE_FINENESS } from '../lib/schema.ts';
+import { priceSeries, type TariffState } from '../lib/tariff.ts';
+
+interface Props {
+  state: TariffState;
+}
+
+const { state } = Astro.props;
+
+const series = priceSeries(state, HEADLINE_FINENESS);
+const showSparkline = series.length >= 3;
+
+/*
+ * Высота столбика. Нижняя граница берётся с запасом ниже минимума, иначе
+ * самый дешёвый месяц выглядит как ноль и ряд читается как обвал.
+ */
+const values = series.map((entry) => entry.price);
+const max = values.length === 0 ? 0 : Math.max(...values);
+const min = values.length === 0 ? 0 : Math.min(...values);
+const floor = min - (max - min) * 0.25 - 0.0001;
+const barHeight = (price: number): number => Math.round(13 + ((price - floor) / (max - floor)) * 39);
+
+const rows = [...series].reverse();
+const isWithheld = state.status !== 'valid';
+---
+
+{
+  series.length > 0 && (
+    <section class="section">
+      <h2 class="section__title">Как менялась цена</h2>
+      <div class="history">
+        {showSparkline && (
+          <div class="sparkline" aria-hidden="true">
+            {series.map((entry, index) => (
+              <div
+                class:list={[
+                  'sparkline__bar',
+                  index === series.length - 1 &&
+                    (isWithheld ? 'sparkline__bar--last-muted' : 'sparkline__bar--last'),
+                ]}
+                style={`height:${barHeight(entry.price)}px`}
+              />
+            ))}
+          </div>
+        )}
+
+        {rows.map((entry) => (
+          <div class="history__row">
+            <span class="history__price tabular">{formatByn(entry.price)} BYN</span>
+            <span class="history__period">
+              {formatRuPeriod(entry.record.effective_from, entry.record.stated_expiry)}
+            </span>
+            <span class="history__act">№ {entry.record.act_number}</span>
+          </div>
+        ))}
+
+        <p class="history__foot">
+          {HEADLINE_FINENESS} проба, BYN за грамм. Постановления выходят нерегулярно.
+        </p>
+      </div>
+    </section>
+  )
+}

@@ -1,0 +1,57 @@
+---
+/**
+ * Мерные слитки НБРБ.
+ *
+ * Другой источник, другой регламент, ежедневное обновление. Через
+ * калькулятор лома не проходят и рядом с тарифом Минфина не встают.
+ *
+ * Данных нет — секция остаётся, но без таблицы: её работа не в цифрах,
+ * а в том, чтобы увести человека со слитком по правильному адресу.
+ */
+import { formatByn } from '../lib/calc.ts';
+import { formatRuDate } from '../lib/date.ts';
+import { NBRB_URL } from '../lib/site.ts';
+import type { BullionRecord } from '../lib/schema.ts';
+
+interface Props {
+  records: readonly BullionRecord[];
+}
+
+const { records } = Astro.props;
+
+const sorted = [...records].sort((a, b) => a.mass_grams - b.mass_grams);
+const quotedOn = sorted.at(0)?.quoted_on ?? null;
+---
+
+<section class="section">
+  <h2 class="section__title">Мерные слитки — другой порядок</h2>
+  <p class="lede" style="margin-bottom:12px">
+    Слитки Нацбанка — не скупка лома: цену объявляет НБРБ, она меняется ежедневно
+    и зависит от сохранности слитка и сертификата.
+  </p>
+
+  <div class="card">
+    {
+      sorted.length === 0 ? (
+        <div class="withheld__source">
+          <span>Цены на слитки мы не переносим — они меняются каждый день.</span>
+          <a href={NBRB_URL} rel="noopener">Открыть nbrb.by →</a>
+        </div>
+      ) : (
+        <Fragment>
+          {sorted.map((record) => (
+            <div class="bullion-row">
+              <span class="bullion-row__mass">{record.mass_grams} г</span>
+              <span class="bullion-row__note">{record.fineness}</span>
+              <span class="bullion-row__price tabular">{formatByn(record.buyback_byn)} BYN</span>
+            </div>
+          ))}
+          <div class="card__foot">
+            Цены НБРБ{quotedOn === null ? '' : ` на ${formatRuDate(quotedOn)}`}, обратный выкуп
+            слитков без повреждений и с сертификатом.
+          </div>
+        </Fragment>
+      )
+    }
+  </div>
+</section>

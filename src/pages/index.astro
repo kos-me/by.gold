@@ -1,14 +1,101 @@
 ---
-// Заглушка шага 1 — заменяется настоящей главной на шаге 5.
+import Base from '../layouts/Base.astro';
+import Bullion from '../components/Bullion.astro';
+import Calculator from '../components/Calculator.astro';
+import History from '../components/History.astro';
+import Photo from '../components/Photo.astro';
+import PriceCard from '../components/PriceCard.astro';
+import WithheldPanel from '../components/WithheldPanel.astro';
+
+import { bullion, status, tariffs } from '../lib/data.ts';
+import { headCopy, ROUTES, TRADE_IN_COPY, TRADE_IN_LABEL } from '../lib/copy.ts';
+import { resolveTariffState } from '../lib/tariff.ts';
+
+/*
+ * Состояние считается один раз на сборке. Часы — момент сборки: сайт
+ * статический, и «сегодня» на странице означает день, когда её собрали.
+ * Cron-воркер пересобирает сайт, поэтому в проде это не расходится больше
+ * чем на интервал проверки.
+ */
+const state = resolveTariffState(tariffs, new Date());
+const head = headCopy(state);
+const isWithheld = state.status !== 'valid';
 ---
 
-<html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>gold.by</title>
-  </head>
-  <body>
-    <h1>gold.by</h1>
-  </body>
-</html>
+<Base
+  title={
+    isWithheld
+      ? 'Цена скупки золота в Беларуси — цифра не показана | gold.by'
+      : 'Официальная цена скупки золота в Беларуси | gold.by'
+  }
+  description={head.lede}
+  path="/"
+>
+  <section class="section section--first" style="padding-bottom:0">
+    <h1 class="page-title">{head.title}</h1>
+    <p class="lede" style="margin-bottom:22px">{head.lede}</p>
+  </section>
+
+  <PriceCard state={state} />
+
+  {isWithheld && <WithheldPanel state={state} hasCheckLog={status.last_checked !== null} />}
+
+  <section class="section section--tight">
+    <div class="aside-note">
+      <div class="label aside-note__label">{TRADE_IN_LABEL}</div>
+      <p>{TRADE_IN_COPY}</p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <Photo
+      src="/images/hallmark-585.webp"
+      alt="Оттиск 585 и пробирное клеймо внутри шинки кольца"
+      width={900}
+      height={410}
+      frameHeight={250}
+    >
+      Клеймо заявляет пробу, но не подтверждает её. Проба, по которой посчитают
+      сумму, определяется при приёмке.
+    </Photo>
+  </section>
+
+  <Calculator state={state} />
+
+  <History state={state} />
+
+  <Bullion records={bullion} />
+
+  <section class="section">
+    <h2 class="section__title">Не ваш случай?</h2>
+    <div class="routes">
+      {
+        ROUTES.map((route) => (
+          <div class="route">
+            <div class="route__title">{route.title}</div>
+            <p>{route.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <figure class="figure card">
+      <div class="figure__frame" style="height:270px">
+        <img
+          src="/images/touchstone-assay.webp"
+          alt="Капля реактива на пробирном камне"
+          width={846}
+          height={500}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <figcaption class="figure__caption-row">
+        <span>Пробу определяют при вас — это то, что стоит проверить у стойки.</span>
+        <a href="/kak-proverit-otsenku">Как проходит оценка →</a>
+      </figcaption>
+    </figure>
+  </section>
+</Base>

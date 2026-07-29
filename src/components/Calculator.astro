@@ -1,0 +1,102 @@
+---
+/**
+ * Калькулятор: масса × цена за грамм по действующему постановлению.
+ *
+ * Без действующего акта поля выключены на сервере — не скриптом. Страница
+ * без JavaScript в этом состоянии выглядит и ведёт себя так же.
+ *
+ * Подпись результата — «стоимость по официальным ценам Минфина», и никогда
+ * «сколько вы получите»: итоговая сумма зависит от опробования и зачётной
+ * массы, и этот разрыв закрывать нельзя.
+ */
+import { CALC_ASIDE_COPY, CALC_CAVEATS, calcOutCopy } from '../lib/copy.ts';
+import { FINENESSES, HEADLINE_FINENESS } from '../lib/schema.ts';
+import { finenessesOf, headlinePrice, isCalculatorEnabled, type TariffState } from '../lib/tariff.ts';
+
+interface Props {
+  state: TariffState;
+}
+
+const { state } = Astro.props;
+
+const enabled = isCalculatorEnabled(state);
+const record = state.current;
+const out = calcOutCopy(state);
+
+const chips = record === null ? FINENESSES : finenessesOf(record);
+const headline = record === null ? HEADLINE_FINENESS : (headlinePrice(record)?.fineness ?? HEADLINE_FINENESS);
+
+const payload =
+  record === null
+    ? null
+    : JSON.stringify({ prices: record.prices_byn_per_gram, headline });
+---
+
+<section class="section" id="calc">
+  <h2 class="section__title">Сколько стоит ваше изделие</h2>
+
+  <div class="calc">
+    <div>
+      <label class="label calc__label" for="calc-mass">Масса металла, г</label>
+      <input
+        class="calc__input tabular"
+        id="calc-mass"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
+        placeholder={enabled ? '0,00' : ''}
+        disabled={!enabled}
+        data-calc-mass
+      />
+
+      <div class="label calc__purity-label" id="calc-purity-label">Проба по клейму</div>
+      <div class="calc__chips" role="group" aria-labelledby="calc-purity-label">
+        {
+          chips.map((fineness) => (
+            <button
+              type="button"
+              class="chip"
+              data-calc-fineness={fineness}
+              aria-pressed={fineness === headline ? 'true' : 'false'}
+              disabled={!enabled}
+            >
+              {fineness}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="calc__caveats">
+        {CALC_CAVEATS.map((line) => <div>{line}</div>)}
+      </div>
+    </div>
+
+    <div class="calc__out-col">
+      <div class:list={['calc__out', !enabled && 'calc__out--off']}>
+        <div class="calc__out-label">{out.label}</div>
+        <div
+          class="calc__out-value"
+          data-calc-value
+          data-kind={enabled ? 'hint' : 'sum'}
+          aria-live="polite"
+        >
+          {enabled ? 'введите массу' : '—'}
+        </div>
+        <div class="calc__out-note">{out.note}</div>
+      </div>
+
+      <div class="calc__aside">{CALC_ASIDE_COPY}</div>
+    </div>
+  </div>
+
+  {
+    payload !== null && (
+      <Fragment>
+        <script id="tariff-payload" type="application/json" set:html={payload} is:inline />
+        <script>
+          import '../scripts/calculator.ts';
+        </script>
+      </Fragment>
+    )
+  }
+</section>

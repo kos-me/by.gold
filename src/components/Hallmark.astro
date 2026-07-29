@@ -1,0 +1,40 @@
+---
+/**
+ * Клеймо — знак проверенных данных.
+ *
+ * Сплошная рамка: постановление действует. Пунктир: действующего нет.
+ * Появляется ТОЛЬКО рядом с цифрой, у которой есть номер и дата. Поставить
+ * его где-то ещё значит обесценить его везде.
+ */
+import { formatRuDate, formatRuDateShort } from '../lib/date.ts';
+import type { TariffRecord } from '../lib/schema.ts';
+
+interface Props {
+  /** Действующая запись, либо `null` — тогда клеймо пунктирное и пустое. */
+  record: TariffRecord | null;
+}
+
+const { record } = Astro.props;
+---
+
+{
+  record === null ? (
+    <div class="hallmark hallmark--none" aria-label="Действующего постановления нет">
+      <div class="hallmark__act">без действующего</div>
+      <div>постановления</div>
+    </div>
+  ) : (
+    <div
+      class="hallmark"
+      aria-label={`Постановление Минфина № ${record.act_number} от ${formatRuDate(record.act_date)}`}
+    >
+      <div class="hallmark__act">Пост. Минфина № {record.act_number}</div>
+      <div>от {formatRuDate(record.act_date)}</div>
+      {record.stated_expiry === null ? (
+        <div class="hallmark__rule">срок не указан</div>
+      ) : (
+        <div class="hallmark__rule">действует до {formatRuDateShort(record.stated_expiry)}</div>
+      )}
+    </div>
+  )
+}

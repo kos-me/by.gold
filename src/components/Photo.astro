@@ -1,0 +1,25 @@
+---
+/**
+ * Кадр в карточке. Три штуки на весь сайт, все три — реальные материалы
+ * предмета: клеймо, реактив на пробирном камне, дисплей весов.
+ *
+ * `loading="lazy"` на всех: ни один не входит в LCP.
+ */
+interface Props {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** Высота рамки в вёрстке — кадр обрезается по ней. */
+  frameHeight: number;
+}
+
+const { src, alt, width, height, frameHeight } = Astro.props;
+---
+
+<figure class="figure card">
+  <div class="figure__frame" style={`height:${frameHeight}px`}>
+    <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  </div>
+  <figcaption><slot /></figcaption>
+</figure>

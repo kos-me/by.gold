@@ -1,0 +1,80 @@
+/*
+ * Сгенерировано `node scripts/fetch-fonts.mjs`. Руками не править.
+ *
+ * Сабсет: кириллица (русская + і/ў), латиница, цифры, пунктуация,
+ * № — · × и прочее из макета. Всего 94.8 КБ на семь начертаний.
+ * Шрифты под SIL Open Font License; файлы в public/fonts/.
+ *
+ * Символ вне сабсета отрисуется системным шрифтом — заметно, но не сломано.
+ * Если такой понадобится, добавить его в SUBSET_TEXT и перегенерировать.
+ */
+
+/* Onest 700 */
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/onest-700.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
+
+/* Onest 800 */
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/onest-800.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
+
+/* Golos Text 400 */
+@font-face {
+  font-family: 'Golos Text';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/golos-text-400.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
+
+/* Golos Text 500 */
+@font-face {
+  font-family: 'Golos Text';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/golos-text-500.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
+
+/* Golos Text 600 */
+@font-face {
+  font-family: 'Golos Text';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/golos-text-600.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
+
+/* Martian Mono 400 */
+@font-face {
+  font-family: 'Martian Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/martian-mono-400.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
+
+/* Martian Mono 500 */
+@font-face {
+  font-family: 'Martian Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/martian-mono-500.woff2') format('woff2');
+  unicode-range: U+20-7e, U+a0, U+a7, U+ab, U+ad, U+b0-b1, U+b7, U+bb, U+c4, U+cb, U+cf, U+d6-d7, U+dc, U+e4, U+eb, U+ef, U+f6-f7, U+fc, U+ff, U+102-103, U+114-115, U+11e-11f, U+12c-12d, U+14e-14f, U+16c-16d, U+178, U+306, U+308, U+401, U+406-407, U+40e, U+410-44f, U+451, U+456-457, U+45e, U+490-491, U+4c1-4c2, U+4d0-4d3, U+4d6-4d7, U+4dc-4df, U+4e4-4e7, U+4ec-4ed, U+4f0-4f1, U+4f4-4f5, U+4f8-4f9, U+1e26-1e27, U+1e84-1e85, U+1e8c-1e8d, U+1e97, U+2009, U+2011, U+2013-2014, U+2018-2019, U+201c-201e, U+2022, U+2026, U+202f-2030, U+20ac, U+20bd, U+2116, U+2190-2193, U+2248, U+2264-2265, U+2713-2714;
+}
